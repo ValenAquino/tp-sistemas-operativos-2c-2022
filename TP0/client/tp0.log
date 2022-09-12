@@ -1,0 +1,50 @@
+[INFO] 00:52:45:113 logger/(5048:5048): Hola soy un Log!
+[INFO] 00:52:45:113 logger/(5048:5048): valor
+[INFO] 00:52:45:113 logger/(5048:5048): 127.0.0.1
+[INFO] 00:52:45:113 logger/(5048:5048): 4444
+[INFO] 18:35:19:168 logger/(1644:1644): Hola soy un Log!
+[INFO] 18:35:19:168 logger/(1644:1644): valor
+[INFO] 18:35:19:168 logger/(1644:1644): 127.0.0.1
+[INFO] 18:35:19:168 logger/(1644:1644): 4444
+[INFO] 18:35:23:241 logger/(1644:1644): hola
+[INFO] 18:35:25:190 logger/(1644:1644): chau
+[INFO] 18:35:26:064 logger/(1644:1644): Terminado!
+[INFO] 21:27:32:356 logger/(3401:3401): Hola soy un Log!
+[INFO] 21:27:32:356 logger/(3401:3401): valor
+[INFO] 21:27:32:356 logger/(3401:3401): 127.0.0.1
+[INFO] 21:27:32:356 logger/(3401:3401): 4444
+[INFO] 21:27:45:727 logger/(3401:3401): Terminado!
+[INFO] 21:28:02:127 logger/(3417:3417): Hola soy un Log!
+[INFO] 21:28:02:127 logger/(3417:3417): valor
+[INFO] 21:28:02:127 logger/(3417:3417): 127.0.0.1
+[INFO] 21:28:02:127 logger/(3417:3417): 4444
+[INFO] 21:28:04:465 logger/(3417:3417): hola
+[INFO] 21:28:06:358 logger/(3417:3417): chau
+[INFO] 21:28:08:115 logger/(3417:3417): Terminado!
+[INFO] 21:57:13:139 logger/(4389:4389): Hola soy un Log!
+[INFO] 21:57:13:139 logger/(4389:4389): valor
+[INFO] 21:57:13:139 logger/(4389:4389): 127.0.0.1
+[INFO] 21:57:13:139 logger/(4389:4389): 4444
+[INFO] 21:57:18:299 logger/(4389:4389): hola
+[INFO] 21:57:19:313 logger/(4389:4389): Terminado!
+[INFO] 21:59:40:736 logger/(4389:4389): Paquete enviado!
+[INFO] 22:01:42:066 logger/(4458:4458): Hola soy un Log!
+[INFO] 22:01:42:066 logger/(4458:4458): valor
+[INFO] 22:01:42:066 logger/(4458:4458): 127.0.0.1
+[INFO] 22:01:42:066 logger/(4458:4458): 4444
+[INFO] 22:01:46:772 logger/(4458:4458): hola
+[INFO] 22:01:49:514 logger/(4458:4458): Terminado!
+[INFO] 22:08:01:104 logger/(4568:4568): Hola soy un Log!
+[INFO] 22:08:04:214 logger/(4568:4568): hola
+[INFO] 22:08:05:415 logger/(4568:4568): chau
+[INFO] 22:08:06:525 logger/(4568:4568): Terminado!
+[INFO] 22:10:14:346 logger/(4660:4660): Hola soy un Log!
+[INFO] 22:10:14:346 logger/(4660:4660): valor
+[INFO] 22:10:14:346 logger/(4660:4660): 127.0.0.1
+[INFO] 22:10:14:346 logger/(4660:4660): 4444
+[INFO] 22:10:27:945 logger/(4682:4682): Hola soy un Log!
+[INFO] 22:10:27:945 logger/(4682:4682): valor
+[INFO] 22:10:27:945 logger/(4682:4682): 127.0.0.1
+[INFO] 22:10:27:945 logger/(4682:4682): 4444
+[INFO] 22:10:30:848 logger/(4682:4682): hola
+[INFO] 22:10:31:581 logger/(4682:4682): Terminado!

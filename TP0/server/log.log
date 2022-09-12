@@ -1,0 +1,25 @@
+[INFO] 21:27:19:841 Servidor/(3388:3388): Servidor listo para recibir al cliente
+[INFO] 21:56:42:284 Servidor/(4362:4362): Servidor listo para recibir al cliente
+[INFO] 21:57:04:570 Servidor/(4374:4374): Servidor listo para recibir al cliente
+[INFO] 21:57:19:314 Servidor/(3388:3388): Se conecto un cliente!
+[INFO] 21:59:40:737 Servidor/(3388:3388): Me llegaron los siguientes valores:
+
+[INFO] 21:59:40:737 Servidor/(3388:3388): hola°™
+[INFO] 21:59:40:737 Servidor/(3388:3388): como va
+[INFO] 21:59:40:737 Servidor/(3388:3388): todo bienÀêªˇˇ
+[ERROR] 21:59:40:738 Servidor/(3388:3388): el cliente se desconecto. Terminando servidor
+[INFO] 22:01:31:041 Servidor/(4429:4429): Servidor listo para recibir al cliente
+[INFO] 22:01:49:515 Servidor/(4429:4429): Se conecto un cliente!
+[INFO] 22:02:21:227 Servidor/(4429:4429): Me llegaron los siguientes valores:
+
+[INFO] 22:02:21:227 Servidor/(4429:4429): como va
+[INFO] 22:02:21:227 Servidor/(4429:4429): todo bienÀáˇˇ
+[ERROR] 22:02:21:229 Servidor/(4429:4429): el cliente se desconecto. Terminando servidor
+[INFO] 22:07:56:245 Servidor/(4540:4540): Servidor listo para recibir al cliente
+[INFO] 22:10:23:032 Servidor/(4671:4671): Servidor listo para recibir al cliente
+[INFO] 22:10:31:582 Servidor/(4671:4671): Se conecto un cliente!
+[INFO] 22:10:45:944 Servidor/(4671:4671): Me llegaron los siguientes valores:
+
+[INFO] 22:10:45:944 Servidor/(4671:4671): hola†™
+[INFO] 22:10:45:944 Servidor/(4671:4671): como v
+[ERROR] 22:10:45:945 Servidor/(4671:4671): el cliente se desconecto. Terminando servidor
