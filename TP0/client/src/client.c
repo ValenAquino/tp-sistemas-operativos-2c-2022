@@ -49,7 +49,7 @@ int main(void)
 	/* ---------------- LEER DE CONSOLA ---------------- */
 
 
-	leer_consola(logger);
+//	leer_consola(logger);
 
 
 	//---------------------------------------------------PARTE 3-------------------------------------------------------------/
@@ -121,12 +121,13 @@ void paquete(int conexion)
 	// Leemos y esta vez agregamos las lineas al paquete
 	mensaje = readline("> ");
 
-	while(strcmp(mensaje, "")!=0){
-			agregar_a_paquete(paquete, mensaje, strlen(mensaje));
-			mensaje = readline("> ");
-		}
+	while(strcmp(mensaje, "") != 0){
+		agregar_a_paquete(paquete, mensaje, strlen(mensaje) + 1);
+		free(mensaje);
+		mensaje = readline("> ");
+	}
 
-	// free(mensaje);
+	free(mensaje);
 	enviar_paquete(paquete, conexion);
 
 	eliminar_paquete(paquete);
