@@ -1,10 +1,3 @@
-/*
- * utils.h
- *
- *  Created on: Sep 21, 2022
- *      Author: ubuntu
- */
-
 #ifndef UTILS_H_
 #define UTILS_H_
 

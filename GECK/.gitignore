@@ -1,1 +1,12 @@
+# Cosas de eclipse
 /.metadata/
+.settings
+.cproject
+.project
+
+# todos los loggers
+*.log
+
+# binarios
+kernel/Debug/kernel
+kernel/Debug/kernel

@@ -1,10 +1,3 @@
-/*
- * utils.c
- *
- *  Created on: Sep 21, 2022
- *      Author: ubuntu
- */
-
 #include "../include/utils.h"
 
 bool config_has_all_properties(t_config* cfg, char** properties) {
