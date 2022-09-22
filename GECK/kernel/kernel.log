@@ -3,3 +3,9 @@
 [INFO] 20:03:13:059 Kernel/(6861:6861): Kernel listo para recibir al cliente
 [INFO] 20:03:21:776 Kernel/(6861:6861): Se conecto un cliente!
 [ERROR] 20:03:21:783 Kernel/(6861:6861): el cliente se desconecto. Terminando servidor
+[INFO] 21:00:12:821 Kernel/(3794:3794): Kernel listo para recibir al cliente
+[INFO] 21:06:41:013 Kernel/(3794:3794): Se conecto un cliente!
+[ERROR] 21:06:41:014 Kernel/(3794:3794): el cliente se desconecto. Terminando servidor
+[INFO] 22:42:30:905 Kernel/(5398:5398): Kernel listo para recibir al cliente
+[INFO] 22:42:38:959 Kernel/(5398:5398): Se conecto un cliente!
+[ERROR] 22:42:38:959 Kernel/(5398:5398): el cliente se desconecto. Terminando servidor

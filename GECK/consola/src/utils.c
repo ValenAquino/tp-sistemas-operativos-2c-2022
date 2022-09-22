@@ -36,3 +36,6 @@ void liberar_conexion(int socket_cliente)
 {
 	close(socket_cliente);
 }
+
+// TODO: Mover a shared
+
