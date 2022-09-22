@@ -8,5 +8,6 @@
 *.log
 
 # binarios
-kernel/Debug/kernel
-kernel/Debug/kernel
+/consola/Debug/consola
+
+/kernel/Debug/kernel
