@@ -1,0 +1,18 @@
+/*
+ * main.h
+ *
+ *  Created on: Sep 15, 2022
+ *      Author: ubuntu
+ */
+
+#ifndef CONSOLA_H_
+#define CONSOLA_H_
+
+#include <stdlib.h>
+#include <commons/log.h>
+#include <utils.h>
+#include "utils.h"
+
+int liberar_memoria(t_config* config, int conexion_kernel);
+int conect_to_kernel(char* ip, char* puerto);
+#endif /* CONSOLA_H_ */
