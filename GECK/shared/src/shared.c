@@ -1,4 +1,8 @@
-#include "../include/utils.h"
+#include "../include/shared.h"
+
+void liberar_conexion(int socket_cliente) {
+	close(socket_cliente);
+}
 
 bool config_has_all_properties(t_config* cfg, char** properties) {
     for(uint8_t i = 0; properties[i] != NULL; i++) {

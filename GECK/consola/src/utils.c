@@ -1,41 +1,43 @@
-/*
- * utils.c
- *
- *  Created on: Sep 15, 2022
- *      Author: ubuntu
- */
 #include "../include/utils.h"
 
-int crear_conexion(char *ip, char* puerto)
-{
-	struct addrinfo hints;
-	struct addrinfo *servinfo;
+extern t_log* logger;
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
+int procesar_config(char *config_path, t_list **lista_segmentos) {
+	char **lista;
+	t_config* config = config_create(config_path);
 
-	getaddrinfo(ip, puerto, &hints, &servinfo);
+	if (config== NULL) {
+		log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
+		exit(EXIT_FAILURE);
+	}
 
-	// Ahora vamos a crear el socket.
-	int socket_cliente = socket(servinfo->ai_family,
-            servinfo->ai_socktype,
-            servinfo->ai_protocol);
+	char* ip_kernel = config_get_string_value(config, "IP_KERNEL");
+	char* puerto_kernel = config_get_string_value(config, "PUERTO_KERNEL");
+	lista = config_get_array_value(config, "SEGMENTOS");
 
-	// Ahora que tenemos el socket, vamos a conectarlo
-	connect(socket_cliente, servinfo->ai_addr, servinfo->ai_addrlen);
+	log_debug(logger, "ip: %s", ip_kernel);
+	log_debug(logger, "puerto: %s", puerto_kernel);
 
-	freeaddrinfo(servinfo);
+	int conexion_kernel = conect_to_kernel(ip_kernel, puerto_kernel);
 
-	return socket_cliente;
+	if(conexion_kernel == -1) {
+		log_info(logger, "No se ha podido conectar con el KERNEL");
+		exit(EXIT_FAILURE);
+	}
+
+	log_info(logger, "Se ha conectado con el KERNEL exitosamente");
+	config_destroy(config);
+
+	return conexion_kernel;
 }
 
-
-void liberar_conexion(int socket_cliente)
-{
-	close(socket_cliente);
+int conect_to_kernel(char* ip, char* puerto) {
+	log_info(logger, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
+	return crear_conexion(ip, puerto);
 }
 
-// TODO: Mover a shared
-
+int liberar_memoria(t_log* logg, int fd) {
+	liberar_conexion(fd);
+	log_destroy(logg);
+	return EXIT_SUCCESS;
+}
