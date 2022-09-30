@@ -6,9 +6,12 @@
 //Uso general
 #include<stdio.h>
 #include<stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include<string.h>
 #include<assert.h>
 #include<signal.h>
+#include <inttypes.h>
 
 //Sockets
 #include<sys/socket.h>

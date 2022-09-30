@@ -4,23 +4,23 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/main.c \
-../src/utils.c 
+../src/comunicacion.c \
+../src/main.c 
 
 C_DEPS += \
-./src/main.d \
-./src/utils.d 
+./src/comunicacion.d \
+./src/main.d 
 
 OBJS += \
-./src/main.o \
-./src/utils.o 
+./src/comunicacion.o \
+./src/main.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.c src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I"/home/utnso/tp-2022-2c-Compilant/GECK/shared/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	gcc -I"/home/ubuntu/Documents/tp-2022-2c-Compilant/GECK/shared/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -28,7 +28,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/main.d ./src/main.o ./src/utils.d ./src/utils.o
+	-$(RM) ./src/comunicacion.d ./src/comunicacion.o ./src/main.d ./src/main.o
 
 .PHONY: clean-src
 

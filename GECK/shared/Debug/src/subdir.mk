@@ -5,16 +5,19 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/cliente.c \
+../src/protocolo.c \
 ../src/servidor.c \
 ../src/shared.c 
 
 C_DEPS += \
 ./src/cliente.d \
+./src/protocolo.d \
 ./src/servidor.d \
 ./src/shared.d 
 
 OBJS += \
 ./src/cliente.o \
+./src/protocolo.o \
 ./src/servidor.o \
 ./src/shared.o 
 
@@ -31,7 +34,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/cliente.d ./src/cliente.o ./src/servidor.d ./src/servidor.o ./src/shared.d ./src/shared.o
+	-$(RM) ./src/cliente.d ./src/cliente.o ./src/protocolo.d ./src/protocolo.o ./src/servidor.d ./src/servidor.o ./src/shared.d ./src/shared.o
 
 .PHONY: clean-src
 
