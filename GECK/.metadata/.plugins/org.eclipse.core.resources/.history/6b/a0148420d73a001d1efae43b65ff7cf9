@@ -1,0 +1,47 @@
+#include "../include/utils.h"
+
+int crear_conexion(char *ip, char* puerto)
+{
+	struct addrinfo hints;
+	struct addrinfo *servinfo;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	getaddrinfo(ip, puerto, &hints, &servinfo);
+
+	// Ahora vamos a crear el socket.
+	int socket_cliente = socket(servinfo->ai_family,
+            servinfo->ai_socktype,
+            servinfo->ai_protocol);
+
+	// Ahora que tenemos el socket, vamos a conectarlo
+	connect(socket_cliente, servinfo->ai_addr, servinfo->ai_addrlen);
+
+	freeaddrinfo(servinfo);
+
+	return socket_cliente;
+}
+
+
+void liberar_conexion(int socket_cliente)
+{
+	close(socket_cliente);
+}
+
+// TODO: Mover a shared
+
+int liberar_memoria(t_config* config, int conexion_kernel) {
+	liberar_conexion(conexion_kernel);
+	log_destroy(logger);
+	config_destroy(config);
+	return EXIT_SUCCESS;
+}
+
+int conect_to_kernel(char* ip, char* puerto) {
+	log_info(logger, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
+	return crear_conexion(ip, puerto);
+}
+

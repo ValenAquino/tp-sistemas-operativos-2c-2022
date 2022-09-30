@@ -12,7 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <commons/log.h>
-#include "utils.h"
+#include <servidor.h>
+#include <shared.h>
+
+#include "comunicacion.h"
 
 int iniciar_servidor_kernel(void);
 

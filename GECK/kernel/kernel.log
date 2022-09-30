@@ -1,5 +1,0 @@
-[INFO] 19:50:32:749 Kernel/(6271:6271): Servidor listo para recibir al cliente
-[INFO] 20:02:22:981 Kernel/(6832:6832): Kernel listo para recibir al cliente
-[INFO] 20:03:13:059 Kernel/(6861:6861): Kernel listo para recibir al cliente
-[INFO] 20:03:21:776 Kernel/(6861:6861): Se conecto un cliente!
-[ERROR] 20:03:21:783 Kernel/(6861:6861): el cliente se desconecto. Terminando servidor

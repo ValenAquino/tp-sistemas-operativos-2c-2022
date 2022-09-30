@@ -1,0 +1,8 @@
+#ifndef SERVIDOR_H_
+#define SERVIDOR_H_
+
+#include <comunicaciones.h>
+
+int iniciar_servidor(char*, char*);
+
+#endif /* SERVIDOR_H_ */

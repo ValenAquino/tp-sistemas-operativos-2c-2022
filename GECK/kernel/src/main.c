@@ -1,5 +1,7 @@
 #include "../include/main.h"
 
+t_log* logger;
+
 int main(void) {
 	return iniciar_servidor_kernel();
 }
@@ -12,25 +14,14 @@ int iniciar_servidor_kernel(void) {
 	log_info(logger, "Kernel listo para recibir al cliente");
 	int cliente_fd = esperar_cliente(server_fd);
 
-//	t_list* lista;
 	while (1) {
 		int cod_op = recibir_operacion(cliente_fd);
-		switch (cod_op) {
-		case MENSAJE:
-			recibir_mensaje(cliente_fd);
-			break;
-		case PAQUETE:
-//			lista = recibir_paquete(cliente_fd);
-			log_info(logger, "Me llegaron los siguientes valores:\n");
-//			list_iterate(lista, (void*) iterator);
-			break;
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
+		// Si cod_op es -1 habria que ver como llega a la funcion manejar_comunicacion.
+		// En el caso de que haya algun problema con eso, deberiamos manejarlo aca.
+		if (manejar_comunicacion(cod_op) == -1) {
 			return EXIT_FAILURE;
-		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-			break;
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
