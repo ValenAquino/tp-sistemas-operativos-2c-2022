@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/consola.c 
+../src/consola.c \
+../src/pseudocodigo.c 
 
 C_DEPS += \
-./src/consola.d 
+./src/consola.d \
+./src/pseudocodigo.d 
 
 OBJS += \
-./src/consola.o 
+./src/consola.o \
+./src/pseudocodigo.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/consola.d ./src/consola.o
+	-$(RM) ./src/consola.d ./src/consola.o ./src/pseudocodigo.d ./src/pseudocodigo.o
 
 .PHONY: clean-src
 
