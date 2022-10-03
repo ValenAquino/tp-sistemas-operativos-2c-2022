@@ -1,8 +1,5 @@
 # Cosas de eclipse
-/metadata/
-# .settings
-# .cproject
-# .project
+.metadata/
 
 # todos los loggers
 *.log

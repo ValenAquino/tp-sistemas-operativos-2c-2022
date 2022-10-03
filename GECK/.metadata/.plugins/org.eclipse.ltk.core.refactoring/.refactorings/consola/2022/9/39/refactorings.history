@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;consola/src/main.c&apos; to &apos;consola.c&apos;" description="Rename resource &apos;main.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main.c" name="consola.c" stamp="1663892702151" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;consola/include/main.h&apos; to &apos;consola.h&apos;" description="Rename resource &apos;main.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="include/main.h" name="consola.h" stamp="1663892709688" updateReferences="true"/>
-</session>
