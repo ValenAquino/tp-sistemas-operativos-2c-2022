@@ -20,11 +20,35 @@
 #include <shared.h>
 #include <cliente.h>
 
-int procesar_config(
-			char *config_path,
-			t_list **lista_segmentos
-		);
-int conect_to_kernel(char*, char*);
-int liberar_memoria(t_log*, int);
+typedef enum {
+	SET,
+	ADD,
+	MOV_IN,
+	MOV_OUT,
+	IO,
+	EXIT
+} t_instr;
+typedef enum {
+	AX,
+	BX,
+	CX,
+	DX
+} reg_cpu;
+
+typedef enum {
+	DISCO,
+	TECLADO,
+	PANTALLA
+} dispositivos;
+typedef struct {
+	t_instr instr;
+	int param1;
+	int param2;
+} ts_instr;
+
+t_config* procesar_config(char *, char ***, int*);
+int connect_to_kernel(t_config*);
+int liberar_memoria(t_log*, int, t_config*);
+t_list* parsear_pseudocod(char* );
 
 #endif /* CONSOLA_H_ */
