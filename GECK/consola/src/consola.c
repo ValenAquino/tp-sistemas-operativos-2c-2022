@@ -53,6 +53,8 @@ int procesar_config(char *config_path, t_list **lista_segmentos) {
 		exit(EXIT_FAILURE);
 	}
 
+	send_debug(conexion_kernel);
+
 	log_info(logger, "Se ha conectado con el KERNEL exitosamente");
 	config_destroy(config);
 

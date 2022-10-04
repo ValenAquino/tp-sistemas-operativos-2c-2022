@@ -1,16 +1,8 @@
-/*
- * comunicacion.c
- *
- *  Created on: Sep 29, 2022
- *      Author: ubuntu
- */
-
 #include "../include/comunicacion.h"
 
 extern t_log* logger;
 
 void manejar_comunicacion(void* void_args) {
-
 		t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
 		int cliente_socket = args->fd;
 		char* server_name = args->server_name;
@@ -21,9 +13,6 @@ void manejar_comunicacion(void* void_args) {
 			int cod_op = recibir_operacion(cliente_socket);
 
 			switch (cod_op) {
-			case ELEMENTOS_CONSOLA:
-				// Parsear segmentos
-				break;
 			case DEBUG:
 				log_debug(logger, "Estoy debuggeando!");
 				break;
@@ -54,14 +43,4 @@ int server_escuchar(char* server_name, int server_socket) {
     }
 
     return 0;
-}
-
-int conectar_cpu(char* ip, char* puerto) {
-	log_info(logger, "Iniciando conexion con la CPU - Puerto: %s - IP: %s", ip, puerto);
-	return crear_conexion(ip, puerto);
-}
-
-int conectar_memoria(char* ip, char* puerto) {
-	log_info(logger, "Iniciando conexion con la Memoria - Puerto: %s - IP: %s", ip, puerto);
-	return crear_conexion(ip, puerto);
 }
