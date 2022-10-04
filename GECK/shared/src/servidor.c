@@ -1,9 +1,7 @@
 #include "../include/servidor.h"
 
-extern t_log* logger;
-
 // TODO comprobar que las syscall devuelvan >= 0 sino tirar error
-int iniciar_servidor(char* ip, char* puerto) {
+int iniciar_servidor(t_log* logger, const char* server_name, char* ip, char* puerto) {
 	int socket_servidor;
 
 	struct addrinfo condiciones, *servinfo;
@@ -31,21 +29,22 @@ int iniciar_servidor(char* ip, char* puerto) {
 	// Asociamos el socket a un puerto
 	bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
 
-	log_trace(logger, "KERNEL escuchando en la IP: %s PUERTO: %s", ip, puerto);
+	log_trace(logger, "%s escuchando en la IP: %s PUERTO: %s", server_name, ip, puerto);
 
 	// Escuchamos las conexiones entrantes
 	listen(socket_servidor, SOMAXCONN); // hay que cambiar SOMAXCONN por el grado de multiprogramacion
 
 	freeaddrinfo(servinfo);
-	log_trace(logger, "Listo para recibir consolas");
+	log_trace(logger, "%s listo para recibir clientes", server_name);
 
 	return socket_servidor;
 }
 
 // quizas haya que modificarla para usar hilos
-int esperar_cliente(int server_fd) {
+int esperar_cliente(t_log* logger, const char* name, int server_fd) {
 	int cliente_fd = accept(server_fd, NULL, NULL);
-	log_info(logger, "Se ha conectado un cliente");
+
+	log_info(logger, "Se ha conectado un cliente a %s", name);
 
 	return cliente_fd;
 }
