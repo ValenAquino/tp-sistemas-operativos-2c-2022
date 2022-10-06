@@ -20,6 +20,7 @@
 #include <shared.h>
 #include <cliente.h>
 #include <protocolo.h>
+#include <sharedLocal.h>
 
 // Consola
 #include "pseudocodigo.h"

@@ -3,45 +3,7 @@
 
 // shared
 #include <shared.h>
-
-// Consola
-#include "consola.h" // Es para importar los enum, esto debería estar en alguna parte de las shared
-
-// Esto va para las shared ↓↓↓↓↓↓
-typedef enum {
-	SET,
-	ADD,
-	MOV_IN,
-	MOV_OUT,
-	IO,
-	EXIT
-} t_ins;
-
-typedef enum {
-	AX,
-	BX,
-	CX,
-	DX
-} reg_cpu;
-
-typedef enum {
-	DISCO,
-	TECLADO,
-	PANTALLA
-} dispositivos;
-
-typedef struct {
-	t_ins name;
-	int param1;
-	int param2;
-} ts_ins;
-
-typedef struct {
-	op_code code;
-	int size;
-	void* stream;
-} ts_paquete;
-// Esto va para las shared ↑↑↑↑↑↑
+#include <sharedLocal.h>
 
 t_list* parsear_pseudocod(char*);
 

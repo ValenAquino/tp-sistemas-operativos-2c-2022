@@ -15,7 +15,7 @@ t_list* parsear_pseudocod(char* pseudo_path) {
 	while(!feof(f_pseudo)) {
 		inst = crear_instruccion(&f_pseudo);
 		list_add(lista_inst, inst);
-		log_debug(logger, "Instruccion: %d, p1: %d, p2: %d", inst->name, inst->param1, inst->param2);
+		log_debug(logger, "Instruccion = [n: %d, p1: %d, p2: %d]", inst->name, inst->param1, inst->param2);
 	}
 
 	fclose(f_pseudo);

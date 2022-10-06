@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 	config = procesar_config(config_path, &lista_segmentos, &tiempo_pantalla);
 	kernel_fd = connect_to_kernel(config);
 
+	// TODO agregar logs para trackear que va pasando
 	enviar_proceso(kernel_fd, lista_inst, lista_segmentos);
 
 	return liberar_memoria(logger, kernel_fd, config);
@@ -40,10 +41,11 @@ int main(int argc, char** argv) {
 t_list *char_to_int(char **segmentos) {
 	t_list *lista_segmentos = list_create();
 
-	for (int i = 0; segmentos[i] != NULL; i++)
+	for (int i = 0; segmentos[i] != NULL; i++) {
 		list_add(lista_segmentos, atoi(segmentos[i]));
-
-	log_debug(logger, "cant segmentos: %d", list_size(lista_segmentos));
+		int seg = list_get(lista_segmentos, i);
+		log_debug(logger, "segmento[%d] = %d", i, seg);
+	}
 
 	return lista_segmentos;
 }
@@ -84,60 +86,20 @@ int connect_to_kernel(t_config* config) {
 	return kernel_fd;
 }
 
-void *serializar_proceso(t_list* lista_inst, t_list* lista_segmentos, int *size_stream) {
-	ts_ins *instruccion;
-	int *segmento;
-
-	int desplazamiento = 0;
-	int size_lista_inst = list_size(lista_inst);
-	int size_lista_segmentos = list_size(lista_segmentos);
-	
-	*size_stream = size_lista_inst + size_lista_segmentos + (sizeof(int) * 2);
-	void* stream = malloc(*size_stream);
-
-	// Tamaño de la lista de instrucciones
-	memcpy(stream + desplazamiento, &size_lista_inst, sizeof(int)); 
-	desplazamiento += sizeof(int);
-
-	// Lista de instrucciones
-	for(int i = 0; i < size_lista_inst; i++) {
-		instruccion = list_get(lista_inst, i);
-		memcpy(stream + desplazamiento, &instruccion, sizeof(instruccion));
-		desplazamiento += sizeof(int);
-	}
-
-	list_clean(lista_inst);
-	list_destroy(lista_inst);
-
-	// Tamaño de la lista de segmentos
-	memcpy(stream + desplazamiento, &size_lista_segmentos, sizeof(int)); 
-	desplazamiento += sizeof(int);
-
-	// Lista de segmentos
-	for(int i = 0; i < size_lista_segmentos; i++) {
-		segmento = list_get(lista_segmentos, i);
-		memcpy(stream + desplazamiento, &segmento, sizeof(instruccion));
-		desplazamiento += sizeof(int);
-	}
-
-	list_clean(lista_segmentos);
-	list_destroy(lista_segmentos);
-
-	return stream;
-}
-
 void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) {
-	ts_paquete proceso;
-	int size_stream;
-	int bytes_mensaje;
+	ts_paquete* paquete = crear_paquete(ELEMENTOS_CONSOLA);
 
-	proceso.code = ELEMENTOS_CONSOLA;
-	proceso.stream = serializar_proceso(lista_inst, lista_segmentos, &size_stream);
-	proceso.size = sizeof(proceso.stream); // poner size_stream
+	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
+	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
-	bytes_mensaje = sizeof(op_code) + sizeof(int) + proceso.size;
+	void *ins = serializar_lista_ins(lista_inst, size_ins);
+	void *seg = serializar_lista_seg(lista_segmentos, size_seg);
 
-	// enviar_paquete;
+	agregar_a_paquete(paquete, ins, size_ins);
+	agregar_a_paquete(paquete, seg, size_seg);
+
+	enviar_paquete(paquete, kernel_fd);
+	eliminar_paquete(paquete);
 }
 
 int liberar_memoria(t_log* logg, int fd, t_config* config) {
