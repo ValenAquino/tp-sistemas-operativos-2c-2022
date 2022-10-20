@@ -17,6 +17,7 @@
 #include<commons/config.h>
 
 // shared
+#include <protocolo.h>
 #include <shared.h>
 #include <cliente.h>
 #include <protocolo.h>

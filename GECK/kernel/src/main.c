@@ -2,26 +2,50 @@
 
 t_log* logger;
 
-int main(void) {
-	return iniciar_servidor_kernel();
-}
+int main() {
+	int server_fd;
 
-int iniciar_servidor_kernel(void) {
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 
 	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	int server_fd = iniciar_servidor("127.0.0.1", "4444");
-	log_info(logger, "Kernel listo para recibir al cliente");
-	int cliente_fd = esperar_cliente(server_fd);
+	server_fd = iniciar_servidor_kernel("127.0.0.1", "4444");
 
-	while (1) {
-		int cod_op = recibir_operacion(cliente_fd);
-		// Si cod_op es -1 habria que ver como llega a la funcion manejar_comunicacion.
-		// En el caso de que haya algun problema con eso, deberiamos manejarlo aca.
-		if (manejar_comunicacion(cod_op, cliente_fd) == -1) {
-			return EXIT_FAILURE;
-		}
+	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
+	int cpu_interrupt_fd = conectar_cpu("127.0.0.1", "8002");
+	if(cpu_interrupt_fd == -1) {
+		log_info(logger, "No se ha podido conectar con la CPU (interrupt)");
+		exit(EXIT_FAILURE);
 	}
+
+	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
+	int cpu_dispatch_fd = conectar_cpu("127.0.0.1", "8005");
+	if(cpu_dispatch_fd == -1) {
+		log_info(logger, "No se ha podido conectar con la CPU (dispatch)");
+		exit(EXIT_FAILURE);
+	}
+
+	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
+	int memoria_fd = conectar_memoria("127.0.0.1", "8001");
+	if(memoria_fd == -1) {
+		log_info(logger, "No se ha podido conectar con la Memoria");
+		exit(EXIT_FAILURE);
+	}
+
+	send_debug(cpu_interrupt_fd);
+	send_debug(cpu_dispatch_fd);
+	send_debug(memoria_fd);
+
+	while (server_escuchar(SERVERNAME, server_fd));
 
 	return EXIT_SUCCESS;
 }
+
+int iniciar_servidor_kernel(char* ip, char* puerto) {
+	int server_fd = iniciar_servidor(logger, SERVERNAME, ip, puerto);
+
+	log_info(logger, "Kernel listo para recibir al cliente");
+
+	return server_fd;
+}
+
+

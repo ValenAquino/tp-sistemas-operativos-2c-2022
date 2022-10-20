@@ -10,6 +10,11 @@ typedef enum {
     DEBUG
 } op_code;
 
+typedef struct {
+    int fd;
+    char* server_name;
+} t_manejar_conexion_args;
+
 //////////// MENSAJES /////////////
 bool send_debug(int fd);
 

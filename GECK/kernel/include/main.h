@@ -17,6 +17,8 @@
 
 #include "comunicacion.h"
 
-int iniciar_servidor_kernel(void);
+#define SERVERNAME "KERNEL_SERVER"
+
+int iniciar_servidor_kernel(char* ip, char* puerto);
 
 #endif /* KERNEL_MAIN_H_ */

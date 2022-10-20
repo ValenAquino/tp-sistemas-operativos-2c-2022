@@ -81,6 +81,7 @@ int connect_to_kernel(t_config* config) {
 		exit(EXIT_FAILURE);
 	}
 
+	send_debug(kernel_fd);
 	log_debug(logger, "kernel file descriptor: %d", kernel_fd);
 
 	return kernel_fd;
