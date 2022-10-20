@@ -29,12 +29,15 @@ typedef struct t_configuracion_kernel
     char *ip_cpu;
     char *puerto_cpu_dispatch;
     char *puerto_cpu_interrupt;
+    char *puerto_kernel;
     char *puerto_escucha;
     char *algoritmo_planificacion;
-    char * grado_max_multiprogramacion;
-    char * quantum_rr;
+    int grado_max_multiprogramacion;
+    int quantum_rr;
     char **dispositivos_io;
     char **tiempos_io;
 } t_configuracion_kernel;
+
+t_configuracion_kernel* procesar_config(char *);
 
 #endif /* KERNEL_MAIN_H_ */
