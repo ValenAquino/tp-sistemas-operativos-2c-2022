@@ -11,6 +11,8 @@
 #include <protocolo.h>
 #include <shared.h>
 
-int manejar_comunicacion(op_code);
+#include <sharedLocal.h>
+
+int manejar_comunicacion(op_code, int);
 
 #endif /* COMUNICACION_H_ */

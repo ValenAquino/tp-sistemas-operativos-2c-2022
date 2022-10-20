@@ -1,8 +1,5 @@
 # Cosas de eclipse
-/.metadata/
-# .settings
-# .cproject
-# .project
+.metadata/
 
 # todos los loggers
 *.log
@@ -10,3 +7,5 @@
 # binarios
 /consola/Debug/consola
 /kernel/Debug/kernel
+
+.vscode/

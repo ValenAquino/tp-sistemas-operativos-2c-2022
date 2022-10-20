@@ -2,9 +2,16 @@
 
 t_log* logger;
 
+// TODO enviar los mensajes a kernel
+
 int main(int argc, char** argv) {
-	t_list *instrucciones = list_create();
-	t_list *lista_segmentos = list_create();
+	char* config_path;
+	char* pseudo_path;
+	t_config* config;
+	t_list *lista_inst;
+	t_list *lista_segmentos;
+	int tiempo_pantalla;
+	int kernel_fd;
 
 	// Level trace para que hagamos logs debugs y trace
 	// Así los logs minimos quedan al level info
@@ -15,23 +22,36 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
 	}
 
-	char* config_path = argv[1];
-	char* pseudo_path = argv[2];
+	config_path = argv[1];
+	pseudo_path = argv[2];
 
 	log_debug(logger, "config: %s", config_path);
 	log_debug(logger, "pseudo: %s", pseudo_path);
 
-	//instrucciones = parsear_pseudocod(pseudo_path);
-	int kernel_fd = procesar_config(config_path, &lista_segmentos);
+	lista_inst = parsear_pseudocod(pseudo_path);	
+	config = procesar_config(config_path, &lista_segmentos, &tiempo_pantalla);
+	kernel_fd = connect_to_kernel(config);
 
-	log_debug(logger, "kernel file descriptor: %d", kernel_fd);
+	// TODO agregar logs para trackear que va pasando
+	enviar_proceso(kernel_fd, lista_inst, lista_segmentos);
 
-	return liberar_memoria(logger, kernel_fd);
+	return liberar_memoria(logger, kernel_fd, config);
 }
 
+t_list *char_to_int(char **segmentos) {
+	t_list *lista_segmentos = list_create();
 
-int procesar_config(char *config_path, t_list **lista_segmentos) {
-	char **lista;
+	for (int i = 0; segmentos[i] != NULL; i++) {
+		list_add(lista_segmentos, atoi(segmentos[i]));
+		int seg = list_get(lista_segmentos, i);
+		log_debug(logger, "segmento[%d] = %d", i, seg);
+	}
+
+	return lista_segmentos;
+}
+
+t_config* procesar_config(char *config_path, t_list **lista_segmentos, int* tiempo_pantalla) {
+	char **segmentos;
 	t_config* config = config_create(config_path);
 
 	if (config== NULL) {
@@ -39,33 +59,52 @@ int procesar_config(char *config_path, t_list **lista_segmentos) {
 		exit(EXIT_FAILURE);
 	}
 
-	char* ip_kernel = config_get_string_value(config, "IP_KERNEL");
-	char* puerto_kernel = config_get_string_value(config, "PUERTO_KERNEL");
-	lista = config_get_array_value(config, "SEGMENTOS");
+	*tiempo_pantalla = config_get_int_value(config, "TIEMPO_PANTALLA");
+	segmentos = config_get_array_value(config, "SEGMENTOS");
 
-	log_debug(logger, "ip: %s", ip_kernel);
-	log_debug(logger, "puerto: %s", puerto_kernel);
+	*lista_segmentos = char_to_int(segmentos);
 
-	int conexion_kernel = conect_to_kernel(ip_kernel, puerto_kernel);
+	log_info(logger, "tiempo_pantalla: %d", *tiempo_pantalla);
 
-	if(conexion_kernel == -1) {
-		log_info(logger, "No se ha podido conectar con el KERNEL");
+	return config;
+}
+
+int connect_to_kernel(t_config* config) {
+	char* ip = config_get_string_value(config, "IP_KERNEL");
+	char* puerto = config_get_string_value(config, "PUERTO_KERNEL");
+
+	log_info(logger, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
+	int kernel_fd = crear_conexion(ip, puerto);
+
+	if(kernel_fd == -1) {
+		log_error(logger, "No se ha podido iniciar la conexion con el kernel");
 		exit(EXIT_FAILURE);
 	}
 
-	log_info(logger, "Se ha conectado con el KERNEL exitosamente");
-	config_destroy(config);
+	log_debug(logger, "kernel file descriptor: %d", kernel_fd);
 
-	return conexion_kernel;
+	return kernel_fd;
 }
 
-int conect_to_kernel(char* ip, char* puerto) {
-	log_info(logger, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
-	return crear_conexion(ip, puerto);
+void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) {
+	ts_paquete* paquete = crear_paquete(ELEMENTOS_CONSOLA);
+
+	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
+	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
+
+	void *ins = serializar_lista_ins(lista_inst, size_ins);
+	void *seg = serializar_lista_seg(lista_segmentos, size_seg);
+
+	agregar_a_paquete(paquete, ins, size_ins);
+	agregar_a_paquete(paquete, seg, size_seg);
+
+	enviar_paquete(paquete, kernel_fd);
+	eliminar_paquete(paquete);
 }
 
-int liberar_memoria(t_log* logg, int fd) {
+int liberar_memoria(t_log* logg, int fd, t_config* config) {
 	liberar_conexion(fd);
+	config_destroy(config);
 	log_destroy(logg);
 	return EXIT_SUCCESS;
 }

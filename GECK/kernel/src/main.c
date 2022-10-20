@@ -18,7 +18,7 @@ int iniciar_servidor_kernel(void) {
 		int cod_op = recibir_operacion(cliente_fd);
 		// Si cod_op es -1 habria que ver como llega a la funcion manejar_comunicacion.
 		// En el caso de que haya algun problema con eso, deberiamos manejarlo aca.
-		if (manejar_comunicacion(cod_op) == -1) {
+		if (manejar_comunicacion(cod_op, cliente_fd) == -1) {
 			return EXIT_FAILURE;
 		}
 	}

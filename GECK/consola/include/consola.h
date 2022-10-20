@@ -19,12 +19,18 @@
 // shared
 #include <shared.h>
 #include <cliente.h>
+#include <protocolo.h>
+#include <sharedLocal.h>
 
-int procesar_config(
-			char *config_path,
-			t_list **lista_segmentos
-		);
-int conect_to_kernel(char*, char*);
-int liberar_memoria(t_log*, int);
+// Consola
+#include "pseudocodigo.h"
+
+t_config* procesar_config(char *, t_list**, int*);
+t_list* parsear_pseudocod(char*);
+
+int connect_to_kernel(t_config*);
+void enviar_proceso(int, t_list*, t_list*);
+
+int liberar_memoria(t_log*, int, t_config*);
 
 #endif /* CONSOLA_H_ */
