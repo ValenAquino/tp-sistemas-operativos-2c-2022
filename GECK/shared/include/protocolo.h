@@ -5,6 +5,7 @@
 
 typedef enum {
 	// Agregar los tipos de operaciones para todo el sistema aca:
+	DESCONEXION = -1,
 	ELEMENTOS_CONSOLA,
     DEBUG
 } op_code;
