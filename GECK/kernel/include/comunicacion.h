@@ -12,6 +12,8 @@
 #include <cliente.h>
 #include <servidor.h>
 #include <shared.h>
+#include <sharedLocal.h>
+#include <commons/collections/list.h>
 
 void manejar_comunicacion(void* void_args);
 int server_escuchar(char* server_name, int server_socket);
