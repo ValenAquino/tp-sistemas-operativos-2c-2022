@@ -1,10 +1,14 @@
 #include "../include/kernel.h"
 
 t_log* logger;
+t_list* procesosNew;
+t_list* procesosReady;
+t_configuracion_kernel *config;
 
 int main() {
 	int server_fd;
-	t_configuracion_kernel *config = procesar_config("kernel.config");
+	config = procesar_config("kernel.config");
+	inicializar_kernel();
 
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 
@@ -37,7 +41,6 @@ int main() {
 	send_debug(memoria_fd);
 
 	while (server_escuchar(SERVERNAME, server_fd));
-
 	return EXIT_SUCCESS;
 }
 
@@ -47,6 +50,11 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 	log_info(logger, "Kernel listo para recibir al cliente");
 
 	return server_fd;
+}
+
+void inicializar_kernel() {
+	procesosNew = list_create();
+	procesosReady = list_create();
 }
 
 t_configuracion_kernel* procesar_config(char *config_path) {
