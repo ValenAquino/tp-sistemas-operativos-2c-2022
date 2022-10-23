@@ -6,12 +6,10 @@ t_list* procesosReady;
 t_configuracion_kernel *config;
 	
 int main() {
-	config = procesar_config("kernel.config");
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
-
 	inicializar_kernel();
 
 	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
+
 	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
 	int cpu_dispatch_fd = conectar_con("CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch);
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
@@ -33,6 +31,8 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 }
 
 void inicializar_kernel() {
+	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+	config = procesar_config("kernel.config");
 	procesosNew = list_create();
 	procesosReady = list_create();
 }
@@ -79,9 +79,9 @@ t_configuracion_kernel* procesar_config(char *config_path) {
 	    strcpy(datos->puerto_escucha, puerto_escucha);
 	    datos->algoritmo_planificacion = malloc(strlen(algoritmo_planificacion) + 1);
 	    strcpy(datos->algoritmo_planificacion, algoritmo_planificacion);
-	    datos->grado_max_multiprogramacion = malloc(sizeof(int));
+	    datos->grado_max_multiprogramacion = (intptr_t) malloc(sizeof(int));
 	    datos->grado_max_multiprogramacion = grado_max_multiprogramacion;
-	    datos->quantum_rr = malloc(sizeof(int));
+	    datos->quantum_rr = (intptr_t) malloc(sizeof(int));
 	    datos->quantum_rr = quantum_rr;
 	    datos->dispositivos_io = listaDispositivos;
 	    datos->tiempos_io = listaTiempos;
