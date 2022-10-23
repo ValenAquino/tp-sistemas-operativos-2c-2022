@@ -7,8 +7,7 @@
 #include "kernel.h"
 
 void nuevoProceso(PCB* pcb);
-
-void pasarAReady(t_list* ready);
+void pasarAReady();
 
 
 #endif /* PLANIFICADORLARGOPLAZO_H_ */

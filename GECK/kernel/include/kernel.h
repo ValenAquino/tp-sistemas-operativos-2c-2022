@@ -19,8 +19,6 @@
 
 #define SERVERNAME "KERNEL_SERVER"
 
-int iniciar_servidor_kernel(char* ip, char* puerto);
-
 typedef struct t_configuracion_kernel
 {
     char *ip_memoria;
@@ -39,5 +37,7 @@ typedef struct t_configuracion_kernel
 } t_configuracion_kernel;
 
 t_configuracion_kernel* procesar_config(char *);
+int iniciar_servidor_kernel(char* ip, char* puerto);
+void inicializar_kernel();
 
 #endif /* KERNEL_MAIN_H_ */

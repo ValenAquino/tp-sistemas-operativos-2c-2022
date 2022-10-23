@@ -8,61 +8,60 @@ extern t_list* procesosNew; //seria una cola
 
 
 void manejar_comunicacion(void* void_args) {
+	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
+	int cliente_socket = args->fd;
+	char* server_name = args->server_name;
+	free(args);
 
-		t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
-		int cliente_socket = args->fd;
-		char* server_name = args->server_name;
-		free(args);
+		// Mientras la conexion este abierta
+	while (cliente_socket != -1) {
+		int cod_op = recibir_operacion(cliente_socket);
 
-		 // Mientras la conexion este abierta
-	    while (cliente_socket != -1) {
-			int cod_op = recibir_operacion(cliente_socket);
+		switch (cod_op) {
+		case ELEMENTOS_CONSOLA:
 
-			switch (cod_op) {
-				case ELEMENTOS_CONSOLA:
+			t_list *listas = recibir_paquete(cliente_socket);
 
-				t_list *listas = recibir_paquete(cliente_socket);
+			void* ins = list_get(listas, 0);
+			void* seg = list_get(listas, 1);
 
-				void* ins = list_get(listas, 0);
-				void* seg = list_get(listas, 1);
+			list_destroy(listas);
 
-				list_destroy(listas);
+			t_list *lista_ins = deserializar_lista_inst(ins);
+			t_list *lista_segm = deserializar_lista_segm(seg);
 
-				t_list *lista_ins = deserializar_lista_inst(ins);
-				t_list *lista_segm = deserializar_lista_segm(seg);
-
-				PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
-				log_info(logger,"rompe aca");
-				proccess_counter++;
-				nuevoProceso(pcb);
-				log_info(logger,"rompe tambien aca");
-				log_debug(logger, "instrucciones: ");
-				for (int i = 0; i < list_size(lista_ins); i++) {
-					ts_ins *ins = list_get(lista_ins, i);
-					log_debug(logger, "%d %d %d", ins->name, ins->param1, ins->param2);
-				}
-
-				log_debug(logger, "segmentos: ");
-				for (int i = 0; i < list_size(lista_segm); i++) {
-					int *seg = list_get(lista_segm, i);
-					log_debug(logger, "%d", *seg);
-				}
-
-				break;
-			case DEBUG:
-				log_debug(logger, "Estoy debuggeando!");
-				break;
-			case -1:
-				log_error(logger, "El cliente se desconecto. Terminando servidor");
-				return;
-			default:
-				log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-				break;
+			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
+			log_info(logger,"rompe aca");
+			proccess_counter++;
+			nuevoProceso(pcb);
+			log_info(logger,"rompe tambien aca");
+			log_debug(logger, "instrucciones: ");
+			for (int i = 0; i < list_size(lista_ins); i++) {
+				ts_ins *ins = list_get(lista_ins, i);
+				log_debug(logger, "%d %d %d", ins->name, ins->param1, ins->param2);
 			}
-	    }
 
-	    log_warning(logger, "El cliente se desconecto de %s server", server_name);
-	    return;
+			log_debug(logger, "segmentos: ");
+			for (int i = 0; i < list_size(lista_segm); i++) {
+				int *seg = list_get(lista_segm, i);
+				log_debug(logger, "%d", *seg);
+			}
+
+			break;
+		case DEBUG:
+			log_debug(logger, "Estoy debuggeando!");
+			break;
+		case -1:
+			log_error(logger, "El cliente se desconecto. Terminando servidor");
+			return;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+	}
+
+	log_warning(logger, "El cliente se desconecto de %s server", server_name);
+	return;
 }
 
 int server_escuchar(char* server_name, int server_socket) {
@@ -81,13 +80,15 @@ int server_escuchar(char* server_name, int server_socket) {
     return 0;
 }
 
-int conectar_cpu(char* ip, char* puerto) {
-	log_info(logger, "Iniciando conexion con la CPU - Puerto: %s - IP: %s", ip, puerto);
-	return crear_conexion(ip, puerto);
-}
+int conectar_con(char *servername, char *ip, char *puerto) {
+	log_info(logger, "Iniciando conexion con %s - Puerto: %s - IP: %s", ip, puerto, servername);
 
-int conectar_memoria(char* ip, char* puerto) {
-	log_info(logger, "Iniciando conexion con la Memoria - Puerto: %s - IP: %s", ip, puerto);
-	return crear_conexion(ip, puerto);
-}
+	int file_descriptor = crear_conexion(ip, puerto);
 
+	if(file_descriptor == -1) {
+		log_info(logger, "No se ha podido conectar %s", servername);
+		exit(EXIT_FAILURE);
+	}
+
+	return file_descriptor;
+}

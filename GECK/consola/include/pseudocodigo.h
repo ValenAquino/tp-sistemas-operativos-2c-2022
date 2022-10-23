@@ -3,7 +3,7 @@
 
 // shared
 #include <shared.h>
-#include <sharedLocal.h>
+#include <paquetes.h>
 
 t_list* parsear_pseudocod(char*);
 

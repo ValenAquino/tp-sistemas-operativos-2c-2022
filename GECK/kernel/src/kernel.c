@@ -4,37 +4,17 @@ t_log* logger;
 t_list* procesosNew;
 t_list* procesosReady;
 t_configuracion_kernel *config;
-
+	
 int main() {
-	int server_fd;
 	config = procesar_config("kernel.config");
-	inicializar_kernel();
-
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
 
-	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
+	inicializar_kernel();
 
-	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	int cpu_interrupt_fd = conectar_cpu(config->ip_cpu, config->puerto_cpu_interrupt);
-	if(cpu_interrupt_fd == -1) {
-		log_info(logger, "No se ha podido conectar con la CPU (interrupt)");
-		exit(EXIT_FAILURE);
-	}
-
-	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	int cpu_dispatch_fd = conectar_cpu(config->ip_cpu, config->puerto_cpu_dispatch);
-	if(cpu_dispatch_fd == -1) {
-		log_info(logger, "No se ha podido conectar con la CPU (dispatch)");
-		exit(EXIT_FAILURE);
-	}
-
-	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	int memoria_fd = conectar_memoria(config->ip_memoria, config->puerto_memoria);
-	if(memoria_fd == -1) {
-		log_info(logger, "No se ha podido conectar con la Memoria");
-		exit(EXIT_FAILURE);
-	}
+	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
+	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
+	int cpu_dispatch_fd = conectar_con("CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch);
+	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
@@ -109,4 +89,3 @@ t_configuracion_kernel* procesar_config(char *config_path) {
 	    config_destroy(nuevo_config); // libero la memoria del config
 	    return datos;
 	}
-
