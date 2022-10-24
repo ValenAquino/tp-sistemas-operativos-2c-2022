@@ -13,7 +13,7 @@ void manejar_comunicacion(void* void_args) {
 	char* server_name = args->server_name;
 	free(args);
 
-		// Mientras la conexion este abierta
+	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
 		int cod_op = recibir_operacion(cliente_socket);
 
@@ -31,10 +31,12 @@ void manejar_comunicacion(void* void_args) {
 			t_list *lista_segm = deserializar_lista_segm(seg);
 
 			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
-			log_info(logger,"rompe aca");
 			proccess_counter++;
 			nuevoProceso(pcb);
-			log_info(logger,"rompe tambien aca");
+			
+			// PRUEBA
+			dispatch_pcb(pcb);
+			
 			log_debug(logger, "instrucciones: ");
 			for (int i = 0; i < list_size(lista_ins); i++) {
 				ts_ins *ins = list_get(lista_ins, i);

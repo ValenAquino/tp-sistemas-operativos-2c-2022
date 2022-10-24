@@ -1,5 +1,4 @@
 #include "../include/paquetes.h"
-// LA IDEA SERÍA ACOMODAR ESTOS ARCHIVOS EN EL PROTOCOLO
 
 // ENVIOS
 
