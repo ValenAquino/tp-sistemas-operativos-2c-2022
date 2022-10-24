@@ -1,11 +1,9 @@
 #include "../include/comunicacion.h"
 #include "../include/pcb.h"
 #include "../include/planificadorLargoPlazo.h"
+
 extern t_log* logger;
-
 int proccess_counter = 0;
-extern t_list* procesosNew; //seria una cola
-
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
