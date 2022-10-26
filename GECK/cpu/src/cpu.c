@@ -7,7 +7,7 @@ int main() {
 	int server_interrupt_fd;
 	int server_dispatch_fd;
 
-	logger = log_create("cpu.log", "CPU", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("cpu.log", "CPU", 1, LOG_LEVEL_TRACE);
 
 	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
 	server_interrupt_fd = crear_servidor("127.0.0.1", "8005", INTERRUPT_SERVER_NAME);

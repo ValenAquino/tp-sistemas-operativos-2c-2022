@@ -82,9 +82,9 @@ t_configuracion_kernel* procesar_config(char *config_path) {
 	strcpy(datos->puerto_escucha, puerto_escucha);
 	datos->algoritmo_planificacion = malloc(strlen(algoritmo_planificacion) + 1);
 	strcpy(datos->algoritmo_planificacion, algoritmo_planificacion);
-	datos->grado_max_multiprogramacion = malloc(sizeof(int));
+
 	datos->grado_max_multiprogramacion = grado_max_multiprogramacion;
-	datos->quantum_rr = malloc(sizeof(int));
+
 	datos->quantum_rr = quantum_rr;
 	datos->dispositivos_io = listaDispositivos;
 	datos->tiempos_io = listaTiempos;

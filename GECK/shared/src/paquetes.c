@@ -92,14 +92,33 @@ void* serializar_lista_seg(t_list *lista, int size) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
-		int valor = list_get(lista, i);
+		int *valor = list_get(lista, i);
 
-		memcpy(stream + desplazamiento, &valor, size_elemento);
+		memcpy(stream + desplazamiento, valor, size_elemento);
 		desplazamiento += size_elemento;
 	}
 
 	list_destroy(lista);
 
+	return stream;
+}
+
+void* serializar_datos_pcb(PCB *pcb) {
+	int size = sizeof(int)*2 + sizeof(uint32_t)*4;
+	void *stream = malloc(size);
+	int desplazamiento = 0;
+
+	memcpy(stream + desplazamiento, &(pcb->id), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(pcb->programCounter), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	for (int i = 0; i < 4; i++) {
+		memcpy(stream + desplazamiento, &(pcb->registros[i]), sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+	}
+	
 	return stream;
 }
 
@@ -176,11 +195,66 @@ t_list* deserializar_lista_segm(void *stream) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
-		int *valor = malloc(size_elemento);
+		int *valor = malloc(sizeof(int));
 		memcpy(valor, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
 		list_add(lista, valor);
 	}
 
 	return lista;
+}
+
+PCB* deserializar_pcb(void* data, void* inst, void* segm) {
+	PCB* pcb = (PCB*) malloc(sizeof(PCB));
+	int desplazamiento = 0;
+
+	memcpy(&(pcb->id), data + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(pcb->programCounter), data + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	for (int i = 0; i < 4; i++) {
+		memcpy(&(pcb->registros[i]), data + desplazamiento, sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+	}
+
+	pcb->instrucciones = deserializar_lista_inst(inst);
+	pcb->tablaSegmentos = deserializar_lista_segm(segm);
+
+	return pcb;
+}
+
+// POR AHORA
+extern t_log* logger;
+
+void log_pcb(PCB* pcb) {
+	t_list* instrucciones = pcb->instrucciones;
+	t_list* segmentos = pcb->tablaSegmentos;
+
+    log_trace(logger, "IMPRIMIENDO PCB");
+	log_debug(logger, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
+
+	log_debug (
+		logger,
+		"[AX: %u, BX: %u, DX: %u, CX: %u]",
+		pcb->registros[0], pcb->registros[1], pcb->registros[2], pcb->registros[3]
+	);
+
+	for(int i = 0; i < list_size(instrucciones); i++) {
+		ts_ins *inst = list_get(instrucciones, i);
+
+		log_debug(
+            logger,
+            "Instruccion = [n: %d, p1: %d, p2: %d]",
+            inst->name, inst->param1, inst->param2
+        );
+	}
+
+	for(int i = 0; i < list_size(segmentos); i++) {
+		int *seg = list_get(segmentos, i);
+		log_debug(logger, "segmento[%d] = %d", i, *seg);
+	}
+
+    log_trace(logger, "FIN PCB");
 }

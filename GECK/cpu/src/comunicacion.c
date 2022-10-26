@@ -1,33 +1,49 @@
 #include "../include/comunicacion.h"
-
 extern t_log* logger;
 
 void manejar_comunicacion(void* void_args) {
-		t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
-		int cliente_socket = args->fd;
-		char* server_name = args->server_name;
-		free(args);
+	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
+	int cliente_socket = args->fd;
+	char* server_name = args->server_name;
+	free(args);
 
-		 // Mientras la conexion este abierta
-	    while (cliente_socket != -1) {
-			int cod_op = recibir_operacion(cliente_socket);
+	// Mientras la conexion este abierta
+	while (cliente_socket != -1) {
+		int cod_op = recibir_operacion(cliente_socket);
 
-			switch (cod_op) {
-				break;
-			case DEBUG:
-				log_debug(logger, "Estoy debuggeando!");
-				break;
-			case -1:
-				log_error(logger, "El cliente se desconecto. Terminando servidor");
-				return;
-			default:
-				log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-				break;
-			}
-	    }
+		switch (cod_op) {
+		case DISPATCH_PCB:
+			t_list *listas = recibir_paquete(cliente_socket);
 
-	    log_warning(logger, "El cliente se desconecto de %s server", server_name);
-	    return;
+			void* datos = list_get(listas, 0);
+			void* inst  = list_get(listas, 1);
+			void* segm  = list_get(listas, 2);
+
+			log_trace(logger, "size list: %d", list_size(listas));
+			list_destroy(listas);
+			
+			PCB* pcb = deserializar_pcb(datos, inst, segm);
+			log_pcb(pcb);
+			
+			free(datos);
+			free(inst);
+			free(segm);
+
+			break;
+		case DEBUG:
+			log_debug(logger, "Estoy debuggeando!");
+			break;
+		case -1:
+			log_error(logger, "El cliente se desconecto. Terminando servidor");
+			return;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+	}
+
+	log_warning(logger, "El cliente se desconecto de %s server", server_name);
+	return;
 }
 
 int server_escuchar(char* server_name, int server_socket) {

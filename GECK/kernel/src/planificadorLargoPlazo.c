@@ -1,7 +1,4 @@
-
-
 #include "../include/planificadorLargoPlazo.h"
-
 
 extern t_log* logger;
 extern t_configuracion_kernel *config;
@@ -31,8 +28,36 @@ void imprimir_ready() {
 	PCB *pcb = list_get(procesosReady, size-1);
 	string_append(&pids, string_itoa(pcb->id));
 
-	log_info(logger, "lista ready [%s]", pids);
+	log_info(logger, "Cola Ready <%s>: [%s]", config->algoritmo_planificacion, pids);
 	free(pids);
+}
+
+void pasarAExec(PCB* pcb) {
+	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
+
+	int size_data = sizeof(int) * 2 + sizeof(uint32_t) * 4;
+	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
+	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
+
+	void* data = serializar_datos_pcb(pcb);
+	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
+	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
+
+	free(pcb);
+
+	agregar_a_paquete(paquete, data, size_data);
+	agregar_a_paquete(paquete, inst, size_ins);
+	agregar_a_paquete(paquete, segm, size_seg);
+
+	enviar_paquete(paquete, cpu_dispatch_fd);
+	eliminar_paquete(paquete);
+}
+
+void dispatch_pcb(PCB* pcb) {
+	// desencolar por id
+	pasarAExec(pcb);
+	// liberar memoria
+	// algo mas?
 }
 
 void pasarAReady() {
@@ -44,85 +69,6 @@ void pasarAReady() {
 		log_info(logger, "PID: <%d> - Estado Anterior: <NEW> - Estado Actual: <READY>", pcb->id);
 		imprimir_ready();
 	}
-}
-
-/*
-	int id;
-    int programCounter;
-    uint32_t registros[4];
-    t_list* instrucciones;
-    t_list* tablaSegmentos; //lo resuelve memoria a peticion del kernel
-*/
-
-void* serializar_pcb(PCB* pcb) {
-	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
-	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
-	int size_datos = 2 * sizeof(int) + 4 * sizeof(uint32_t);
-	
-	void* lista_ins = serializar_lista_ins(pcb->instrucciones, size_ins);
-	void* lista_seg = serializar_lista_seg(pcb->instrucciones, size_seg);
-
-	void* stream = malloc(size_datos + size_ins + size_datos);
-	int desplazamiento = 0;
-
-	memcpy(stream + desplazamiento, &pcb->id, sizeof(int));
-	desplazamiento += sizeof(int);
-	
-	memcpy(stream + desplazamiento, &pcb->programCounter, sizeof(int));
-	desplazamiento += sizeof(int);
-
-	for(int i = 0; i<4; i++) {
-		memcpy(stream + desplazamiento, &pcb->registros[i], sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-	}
-
-	// usar la función que dejé en consola
-	
-	// TAMAÑO DE LISTA INSTRUCCIONES
-	memcpy(stream + desplazamiento, size_ins, sizeof(int));
-	desplazamiento += sizeof(int);
-
-	// LISTA DE INSTRUCCIONES
-	memcpy(stream + desplazamiento, lista_ins, size_ins);
-	desplazamiento += size_ins;
-	
-	// LISTA DE SEGMENTOS
-	memcpy(stream + desplazamiento, lista_seg, size_seg);
-	desplazamiento += size_seg;
-
-	free(pcb);
-	free(lista_ins);
-	free(lista_seg);
-
-	return stream;
-}
-
-PCB* deserializar_pcb(void *stream) {
-	int size_ins;
-	int size_seg;
-	PCB* pcb = malloc(sizeof(PCB));
-	int desplazamiento = 0;
-		
-	memcpy(&pcb->id, stream + desplazamiento, sizeof(int));
-	desplazamiento += sizeof(int);
-
-	memcpy(&pcb->programCounter, stream + desplazamiento, sizeof(int));
-	desplazamiento += sizeof(int);
-	
-	for(int i = 0; i<4; i++) {
-		memcpy(&pcb->registros[i], stream + desplazamiento, sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-	}
-
-	pcb->instrucciones = deserializar_lista_inst(stream+desplazamiento);
-	pcb->tablaSegmentos = deserializar_lista_segm(stream+desplazamiento);
-
-	return pcb;
-}
-
-void dispatch_pcb(PCB *pcb) {
-	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
-
 }
 
 /*

@@ -15,6 +15,8 @@
 #include <servidor.h>
 #include <shared.h>
 
+#include "../include/comunicacion.h"
+
 #define DISPATCH_SERVER_NAME "CPU_SERVER_DISPATCH"
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
 

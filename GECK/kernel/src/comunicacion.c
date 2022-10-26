@@ -1,11 +1,8 @@
 #include "../include/comunicacion.h"
-#include "../include/pcb.h"
-#include "../include/planificadorLargoPlazo.h"
+
 extern t_log* logger;
-
+//extern t_list* procesosNew; //seria una cola
 int proccess_counter = 0;
-extern t_list* procesosNew; //seria una cola
-
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -19,35 +16,34 @@ void manejar_comunicacion(void* void_args) {
 
 		switch (cod_op) {
 		case ELEMENTOS_CONSOLA:
-
 			t_list *listas = recibir_paquete(cliente_socket);
 
 			void* ins = list_get(listas, 0);
 			void* seg = list_get(listas, 1);
-
-			list_destroy(listas);
 
 			t_list *lista_ins = deserializar_lista_inst(ins);
 			t_list *lista_segm = deserializar_lista_segm(seg);
 
 			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
 			proccess_counter++;
-			nuevoProceso(pcb);
-			
-			// PRUEBA
-			dispatch_pcb(pcb);
-			
-			log_debug(logger, "instrucciones: ");
-			for (int i = 0; i < list_size(lista_ins); i++) {
-				ts_ins *ins = list_get(lista_ins, i);
-				log_debug(logger, "%d %d %d", ins->name, ins->param1, ins->param2);
+
+			for(int i = 0; i < list_size(pcb->instrucciones); i++) {
+				ts_ins *inst = list_get(pcb->instrucciones, i);
+
+				log_debug(
+					logger,
+					"Instruccion = [n: %d, p1: %d, p2: %d]",
+					inst->name, inst->param1, inst->param2
+				);
 			}
 
-			log_debug(logger, "segmentos: ");
-			for (int i = 0; i < list_size(lista_segm); i++) {
-				int *seg = list_get(lista_segm, i);
-				log_debug(logger, "%d", *seg);
+			for(int i = 0; i < list_size(pcb->tablaSegmentos); i++) {
+				int *seg = list_get(pcb->tablaSegmentos, i);
+				log_debug(logger, "segmento[%d] = %d", i, *seg);
 			}
+
+			nuevoProceso(pcb);
+			dispatch_pcb(pcb); // PRUEBA
 
 			break;
 		case DEBUG:

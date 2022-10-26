@@ -1,6 +1,6 @@
 #ifndef SHAREDLOCAL_H_
 #define SHAREDLOCAL_H_
-// LA IDEA SERÍA ACOMODAR ESTOS ARCHIVOS EN EL PROTOCOLO
+
 // basicas
 #include<stdio.h>
 #include<stdlib.h>
@@ -20,6 +20,7 @@
 #include "shared.h"
 #include "cliente.h"
 #include "protocolo.h"
+#include "pcb.h"
 
 typedef enum {
 	SET,
@@ -71,14 +72,19 @@ void eliminar_paquete(ts_paquete* paquete);
 // Serializacion
 void* serializar_lista_ins(t_list*, int);
 void* serializar_lista_seg(t_list*, int);
+void* serializar_datos_pcb(PCB* pcb);
 
 // Deserializacion
 t_list* deserializar_lista_inst(void *stream);
 t_list* deserializar_lista_segm(void *stream);
+PCB* deserializar_pcb(void* data, void* inst, void* segm);
 
 // Recepcion
 int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
+
+// POR AHORA
+void log_pcb(PCB* pcb);
 
 #endif /* SHAREDLOCAL_H_ */

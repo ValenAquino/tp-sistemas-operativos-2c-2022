@@ -1,4 +1,3 @@
-
 #include "../include/memoria.h"
 
 t_log* logger;
@@ -6,7 +5,7 @@ t_log* logger;
 int main() {
 	int memoria_fd;
 
-	logger = log_create("memoria.log", "Memoria", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("memoria.log", "Memoria", 1, LOG_LEVEL_TRACE);
 
 	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
 	memoria_fd = crear_conexion("127.0.0.1", "8001");
@@ -23,4 +22,3 @@ int crear_conexion(char* ip, char* puerto) {
 
 	return server_fd;
 }
-

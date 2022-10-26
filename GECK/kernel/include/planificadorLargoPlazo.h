@@ -3,7 +3,7 @@
 
 #include <commons/collections/list.h>
 #include <commons/string.h>
-#include "pcb.h"
+#include <pcb.h>
 #include "kernel.h"
 
 void nuevoProceso(PCB* pcb);
