@@ -84,7 +84,4 @@ int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 
-// POR AHORA
-void log_pcb(PCB* pcb);
-
 #endif /* SHAREDLOCAL_H_ */

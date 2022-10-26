@@ -6,6 +6,7 @@
 #include <shared.h>
 #include <pcb.h>
 #include <paquetes.h>
+#include <logs.h>
 
 void manejar_comunicacion(void* void_args);
 int server_escuchar(char*, int);

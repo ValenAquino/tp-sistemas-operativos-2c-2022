@@ -27,20 +27,8 @@ void manejar_comunicacion(void* void_args) {
 			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
 			proccess_counter++;
 
-			for(int i = 0; i < list_size(pcb->instrucciones); i++) {
-				ts_ins *inst = list_get(pcb->instrucciones, i);
-
-				log_debug(
-					logger,
-					"Instruccion = [n: %d, p1: %d, p2: %d]",
-					inst->name, inst->param1, inst->param2
-				);
-			}
-
-			for(int i = 0; i < list_size(pcb->tablaSegmentos); i++) {
-				int *seg = list_get(pcb->tablaSegmentos, i);
-				log_debug(logger, "segmento[%d] = %d", i, *seg);
-			}
+			log_list_inst(pcb->instrucciones);
+			log_lista_seg(pcb->tablaSegmentos);
 
 			nuevoProceso(pcb);
 			dispatch_pcb(pcb); // PRUEBA

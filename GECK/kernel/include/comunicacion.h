@@ -15,6 +15,7 @@
 #include <cliente.h>
 #include <servidor.h>
 #include <paquetes.h>
+#include <logs.h>
 
 #include <commons/collections/list.h>
 
