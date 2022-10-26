@@ -25,10 +25,18 @@ void manejar_comunicacion(void* void_args) {
 			PCB* pcb = deserializar_pcb(datos, inst, segm);
 			log_pcb(pcb);
 			
+		    pcb->registros[0] = 12;
+			pcb->registros[1] = 34;
+			pcb->registros[2] = 56;
+			pcb->registros[3] = 78;
+
+			enviar_pcb(pcb, cliente_socket);
+
 			free(datos);
 			free(inst);
 			free(segm);
-
+			free(pcb);
+			
 			break;
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");

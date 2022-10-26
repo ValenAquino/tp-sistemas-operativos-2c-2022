@@ -34,6 +34,28 @@ void manejar_comunicacion(void* void_args) {
 			dispatch_pcb(pcb); // PRUEBA
 
 			break;
+		case DISPATCH_PCB: {
+			t_list *listas = recibir_paquete(cliente_socket);
+
+			void* datos = list_get(listas, 0);
+			void* inst  = list_get(listas, 1);
+			void* segm  = list_get(listas, 2);
+
+			log_trace(logger, "size list: %d", list_size(listas));
+			list_destroy(listas);
+			
+			PCB* pcb = deserializar_pcb(datos, inst, segm);
+
+			log_error(logger, "LO QUE RECIBI DE CPU DISPATCH");
+			log_pcb(pcb);
+			
+			free(datos);
+			free(inst);
+			free(segm);
+			free(pcb);
+
+			break;
+		}
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");
 			break;

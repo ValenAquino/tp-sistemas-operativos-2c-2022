@@ -224,3 +224,22 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 
 	return pcb;
 }
+
+void enviar_pcb(PCB* pcb, int socket_fd) {
+	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
+
+	int size_data = sizeof(int) * 2 + sizeof(uint32_t) * 4;
+	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
+	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
+
+	void* data = serializar_datos_pcb(pcb);
+	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
+	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
+
+	agregar_a_paquete(paquete, data, size_data);
+	agregar_a_paquete(paquete, inst, size_ins);
+	agregar_a_paquete(paquete, segm, size_seg);
+
+	enviar_paquete(paquete, socket_fd);
+	eliminar_paquete(paquete);
+}

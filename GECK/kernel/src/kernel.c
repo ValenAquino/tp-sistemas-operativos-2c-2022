@@ -7,6 +7,22 @@ t_configuracion_kernel *config;
 	
 int cpu_dispatch_fd; // PROBANDO ENVIOS A CPU
 
+
+void hilo_escucha_dispatch() {
+	pthread_t hilo;
+	
+	cpu_dispatch_fd = conectar_con(
+		"CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch
+	);
+	
+	t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
+	args->fd = cpu_dispatch_fd;
+	args->server_name = "CPU - Dispatch";
+	
+	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
+	pthread_detach(hilo);
+}
+
 int main() {
 	config = procesar_config("kernel.config");
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_TRACE);
@@ -14,13 +30,14 @@ int main() {
 	inicializar_kernel();
 
 	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
-	cpu_dispatch_fd = conectar_con("CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch);
+	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
 
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);
+
 
 	while (server_escuchar(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
