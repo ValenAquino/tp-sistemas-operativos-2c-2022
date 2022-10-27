@@ -1,7 +1,4 @@
-
-
 #include "../include/planificadorLargoPlazo.h"
-
 
 extern t_log* logger;
 extern t_configuracion_kernel *config;
@@ -9,17 +6,47 @@ extern t_configuracion_kernel *config;
 extern t_list* procesosNew;
 extern t_list* procesosReady;
 
+extern int cpu_dispatch_fd;
+
 void nuevoProceso(PCB* pcb) {
 	list_add(procesosNew, pcb);
 	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
+	pasarAReady();
+}
+
+void imprimir_ready() {
+	int size = list_size(procesosReady);
+	char *pids = string_new();
+
+	for (int i = 0; i < size-1; i++) {
+		PCB *pcb = list_get(procesosReady, i);
+		string_append(&pids, string_itoa(pcb->id));
+		string_append(&pids, ", ");
+	}
+
+	PCB *pcb = list_get(procesosReady, size-1);
+	string_append(&pids, string_itoa(pcb->id));
+
+	log_info(logger, "Cola Ready <%s>: [%s]", config->algoritmo_planificacion, pids);
+	free(pids);
+}
+
+void dispatch_pcb(PCB* pcb) {
+	// desencolar por id
+	enviar_pcb(pcb, cpu_dispatch_fd);
+	//free(pcb);
+	// algo mas?
 }
 
 void pasarAReady() {
+	log_trace(logger, "procesos ready: %d, grado multi: %d", list_size(procesosReady), config->grado_max_multiprogramacion);
+
 	if(list_size(procesosReady) < config->grado_max_multiprogramacion) {
-		PCB* pcb = list_get(procesosNew, 0);
+		PCB* pcb = list_remove(procesosNew, 0);
 		list_add(procesosReady, pcb);
-		log_info(logger, "Cambio de estado New a Ready: “Cola Ready, con algoritmo: <<%s>> el proceso de id: %d”",config->algoritmo_planificacion, pcb->id);
+		log_info(logger, "PID: <%d> - Estado Anterior: <NEW> - Estado Actual: <READY>", pcb->id);
+		imprimir_ready();
 	}
 }
 

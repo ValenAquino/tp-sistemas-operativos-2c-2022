@@ -1,4 +1,3 @@
-
 #include "../include/memoria.h"
 
 t_log* logger;
@@ -27,4 +26,3 @@ int crear_conexion(char* ip, char* puerto) {
 
 	return server_fd;
 }
-

@@ -22,6 +22,7 @@
 #include <cliente.h>
 #include <protocolo.h>
 #include <paquetes.h>
+#include <logs.h>
 
 // Consola
 #include "pseudocodigo.h"

@@ -42,9 +42,10 @@ t_list *char_to_int(char **segmentos) {
 	t_list *lista_segmentos = list_create();
 
 	for (int i = 0; segmentos[i] != NULL; i++) {
-		list_add(lista_segmentos, atoi(segmentos[i]));
-		int seg = list_get(lista_segmentos, i);
-		log_debug(logger, "segmento[%d] = %d", i, seg);
+		int *seg = malloc(sizeof(int));
+		*seg = atoi(segmentos[i]);
+		
+		list_add(lista_segmentos, seg);
 	}
 
 	return lista_segmentos;
@@ -93,6 +94,9 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
 	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
+	log_list_inst(lista_inst);
+	log_lista_seg(lista_segmentos);
+	
 	void *ins = serializar_lista_ins(lista_inst, size_ins);
 	void *seg = serializar_lista_seg(lista_segmentos, size_seg);
 

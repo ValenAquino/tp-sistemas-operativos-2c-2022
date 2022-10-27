@@ -1,8 +1,7 @@
 #include "../include/comunicacion.h"
-#include "../include/pcb.h"
-#include "../include/planificadorLargoPlazo.h"
 
 extern t_log* logger;
+//extern t_list* procesosNew; //seria una cola
 int proccess_counter = 0;
 
 void manejar_comunicacion(void* void_args) {
@@ -11,39 +10,52 @@ void manejar_comunicacion(void* void_args) {
 	char* server_name = args->server_name;
 	free(args);
 
-		// Mientras la conexion este abierta
+	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
 		case ELEMENTOS_CONSOLA:
-
 			t_list *listas = recibir_paquete(cliente_socket);
 
 			void* ins = list_get(listas, 0);
 			void* seg = list_get(listas, 1);
-
-			list_destroy(listas);
 
 			t_list *lista_ins = deserializar_lista_inst(ins);
 			t_list *lista_segm = deserializar_lista_segm(seg);
 
 			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
 			proccess_counter++;
-			nuevoProceso(pcb);
-			log_debug(logger, "instrucciones: ");
-			for (int i = 0; i < list_size(lista_ins); i++) {
-				ts_ins *ins = list_get(lista_ins, i);
-				log_debug(logger, "%d %d %d", ins->name, ins->param1, ins->param2);
-			}
 
-			log_debug(logger, "segmentos: ");
-			for (int i = 0; i < list_size(lista_segm); i++) {
-				int *seg = list_get(lista_segm, i);
-				log_debug(logger, "%d", *seg);
-			}
+			log_list_inst(pcb->instrucciones);
+			log_lista_seg(pcb->tablaSegmentos);
+
+			nuevoProceso(pcb);
+			dispatch_pcb(pcb); // PRUEBA
 
 			break;
+		case DISPATCH_PCB: {
+			t_list *listas = recibir_paquete(cliente_socket);
+
+			void* datos = list_get(listas, 0);
+			void* inst  = list_get(listas, 1);
+			void* segm  = list_get(listas, 2);
+
+			log_trace(logger, "size list: %d", list_size(listas));
+			list_destroy(listas);
+			
+			PCB* pcb = deserializar_pcb(datos, inst, segm);
+
+			log_error(logger, "LO QUE RECIBI DE CPU DISPATCH");
+			log_pcb(pcb);
+			
+			free(datos);
+			free(inst);
+			free(segm);
+			free(pcb);
+
+			break;
+		}
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");
 			break;

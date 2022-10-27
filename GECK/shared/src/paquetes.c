@@ -1,5 +1,4 @@
 #include "../include/paquetes.h"
-// LA IDEA SERÍA ACOMODAR ESTOS ARCHIVOS EN EL PROTOCOLO
 
 // ENVIOS
 
@@ -93,14 +92,33 @@ void* serializar_lista_seg(t_list *lista, int size) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
-		int valor = list_get(lista, i);
+		int *valor = list_get(lista, i);
 
-		memcpy(stream + desplazamiento, &valor, size_elemento);
+		memcpy(stream + desplazamiento, valor, size_elemento);
 		desplazamiento += size_elemento;
 	}
 
 	list_destroy(lista);
 
+	return stream;
+}
+
+void* serializar_datos_pcb(PCB *pcb) {
+	int size = sizeof(int)*2 + sizeof(uint32_t)*4;
+	void *stream = malloc(size);
+	int desplazamiento = 0;
+
+	memcpy(stream + desplazamiento, &(pcb->id), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(pcb->programCounter), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	for (int i = 0; i < 4; i++) {
+		memcpy(stream + desplazamiento, &(pcb->registros[i]), sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+	}
+	
 	return stream;
 }
 
@@ -177,11 +195,51 @@ t_list* deserializar_lista_segm(void *stream) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
-		int *valor = malloc(size_elemento);
+		int *valor = malloc(sizeof(int));
 		memcpy(valor, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
 		list_add(lista, valor);
 	}
 
 	return lista;
+}
+
+PCB* deserializar_pcb(void* data, void* inst, void* segm) {
+	PCB* pcb = (PCB*) malloc(sizeof(PCB));
+	int desplazamiento = 0;
+
+	memcpy(&(pcb->id), data + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(pcb->programCounter), data + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	for (int i = 0; i < 4; i++) {
+		memcpy(&(pcb->registros[i]), data + desplazamiento, sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+	}
+
+	pcb->instrucciones = deserializar_lista_inst(inst);
+	pcb->tablaSegmentos = deserializar_lista_segm(segm);
+
+	return pcb;
+}
+
+void enviar_pcb(PCB* pcb, int socket_fd) {
+	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
+
+	int size_data = sizeof(int) * 2 + sizeof(uint32_t) * 4;
+	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
+	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
+
+	void* data = serializar_datos_pcb(pcb);
+	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
+	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
+
+	agregar_a_paquete(paquete, data, size_data);
+	agregar_a_paquete(paquete, inst, size_ins);
+	agregar_a_paquete(paquete, segm, size_seg);
+
+	enviar_paquete(paquete, socket_fd);
+	eliminar_paquete(paquete);
 }
