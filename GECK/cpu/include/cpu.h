@@ -1,10 +1,3 @@
-/*
- * cpu.h
- *
- *  Created on: Oct 2, 2022
- *      Author: ubuntu
- */
-
 #ifndef CPU_H_
 #define CPU_H_
 
@@ -15,9 +8,13 @@
 #include <servidor.h>
 #include <shared.h>
 
+#include "comunicacion.h"
+#include "configuracion.h"
+
 #define DISPATCH_SERVER_NAME "CPU_SERVER_DISPATCH"
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
 
+void iniciar_cpu();
 int crear_servidor(char* ip, char* puerto, char* server_name);
 
 #endif /* CPU_H_ */

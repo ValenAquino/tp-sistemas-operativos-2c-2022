@@ -2,18 +2,22 @@
 #include "../include/memoria.h"
 
 t_log* logger;
+t_configuracion_memoria* config;
 
 int main() {
-	int memoria_fd;
+	iniciar_memoria();
 
-	logger = log_create("memoria.log", "Memoria", 1, LOG_LEVEL_DEBUG);
-
-	// TODO: Leer IP y PUERTO desde un archivo de configuracion.
-	memoria_fd = crear_conexion("127.0.0.1", "8001");
+	int memoria_fd = crear_conexion(config->ip_memoria, config->puerto_escucha);
 
 	while (server_escuchar(SERVERNAME, memoria_fd));
 
 	return EXIT_SUCCESS;
+}
+
+void iniciar_memoria() {
+	logger = log_create("memoria.log", "Memoria", 1, LOG_LEVEL_DEBUG);
+	config = procesar_config("memoria.config");
+	test_read_config(config);
 }
 
 int crear_conexion(char* ip, char* puerto) {

@@ -1,11 +1,9 @@
 #include "../include/comunicacion.h"
 #include "../include/pcb.h"
 #include "../include/planificadorLargoPlazo.h"
+
 extern t_log* logger;
-
 int proccess_counter = 0;
-extern t_list* procesosNew; //seria una cola
-
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -31,10 +29,8 @@ void manejar_comunicacion(void* void_args) {
 			t_list *lista_segm = deserializar_lista_segm(seg);
 
 			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
-			log_info(logger,"rompe aca");
 			proccess_counter++;
 			nuevoProceso(pcb);
-			log_info(logger,"rompe tambien aca");
 			log_debug(logger, "instrucciones: ");
 			for (int i = 0; i < list_size(lista_ins); i++) {
 				ts_ins *ins = list_get(lista_ins, i);

@@ -16,9 +16,11 @@
 #include <shared.h>
 
 #include "comunicacion.h"
+#include "configuracion.h"
 
 #define SERVERNAME "MEMORIA_SERVER"
 
 int crear_conexion(char* ip, char* puerto);
+void iniciar_memoria();
 
 #endif /* MEMORIA_H_ */
