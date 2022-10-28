@@ -35,6 +35,12 @@ int main(int argc, char** argv) {
 	// TODO agregar logs para trackear que va pasando
 	enviar_proceso(kernel_fd, lista_inst, lista_segmentos);
 
+	t_manejar_conexion_args * comunicacion_args = malloc(sizeof(t_manejar_conexion_args));
+	comunicacion_args->fd = kernel_fd;
+	comunicacion_args->server_name = "CONSOLA - KERNEL";
+
+	while(manejar_comunicacion(comunicacion_args))
+
 	return liberar_memoria(logger, kernel_fd, config);
 }
 

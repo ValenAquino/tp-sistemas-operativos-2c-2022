@@ -8,7 +8,9 @@ typedef enum {
 	DESCONEXION = -1,
 	ELEMENTOS_CONSOLA,
     DEBUG,
-    DISPATCH_PCB
+    DISPATCH_PCB,
+	MANEJAR_EXIT,
+	FIN_POR_EXIT
 } op_code;
 
 typedef struct {

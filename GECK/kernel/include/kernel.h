@@ -19,6 +19,14 @@
 
 #define SERVERNAME "KERNEL_SERVER"
 
+typedef enum {
+	FIFO,
+	RR,
+	FEEDBACK
+} t_algoritmo_planificacion;
+
+
+
 typedef struct t_configuracion_kernel
 {
     char *ip_memoria;
@@ -29,7 +37,7 @@ typedef struct t_configuracion_kernel
     char *puerto_cpu_interrupt;
     char *puerto_kernel;
     char *puerto_escucha;
-    char *algoritmo_planificacion;
+    t_algoritmo_planificacion algoritmo_planificacion;
     int grado_max_multiprogramacion;
     int quantum_rr;
     char **dispositivos_io;
@@ -37,7 +45,10 @@ typedef struct t_configuracion_kernel
 } t_configuracion_kernel;
 
 t_configuracion_kernel* procesar_config(char *);
+t_algoritmo_planificacion procesar_algoritmo(char* algoritmo);
+
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
+
 
 #endif /* KERNEL_MAIN_H_ */

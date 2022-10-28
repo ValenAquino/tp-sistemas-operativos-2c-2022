@@ -5,6 +5,7 @@ extern t_configuracion_kernel *config;
 
 extern t_list* procesosNew;
 extern t_list* procesosReady;
+extern t_list* procesosExit;
 
 extern int cpu_dispatch_fd;
 
@@ -28,7 +29,7 @@ void imprimir_ready() {
 	PCB *pcb = list_get(procesosReady, size-1);
 	string_append(&pids, string_itoa(pcb->id));
 
-	log_info(logger, "Cola Ready <%s>: [%s]", config->algoritmo_planificacion, pids);
+	log_info(logger, "Cola Ready <%s>: [%s]", str([config->algoritmo_planificacion]), pids);
 	free(pids);
 }
 
@@ -48,6 +49,11 @@ void pasarAReady() {
 		log_info(logger, "PID: <%d> - Estado Anterior: <NEW> - Estado Actual: <READY>", pcb->id);
 		imprimir_ready();
 	}
+}
+
+void pasarAExit(PCB* pcb, int cliente_socket) {
+	enviar_codop(cliente_socket, FIN_POR_EXIT);
+	list_add(procesosExit, pcb);
 }
 
 /*
