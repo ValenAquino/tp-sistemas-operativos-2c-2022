@@ -8,8 +8,8 @@
 #include <protocolo.h>
 #include "kernel.h"
 
-#define str(x) #x
 
+void planificador_largo_plazo();
 void nuevoProceso(PCB* pcb);
 void pasarAReady();
 

@@ -4,6 +4,11 @@
 t_log* logger;
 t_configuracion_cpu *config;
 
+uint32_t REG_AX;
+uint32_t REG_BX;
+uint32_t REG_CX;
+uint32_t REG_DX;
+
 int main() {
 	iniciar_cpu();
 

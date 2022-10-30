@@ -70,6 +70,21 @@ t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
     exit(EXIT_FAILURE);
 }
 
+char* get_algoritmo_string(t_algoritmo_planificacion algoritmo) {
+
+	switch (algoritmo) {
+	case FIFO:
+		return "FIFO";
+	case RR:
+		return "RR";
+	case FEEDBACK:
+		return "FEEDBACK";
+	}
+
+    log_error(logger, "El algoritmo es incorrecto");
+    exit(EXIT_FAILURE);
+}
+
 void test_read_config(t_configuracion_kernel* config) {
 	log_debug(logger,"Leyendo de config: \n"
 			"IP_MEMORIA: %s \n"
@@ -89,7 +104,7 @@ void test_read_config(t_configuracion_kernel* config) {
 			config->puerto_kernel,
 			config->puerto_cpu_dispatch,
 			config->puerto_cpu_interrupt,
-			str([config->algoritmo_planificacion]),
+			get_algoritmo_string(config->algoritmo_planificacion),
 			config->grado_max_multiprogramacion,
 			config->quantum_rr);
 }

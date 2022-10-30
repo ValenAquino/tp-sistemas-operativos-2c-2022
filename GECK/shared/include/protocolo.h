@@ -10,7 +10,8 @@ typedef enum {
     DEBUG,
     DISPATCH_PCB,
 	MANEJAR_EXIT,
-	FIN_POR_EXIT
+	FIN_POR_EXIT,
+	SIGUIENTE_PROCESO
 } op_code;
 
 typedef struct {

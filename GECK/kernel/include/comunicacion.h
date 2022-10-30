@@ -9,6 +9,7 @@
 #define COMUNICACION_H_
 
 #include "../include/planificadorLargoPlazo.h"
+#include "../include/planificadorCortoPlazo.h"
 
 #include <shared.h>
 #include <servidor.h>

@@ -9,6 +9,14 @@ extern t_list* procesosExit;
 
 extern int cpu_dispatch_fd;
 
+
+void planificador_largo_plazo() {
+	while(1)
+
+	return;
+}
+
+
 void nuevoProceso(PCB* pcb) {
 	list_add(procesosNew, pcb);
 	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
@@ -33,7 +41,7 @@ void imprimir_ready() {
 	PCB *pcb = list_get(procesosReady, size-1);
 	string_append(&pids, string_itoa(pcb->id));
 
-	log_info(logger, "Cola Ready <%s>: [%s]", str([config->algoritmo_planificacion]), pids);
+	log_info(logger, "Cola Ready <%s>: [%s]", get_algoritmo_string(config->algoritmo_planificacion), pids);
 	free(pids);
 }
 

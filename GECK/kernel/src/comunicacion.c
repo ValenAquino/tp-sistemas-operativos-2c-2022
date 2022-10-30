@@ -31,8 +31,6 @@ void manejar_comunicacion(void* void_args) {
 			log_lista_seg(pcb->tablaSegmentos);
 
 			nuevoProceso(pcb);
-			dispatch_pcb(pcb); // PRUEBA
-
 			break;
 		case DISPATCH_PCB: {
 			t_list *listas = recibir_paquete(cliente_socket);
@@ -75,6 +73,10 @@ void manejar_comunicacion(void* void_args) {
 			// Aca no se hace el free del pcb porque en pasarAExit se usa.
 			break;
 		}
+		case SIGUIENTE_PROCESO:
+			PCB *siguiente_pcb = get_siguiente_proceso();
+			dispatch_pcb(siguiente_pcb);
+			return;
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");
 			break;

@@ -26,6 +26,15 @@ int main() {
 	return EXIT_SUCCESS;
 }
 
+
+void hilo_planificador_largo_plazo() {
+	pthread_t hilo;
+
+
+	pthread_create(&hilo, NULL, (void*) planificador_largo_plazo, NULL);
+	pthread_detach(hilo);
+}
+
 void hilo_escucha_dispatch() {
 	pthread_t hilo;
 
