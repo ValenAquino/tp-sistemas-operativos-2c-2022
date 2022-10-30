@@ -30,7 +30,7 @@ void manejar_comunicacion(void* void_args) {
 			pcb->registros[2] = 56;
 			pcb->registros[3] = 78;
 
-			enviar_pcb(pcb, cliente_socket);
+			enviar_pcb(pcb, cliente_socket, DISPATCH_PCB);
 
 			free(datos);
 			free(inst);

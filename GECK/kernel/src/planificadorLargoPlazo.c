@@ -14,6 +14,10 @@ void nuevoProceso(PCB* pcb) {
 	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
 	pasarAReady();
+
+	//TEST_----------
+	PCB* pcb_test = list_remove(procesosReady, 0);
+	pasarAExit(pcb_test);
 }
 
 void imprimir_ready() {
@@ -35,7 +39,7 @@ void imprimir_ready() {
 
 void dispatch_pcb(PCB* pcb) {
 	// desencolar por id
-	enviar_pcb(pcb, cpu_dispatch_fd);
+	enviar_pcb(pcb, cpu_dispatch_fd, DISPATCH_PCB);
 	//free(pcb);
 	// algo mas?
 }
@@ -45,14 +49,16 @@ void pasarAReady() {
 
 	if(list_size(procesosReady) < config->grado_max_multiprogramacion) {
 		PCB* pcb = list_remove(procesosNew, 0);
+		pcb->estado_actual = READY_STATE;
 		list_add(procesosReady, pcb);
 		log_info(logger, "PID: <%d> - Estado Anterior: <NEW> - Estado Actual: <READY>", pcb->id);
 		imprimir_ready();
 	}
 }
 
-void pasarAExit(PCB* pcb, int cliente_socket) {
-	enviar_codop(cliente_socket, FIN_POR_EXIT);
+void pasarAExit(PCB* pcb) {
+	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
+	pcb->estado_actual = EXIT;
 	list_add(procesosExit, pcb);
 }
 

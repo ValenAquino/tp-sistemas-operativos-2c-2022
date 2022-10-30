@@ -17,6 +17,6 @@ void pasarAReady();
 void dispatch_pcb(PCB* pcb);
 
 void* serializar_pcb(PCB* pcb);
-void pasarAExit(PCB* pcb, int cliente_socket);
+void pasarAExit(PCB* pcb);
 
 #endif /* PLANIFICADORLARGOPLAZO_H_ */

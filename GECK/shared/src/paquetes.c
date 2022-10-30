@@ -114,6 +114,12 @@ void* serializar_datos_pcb(PCB *pcb) {
 	memcpy(stream + desplazamiento, &(pcb->programCounter), sizeof(int));
 	desplazamiento += sizeof(int);
 
+	memcpy(stream + desplazamiento, &(pcb->socket_consola), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(pcb->estado_actual), sizeof(t_estado_proceso));
+	desplazamiento += sizeof(t_estado_proceso);
+
 	for (int i = 0; i < 4; i++) {
 		memcpy(stream + desplazamiento, &(pcb->registros[i]), sizeof(uint32_t));
 		desplazamiento += sizeof(uint32_t);
@@ -214,6 +220,12 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	memcpy(&(pcb->programCounter), data + desplazamiento, sizeof(int));
 	desplazamiento += sizeof(int);
 
+	memcpy(&(pcb->socket_consola), data + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(pcb->estado_actual), data + desplazamiento, sizeof(t_estado_proceso));
+	desplazamiento += sizeof(t_estado_proceso);
+
 	for (int i = 0; i < 4; i++) {
 		memcpy(&(pcb->registros[i]), data + desplazamiento, sizeof(uint32_t));
 		desplazamiento += sizeof(uint32_t);
@@ -225,9 +237,8 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	return pcb;
 }
 
-// TODO: Agregar un tercer parametro para recibir el op cod.
-void enviar_pcb(PCB* pcb, int socket_fd) {
-	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
+void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
+	ts_paquete* paquete = crear_paquete(op_code);
 
 	int size_data = sizeof(int) * 2 + sizeof(uint32_t) * 4;
 	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);

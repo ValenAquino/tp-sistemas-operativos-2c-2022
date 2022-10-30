@@ -14,6 +14,9 @@ int manejar_comunicacion(void* void_args) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
+		case FIN_POR_EXIT:
+			log_debug(logger,"FIN POR EXIT");
+			return 0;
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");
 			return 1;

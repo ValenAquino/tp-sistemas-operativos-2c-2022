@@ -68,7 +68,7 @@ void agregar_a_paquete(ts_paquete* paquete, void* valor, int tamanio);
 void* serializar_paquete(ts_paquete* paquete, int bytes);
 void enviar_paquete(ts_paquete* paquete, int socket_cliente);
 void eliminar_paquete(ts_paquete* paquete);
-void enviar_pcb(PCB* pcb, int socket_fd);
+void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
 
 // Serializacion
 void* serializar_lista_ins(t_list*, int);

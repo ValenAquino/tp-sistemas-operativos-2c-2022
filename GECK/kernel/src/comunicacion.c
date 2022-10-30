@@ -24,7 +24,7 @@ void manejar_comunicacion(void* void_args) {
 			t_list *lista_ins = deserializar_lista_inst(ins);
 			t_list *lista_segm = deserializar_lista_segm(seg);
 
-			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
+			PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
 			proccess_counter++;
 
 			log_list_inst(pcb->instrucciones);
@@ -56,9 +56,6 @@ void manejar_comunicacion(void* void_args) {
 			break;
 		}
 		case MANEJAR_EXIT: {
-			// TODO: Actualmente cliente_socket es el file descriptor de la CPU
-			// Necesitamos para este caso el socket de la consola para avisarle
-			// que tiene que terminar el proceso.
 			t_list *listas = recibir_paquete(cliente_socket);
 
 			void* datos = list_get(listas, 0);
@@ -70,7 +67,7 @@ void manejar_comunicacion(void* void_args) {
 
 			PCB* pcb = deserializar_pcb(datos, inst, segm);
 
-			pasarAExit(pcb, cliente_socket);
+			pasarAExit(pcb);
 
 			free(datos);
 			free(inst);
