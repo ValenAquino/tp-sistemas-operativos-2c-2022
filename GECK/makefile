@@ -10,7 +10,6 @@ ifneq ($(shell id -un),root)
 SUDO=sudo
 endif
 
-# Clean and compile .so
 all: install memoria kernel cpu consola
 
 memoria: libshared.so
