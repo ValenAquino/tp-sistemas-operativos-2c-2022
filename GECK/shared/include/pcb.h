@@ -10,6 +10,11 @@
 
 typedef struct PCB
 {
+	// TODO: Descomentar la linea de abajo y tener en cuenta
+	// que haciendo eso, tambien hay que modificar la serializacion
+	// y deserializacion.
+	//int socket_consola;
+	// TODO: Agregar estado del proceso.
     int id;
     int programCounter;
     uint32_t registros[4];

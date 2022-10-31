@@ -46,7 +46,6 @@ void manejar_comunicacion(void* void_args) {
 			
 			PCB* pcb = deserializar_pcb(datos, inst, segm);
 
-			log_error(logger, "LO QUE RECIBI DE CPU DISPATCH");
 			log_pcb(pcb);
 			
 			free(datos);
@@ -54,6 +53,29 @@ void manejar_comunicacion(void* void_args) {
 			free(segm);
 			free(pcb);
 
+			break;
+		}
+		case MANEJAR_EXIT: {
+			// TODO: Actualmente cliente_socket es el file descriptor de la CPU
+			// Necesitamos para este caso el socket de la consola para avisarle
+			// que tiene que terminar el proceso.
+			t_list *listas = recibir_paquete(cliente_socket);
+
+			void* datos = list_get(listas, 0);
+			void* inst  = list_get(listas, 1);
+			void* segm  = list_get(listas, 2);
+
+			log_trace(logger, "size list: %d", list_size(listas));
+			list_destroy(listas);
+
+			PCB* pcb = deserializar_pcb(datos, inst, segm);
+
+			pasarAExit(pcb, cliente_socket);
+
+			free(datos);
+			free(inst);
+			free(segm);
+			// Aca no se hace el free del pcb porque en pasarAExit se usa.
 			break;
 		}
 		case DEBUG:

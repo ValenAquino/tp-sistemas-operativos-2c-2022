@@ -26,6 +26,8 @@
 
 // Consola
 #include "pseudocodigo.h"
+#include "comunicacion.h"
+
 
 t_config* procesar_config(char *, t_list**, int*);
 t_list* parsear_pseudocod(char*);

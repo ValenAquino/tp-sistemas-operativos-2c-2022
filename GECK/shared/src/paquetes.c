@@ -225,6 +225,7 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	return pcb;
 }
 
+// TODO: Agregar un tercer parametro para recibir el op cod.
 void enviar_pcb(PCB* pcb, int socket_fd) {
 	ts_paquete* paquete = crear_paquete(DISPATCH_PCB);
 
