@@ -73,7 +73,7 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
 // Serializacion
 void* serializar_lista_ins(t_list*, int);
 void* serializar_lista_seg(t_list*, int);
-void* serializar_datos_pcb(PCB* pcb);
+void* serializar_datos_pcb(PCB*, int);
 
 // Deserializacion
 t_list* deserializar_lista_inst(void *stream);

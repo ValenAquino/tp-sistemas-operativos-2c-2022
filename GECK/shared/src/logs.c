@@ -25,6 +25,7 @@ void log_pcb(PCB* pcb) {
 
     log_trace(logger, "IMPRIMIENDO PCB");
 	log_debug(logger, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
+	log_debug(logger, "STATE: %d, FD: %d", pcb->estado_actual, pcb->socket_consola);
 
 	log_debug (
 		logger,
