@@ -41,11 +41,3 @@ int crear_conexion(char *ip, char* puerto)
 
 	return socket_cliente;
 }
-
-void enviar_codop(int socket_conexion, int cod_op) {
-	void * a_enviar = malloc(sizeof(int));
-
-	memcpy(a_enviar, &(cod_op), sizeof(int));
-	send(socket_conexion, a_enviar, sizeof(int), 0);
-}
-

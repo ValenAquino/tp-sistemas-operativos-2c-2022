@@ -39,7 +39,7 @@ typedef enum {
 } reg_cpu;
 
 typedef enum {
-	DISCO,
+	DISCO = 6, // valor elevado para que sea distinto a otros enum que pueda a haber en un manejar_comunicacion(). Ej consola
 	TECLADO,
 	PANTALLA
 } dispositivos;

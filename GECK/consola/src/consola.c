@@ -39,9 +39,9 @@ int main(int argc, char** argv) {
 	comunicacion_args->fd = kernel_fd;
 	comunicacion_args->server_name = "CONSOLA - KERNEL";
 
-	while(manejar_comunicacion(comunicacion_args))
+	while(manejar_comunicacion(comunicacion_args));
 
-	return liberar_memoria(logger, kernel_fd, config);
+	return liberar_memoria(logger, kernel_fd, config);;
 }
 
 t_list *char_to_int(char **segmentos) {
@@ -114,6 +114,7 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 }
 
 int liberar_memoria(t_log* logg, int fd, t_config* config) {
+	log_trace(logger, "Finalizando consola");
 	liberar_conexion(fd);
 	config_destroy(config);
 	log_destroy(logg);
