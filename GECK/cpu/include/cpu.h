@@ -9,8 +9,6 @@
 #include <shared.h>
 #include <logs.h>
 
-#include "../include/comunicacion.h"
-
 #include "comunicacion.h"
 #include "configuracion.h"
 

@@ -39,7 +39,7 @@ typedef enum {
 } reg_cpu;
 
 typedef enum {
-	DISCO,
+	DISCO = 6, // valor elevado para que sea distinto a otros enum que pueda a haber en un manejar_comunicacion(). Ej consola
 	TECLADO,
 	PANTALLA
 } dispositivos;
@@ -68,12 +68,12 @@ void agregar_a_paquete(ts_paquete* paquete, void* valor, int tamanio);
 void* serializar_paquete(ts_paquete* paquete, int bytes);
 void enviar_paquete(ts_paquete* paquete, int socket_cliente);
 void eliminar_paquete(ts_paquete* paquete);
-void enviar_pcb(PCB* pcb, int socket_fd);
+void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
 
 // Serializacion
 void* serializar_lista_ins(t_list*, int);
 void* serializar_lista_seg(t_list*, int);
-void* serializar_datos_pcb(PCB* pcb);
+void* serializar_datos_pcb(PCB*, int);
 
 // Deserializacion
 t_list* deserializar_lista_inst(void *stream);
@@ -84,5 +84,8 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm);
 int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
+
+PCB* recibir_pcb(int cliente_socket);
+
 
 #endif /* SHAREDLOCAL_H_ */

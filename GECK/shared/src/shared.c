@@ -1,6 +1,14 @@
 #include "../include/shared.h"
 
+void enviar_codop(int socket_conexion, int cod_op) {
+	void * a_enviar = malloc(sizeof(int));
+
+	memcpy(a_enviar, &(cod_op), sizeof(int));
+	send(socket_conexion, a_enviar, sizeof(int), 0);
+}
+
 void liberar_conexion(int socket_cliente) {
+    enviar_codop(socket_cliente, DESCONEXION_CONTROLADA);
 	close(socket_cliente);
 }
 

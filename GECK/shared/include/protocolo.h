@@ -9,8 +9,9 @@ typedef enum {
 	ELEMENTOS_CONSOLA,
     DEBUG,
     DISPATCH_PCB,
-	MANEJAR_EXIT,
-	FIN_POR_EXIT
+	FIN_POR_EXIT,
+	SIGUIENTE_PROCESO,
+	INTERRUPT
 } op_code;
 
 typedef struct {

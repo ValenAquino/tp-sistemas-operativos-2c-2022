@@ -28,6 +28,9 @@
 #include <commons/string.h>
 #include <commons/collections/list.h>
 
+#define DESCONEXION_CONTROLADA 100 // valor de case para enviar antes de cerrar un socket, ya implicito en liberar_conexion()
+
+void enviar_codop(int socket_conexion, int cod_op);
 void liberar_conexion(int);
 
 bool config_has_all_properties(t_config*, char**);

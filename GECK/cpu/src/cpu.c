@@ -1,8 +1,13 @@
-
 #include "../include/cpu.h"
 
 t_log* logger;
 t_configuracion_cpu *config;
+int FLAG_INTERRUPT;
+
+uint32_t REG_AX;
+uint32_t REG_BX;
+uint32_t REG_CX;
+uint32_t REG_DX;
 
 int main() {
 	iniciar_cpu();
@@ -17,7 +22,7 @@ int main() {
 }
 
 void iniciar_cpu() {
-	logger = log_create("cpu.log", "CPU", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("cpu.log", "CPU", 1, LOG_LEVEL_TRACE);
 	config = procesar_config("cpu.config");
 	test_read_config(config);
 }
@@ -29,4 +34,3 @@ int crear_servidor(char* ip, char* puerto, char* server_name) {
 
 	return server_fd;
 }
-
