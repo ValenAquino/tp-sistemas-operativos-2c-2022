@@ -15,6 +15,6 @@ PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos) {
     pcb->registros[2] = 0;
     pcb->registros[3] = 0;
 
-    log_info(logger, "Se crea el proceso <%d> en NEW", id);
+    log_info(logger, "Se crea el proceso <%d>", id);
     return pcb;
 }

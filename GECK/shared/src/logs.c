@@ -29,7 +29,7 @@ void log_pcb(PCB* pcb) {
 
 	log_debug (
 		logger,
-		"[AX: %u, BX: %u, DX: %u, CX: %u]",
+		"[AX: %u, BX: %u, CX: %u, DX: %u]",
 		pcb->registros[0], pcb->registros[1], pcb->registros[2], pcb->registros[3]
 	);
 
@@ -37,4 +37,68 @@ void log_pcb(PCB* pcb) {
 	log_lista_seg(segmentos);
 	
     log_trace(logger, "FIN PCB");
+}
+
+char* str_ins(t_ins ins) {
+	switch (ins) {
+	case SET:
+		return "SET";
+	case ADD:
+		return "ADD";
+	case MOV_IN:
+		return "MOV_IN";
+	case MOV_OUT:
+		return "MOV_OUT";
+	case IO:
+		return "IO";
+	case EXIT:
+		return "EXIT";
+	
+	default:
+		return "UNKNOWN";
+		break;
+	}
+	return "UNKNOWN";
+}
+
+char* str_estado(t_estado_proceso estado) {	
+	switch (estado) {
+	case NEW_STATE:
+		return "NEW";
+	case READY_STATE:
+		return "READY";
+	case EXEC_STATE:
+		return "EXEC";
+	case BLOCK_STATE:
+		return "BLOCK";
+	case EXIT_STATE:
+		return "EXIT";
+	default:
+		return "UNKNONW";
+	}
+	return "UNKNONW";
+}
+
+char* str_registro(reg_cpu reg) {
+	switch (reg) {
+	case AX:
+		return "AX";
+	case BX:
+		return "BX";
+	case CX:
+		return "CX";
+	case DX:
+		return "DX";
+	default:
+		return "UNKNOWN";
+	}
+	return "UNKNOWN";
+}
+
+void log_cambio_de_estado(int id, t_estado_proceso anterior, t_estado_proceso nuevo)  {
+	log_info(
+		logger, 
+		"PID: <%d> - Estado Anterior: <%s> - Estado Actual: <%s>",
+		id, str_estado(anterior), str_estado(nuevo)
+	);
 }

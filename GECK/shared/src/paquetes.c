@@ -233,6 +233,10 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	pcb->instrucciones = deserializar_lista_inst(inst);
 	pcb->tablaSegmentos = deserializar_lista_segm(segm);
 
+	free(data);
+	free(inst);
+	free(segm);
+
 	return pcb;
 }
 
@@ -254,4 +258,17 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 
 	enviar_paquete(paquete, socket_fd);
 	eliminar_paquete(paquete);
+}
+
+PCB* recibir_pcb(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	void* datos = list_get(listas, 0);
+	void* inst  = list_get(listas, 1);
+	void* segm  = list_get(listas, 2);
+	list_destroy(listas);
+
+	PCB* pcb = deserializar_pcb(datos, inst, segm);
+
+	return pcb;
 }

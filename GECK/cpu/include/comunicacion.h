@@ -8,6 +8,8 @@
 #include <paquetes.h>
 #include <logs.h>
 
+#include "cicloDeInstruccion.h"
+
 void manejar_comunicacion(void* void_args);
 int server_escuchar(char*, int);
 int server_escuchar(char* server_name, int server_socket);

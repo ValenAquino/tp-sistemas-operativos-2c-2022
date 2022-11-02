@@ -85,4 +85,7 @@ int recibir_operacion(int);
 void* recibir_buffer(int*, int);
 t_list* recibir_paquete(int);
 
+PCB* recibir_pcb(int cliente_socket);
+
+
 #endif /* SHAREDLOCAL_H_ */

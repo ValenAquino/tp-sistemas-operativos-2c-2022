@@ -59,7 +59,7 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 }
 
 void inicializar_kernel() {
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_TRACE);
 	config = procesar_config("kernel.config");
 	test_read_config(config);
 	procesosNew = list_create();

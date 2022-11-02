@@ -5,7 +5,7 @@ extern t_log* logger;
 int manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
 	int cliente_socket = args->fd;
-	char* server_name = args->server_name;
+	//char* server_name = args->server_name;
 	free(args);
 
 	// Mientras la conexion este abierta
