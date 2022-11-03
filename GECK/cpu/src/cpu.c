@@ -3,7 +3,7 @@
 t_log* logger;
 t_configuracion_cpu *config;
 int FLAG_INTERRUPT;
-
+t_list* tiempos_io;
 uint32_t REG_AX;
 uint32_t REG_BX;
 uint32_t REG_CX;

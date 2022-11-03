@@ -79,6 +79,7 @@ void* serializar_datos_pcb(PCB*, int);
 t_list* deserializar_lista_inst(void *stream);
 t_list* deserializar_lista_segm(void *stream);
 PCB* deserializar_pcb(void* data, void* inst, void* segm);
+t_list* deserializar_lista_io(void *string);
 
 // Recepcion
 int recibir_operacion(int);

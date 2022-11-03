@@ -31,13 +31,13 @@ typedef struct t_configuracion_kernel
     int grado_max_multiprogramacion;
     int quantum_rr;
     char **dispositivos_io;
-    char **tiempos_io;
+    t_list* tiempos_io;
 } t_configuracion_kernel;
 
 t_configuracion_kernel* procesar_config(char *);
 t_algoritmo_planificacion procesar_algoritmo(char* algoritmo);
 char* get_algoritmo_string(t_algoritmo_planificacion algoritmo);
-
+t_list* string_to_int(char **segmentos);
 void test_read_config(t_configuracion_kernel* config);
 
 #endif /* CONFIGURACION_H_ */

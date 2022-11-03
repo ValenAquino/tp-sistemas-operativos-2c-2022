@@ -11,7 +11,9 @@ typedef enum {
     DISPATCH_PCB,
 	FIN_POR_EXIT,
 	SIGUIENTE_PROCESO,
-	INTERRUPT
+	INTERRUPT,
+	OP_IO,
+	TIEMPOS_IO
 } op_code;
 
 typedef struct {

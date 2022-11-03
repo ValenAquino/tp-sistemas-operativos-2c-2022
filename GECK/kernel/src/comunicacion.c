@@ -27,12 +27,21 @@ void manejar_comunicacion(void* void_args) {
 			
 			break;
 
+
 		case FIN_POR_EXIT: {
 			PCB* pcb = recibir_pcb(cliente_socket);
 			log_pcb(pcb);
 			pasarAExit(pcb);
 			break;
 		}
+
+		case OP_IO: {
+			PCB* pcb = recibir_pcb(cliente_socket);
+			log_pcb(pcb);
+			pasarAExec(pcb);
+			break;
+		}
+
 
 		case SIGUIENTE_PROCESO:
 			PCB *siguiente_pcb = get_siguiente_proceso();

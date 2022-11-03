@@ -3,6 +3,7 @@
 extern t_log* logger;
 extern t_configuracion_cpu *config;
 extern int FLAG_INTERRUPT;
+extern t_list* tiempos_io;
 
 // Anotacion:
 // capaz que acá conviene un array y que se acceda con el enum como indice: regisros[REG_AX]
@@ -103,16 +104,16 @@ void execute(ts_ins* instruccion, PCB *pcb) {
 			success = execute_add(instruccion, pcb);
 			break;
 		case IO:
-			execute_io(instruccion, pcb);
+			success = execute_io(instruccion, pcb);
 			break;
 		case EXIT:
 			success = execute_exit(instruccion, pcb);
 			break;
 		case MOV_IN:
-			execute_mov_in(instruccion, pcb);
+			success = execute_mov_in(instruccion, pcb);
 			break;
 		case MOV_OUT:
-			execute_mov_out(instruccion, pcb);
+			success = execute_mov_out(instruccion, pcb);
 			break;
 	}
 
@@ -166,6 +167,14 @@ int execute_add(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_io(ts_ins* instruccion, PCB *pcb) {
+	pcb->programCounter = pcb->programCounter + 1;
+
+	actualizar_pcb(pcb);
+	log_trace(logger, "ENVIANDO PCB A KERNEL POR I/O");
+	enviar_pcb(pcb, kernel_fd, OP_IO);
+
+	//arreglar
+	se_ejecuto_exit = true;
 	return EXIT_FAILURE;
 }
 
@@ -183,11 +192,11 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }
 
 int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }
 
 void check_interrupt(PCB* pcb) {
