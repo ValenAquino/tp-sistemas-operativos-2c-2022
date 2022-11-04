@@ -240,6 +240,13 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	return pcb;
 }
 
+t_list* deserializar_lista_io(void* string) {
+	t_list* ret = list_create();
+	list_add(ret, 1000);
+	list_add(ret, 5000);
+	return ret;
+}
+
 void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 	ts_paquete* paquete = crear_paquete(op_code);
 

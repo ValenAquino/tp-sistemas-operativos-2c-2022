@@ -17,6 +17,7 @@ int main() {
 	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 
+	enviar_codop(cpu_dispatch_fd, TIEMPOS_IO);
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);

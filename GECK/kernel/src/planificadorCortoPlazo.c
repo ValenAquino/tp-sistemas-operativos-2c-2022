@@ -26,7 +26,6 @@ PCB* get_siguiente_proceso() {
 
 PCB* siguiente_proceso_FIFO() {
 	PCB* pcb = list_remove(procesosReady, 0);
-	 
 	return pcb;
 }
 

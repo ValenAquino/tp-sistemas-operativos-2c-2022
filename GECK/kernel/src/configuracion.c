@@ -50,11 +50,26 @@ t_configuracion_kernel* procesar_config(char *config_path) {
 	datos->grado_max_multiprogramacion = grado_max_multiprogramacion;
 	datos->quantum_rr = quantum_rr;
 	datos->dispositivos_io = listaDispositivos;
-	datos->tiempos_io = listaTiempos;
+	datos->tiempos_io = string_to_int(listaTiempos);
 
 	config_destroy(nuevo_config); // libero la memoria del config
 	return datos;
 }
+
+
+t_list* string_to_int(char **segmentos) {
+    t_list* lista_segmentos = list_create();
+
+    for (int i = 0; segmentos[i] != NULL; i++) {
+        int *seg = malloc(sizeof(int));
+        *seg = atoi(segmentos[i]);
+
+        list_add(lista_segmentos, seg);
+    }
+
+    return lista_segmentos;
+}
+
 
 t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
     if(strcmp("FIFO", algoritmo) == 0)

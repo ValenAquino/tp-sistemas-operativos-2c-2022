@@ -2,6 +2,7 @@
 extern t_log* logger;
 
 extern int FLAG_INTERRUPT;
+extern t_list* tiempos_io;
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -22,6 +23,11 @@ void manejar_comunicacion(void* void_args) {
 			log_trace(logger, "Enviando PCB al ciclo de instruccion\n");
 			ciclo_de_instruccion(pcb, cliente_socket);
 			log_trace(logger, "Ciclo de instruccion completado\n");
+			break;
+
+		case TIEMPOS_IO:
+			//t_list* lista_io = recibir_paquete(cliente_socket);
+			tiempos_io = deserializar_lista_io(NULL);
 			break;
 
 		case DEBUG:
