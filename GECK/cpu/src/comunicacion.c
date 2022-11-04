@@ -33,11 +33,6 @@ void manejar_comunicacion(void* void_args) {
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!\n");
 			break;
-
-		case DESCONEXION_CONTROLADA:
-			log_info(logger, "El cliente se desconecto de manera esperada\n");
-			close(cliente_socket);
-			return;
 		
 		case INTERRUPT:
 			FLAG_INTERRUPT = 1;

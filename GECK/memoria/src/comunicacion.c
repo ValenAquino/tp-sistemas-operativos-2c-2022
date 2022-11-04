@@ -16,13 +16,12 @@ void manejar_comunicacion(void* void_args) {
 			case DEBUG:
 				log_debug(logger, "Estoy debuggeando!");
 				break;
-			case DESCONEXION_CONTROLADA:
-				log_info(logger, "El cliente se desconecto de manera esperada");
-				close(cliente_socket);
+
 			return;
 			case -1:
 				log_error(logger, "El cliente se desconecto. Terminando servidor");
 				return;
+
 			default:
 				log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 				break;
