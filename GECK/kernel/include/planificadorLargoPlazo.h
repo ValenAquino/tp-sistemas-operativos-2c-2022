@@ -8,7 +8,6 @@
 #include <protocolo.h>
 #include "kernel.h"
 
-
 void planificador_largo_plazo();
 void nuevoProceso(PCB* pcb);
 void pasarAReady();

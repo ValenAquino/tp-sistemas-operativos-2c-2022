@@ -7,6 +7,8 @@ t_list* procesosExit;
 t_configuracion_kernel *config;
 	
 int cpu_dispatch_fd; // PROBANDO ENVIOS A CPU
+sem_t sem_procesos_ready;
+sem_t sem_proceso_nuevo;
 
 int main() {
 	inicializar_kernel();
@@ -22,6 +24,8 @@ int main() {
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);
+
+	hilo_planificador_largo_plazo();
 
 	while (server_escuchar(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
@@ -60,7 +64,10 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 void inicializar_kernel() {
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_TRACE);
 	config = procesar_config("kernel.config");
-	test_read_config(config);
+
+	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion); // Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
+	sem_init(&sem_proceso_nuevo, 0, 0);
+
 	procesosNew = list_create();
 	procesosReady = list_create();
 	procesosExit = list_create();

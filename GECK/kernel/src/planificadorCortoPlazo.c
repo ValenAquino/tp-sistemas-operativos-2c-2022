@@ -2,12 +2,13 @@
 
 extern t_list *procesosReady;
 extern t_configuracion_kernel *config;
+extern sem_t sem_procesos_ready;
 
 void pasarAExec(PCB* pcb) {
 	pcb->estado_actual = EXEC_STATE;
 	log_cambio_de_estado(pcb->id, READY_STATE, EXEC_STATE);
-
 	dispatch_pcb(pcb);
+	sem_post(&sem_procesos_ready);
 }
 
 PCB* get_siguiente_proceso() {

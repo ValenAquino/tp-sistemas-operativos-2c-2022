@@ -9,8 +9,16 @@ extern t_list* procesosExit;
 
 extern int cpu_dispatch_fd;
 
+extern sem_t sem_procesos_ready;
+extern sem_t sem_proceso_nuevo;
+
 void planificador_largo_plazo() {
-	while(1)
+
+	while(1) {
+		sem_wait(&sem_proceso_nuevo);
+		sem_wait(&sem_procesos_ready);
+		pasarAReady();
+	}
 
 	return;
 }
@@ -19,7 +27,7 @@ void nuevoProceso(PCB* pcb) { // cambiar a pasarANew()
 	list_add(procesosNew, pcb);
 	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
-	pasarAReady();
+	sem_post(&sem_proceso_nuevo);
 }
 
 void imprimir_ready() {

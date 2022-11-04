@@ -14,6 +14,7 @@
 #include <commons/log.h>
 #include <servidor.h>
 #include <shared.h>
+#include <semaphore.h>
 
 typedef enum {
 	FIFO,
@@ -29,5 +30,6 @@ typedef enum {
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
 void hilo_escucha_dispatch();
+void hilo_planificador_largo_plazo();
 
 #endif /* KERNEL_MAIN_H_ */
