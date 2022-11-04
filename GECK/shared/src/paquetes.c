@@ -240,13 +240,6 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	return pcb;
 }
 
-t_list* deserializar_lista_io(void* string) {
-	t_list* ret = list_create();
-	list_add(ret, 1000);
-	list_add(ret, 5000);
-	return ret;
-}
-
 void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 	ts_paquete* paquete = crear_paquete(op_code);
 
@@ -278,4 +271,46 @@ PCB* recibir_pcb(int cliente_socket) {
 	PCB* pcb = deserializar_pcb(datos, inst, segm);
 
 	return pcb;
+}
+
+void handshake_dispatch(int socket_fd, t_list* lista) {
+	ts_paquete* paquete = crear_paquete(TIEMPOS_IO);
+
+	int size = sizeof(int) * 2 * list_size(lista);
+	int desplazamiento = 0;
+	void* stream = malloc(size);
+
+	for (int i = 0; i < 2; i++) {
+		int *tiempo = list_get(lista, i);
+		
+		memcpy(stream + desplazamiento, &(tiempo[0]), sizeof(int));
+		desplazamiento += sizeof(int);	
+
+		memcpy(stream + desplazamiento, &(tiempo[1]), sizeof(int));
+		desplazamiento += sizeof(int);
+	}
+
+	agregar_a_paquete(paquete, stream, size);
+
+	enviar_paquete(paquete, socket_fd);
+	eliminar_paquete(paquete);
+}
+
+t_list* deserializar_lista_tiempos(void* stream) {
+	t_list* lista = list_create();
+	int desplazamiento = 0;
+
+	for (int i = 0; i < 2; i++) {
+		int *tiempo = malloc(2*sizeof(int));
+		
+		memcpy(&(tiempo[0]), stream + desplazamiento, sizeof(int));
+		desplazamiento += sizeof(int);	
+
+		memcpy(&(tiempo[1]), stream + desplazamiento, sizeof(int));
+		desplazamiento += sizeof(int);
+
+		list_add(lista, tiempo);
+	}
+
+	return lista;
 }

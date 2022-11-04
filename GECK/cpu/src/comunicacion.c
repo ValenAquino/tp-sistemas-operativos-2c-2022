@@ -26,8 +26,16 @@ void manejar_comunicacion(void* void_args) {
 			break;
 
 		case TIEMPOS_IO:
-			//t_list* lista_io = recibir_paquete(cliente_socket);
-			tiempos_io = deserializar_lista_io(NULL);
+			t_list* lista_io = recibir_paquete(cliente_socket);
+			t_list* tiempos_io = deserializar_lista_tiempos(list_get(lista_io, 0));
+			
+			int *dispo1 = list_get(tiempos_io, 0);
+			int *dispo2 = list_get(tiempos_io, 1);
+			
+			log_trace(logger, "Se recibieron los tiempos IO");
+			log_debug(logger, "TIEMPO 1: %d, %d ms", dispo1[0], dispo1[1]);
+			log_debug(logger, "TIEMPO 2: %d, %d ms \n", dispo2[0], dispo2[1]);
+
 			break;
 
 		case DEBUG:

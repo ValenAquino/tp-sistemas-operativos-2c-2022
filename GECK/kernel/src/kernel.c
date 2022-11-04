@@ -17,20 +17,18 @@ int main() {
 	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 
-	enviar_codop(cpu_dispatch_fd, TIEMPOS_IO);
+	handshake_dispatch(cpu_dispatch_fd, config->tiempos_io);
+	
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);
-
 
 	while (server_escuchar(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
 }
 
-
 void hilo_planificador_largo_plazo() {
 	pthread_t hilo;
-
 
 	pthread_create(&hilo, NULL, (void*) planificador_largo_plazo, NULL);
 	pthread_detach(hilo);

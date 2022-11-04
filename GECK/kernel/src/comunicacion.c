@@ -1,6 +1,7 @@
 #include "../include/comunicacion.h"
 
 extern t_log* logger;
+extern t_configuracion_kernel* config;
 int proccess_counter = 0;
 
 void manejar_comunicacion(void* void_args) {
@@ -34,9 +35,34 @@ void manejar_comunicacion(void* void_args) {
 			break;
 		}
 
-		case OP_IO: {
+		case OP_DISCO: {
 			PCB* pcb = recibir_pcb(cliente_socket);
+			int unidades_de_trabajo = recibir_operacion(cliente_socket);
+
+			int *dispo1 = malloc(sizeof(int) * 2);
+			dispo1 = list_get(config->tiempos_io, 0);
+
 			log_pcb(pcb);
+			
+			log_trace(logger, "DISCO");
+			log_trace(logger, "SLEEP DE %d", (dispo1[1] * unidades_de_trabajo / 1000));
+			sleep(dispo1[1] * unidades_de_trabajo / 1000);
+			
+			pasarAExec(pcb);
+			break;
+		}
+
+		case OP_IMPRESORA: {
+			PCB* pcb = recibir_pcb(cliente_socket);
+			int unidades_de_trabajo = recibir_operacion(cliente_socket);
+
+			int *dispo2 = malloc(sizeof(int) * 2); 
+			dispo2 = list_get(config->tiempos_io, 1);
+
+			log_pcb(pcb);
+			log_trace(logger, "IMPRESORA");
+			log_trace(logger, "SLEEP DE %d", (dispo2[1] * unidades_de_trabajo / 1000));
+			sleep(dispo2[1] * unidades_de_trabajo / 1000);
 			pasarAExec(pcb);
 			break;
 		}

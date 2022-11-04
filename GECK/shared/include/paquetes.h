@@ -39,9 +39,10 @@ typedef enum {
 } reg_cpu;
 
 typedef enum {
-	DISCO = 6, // valor elevado para que sea distinto a otros enum que pueda a haber en un manejar_comunicacion(). Ej consola
+	DISCO,
+	IMPRESORA,
 	TECLADO,
-	PANTALLA
+	PANTALLA,
 } dispositivos;
 
 typedef struct {
@@ -69,6 +70,7 @@ void* serializar_paquete(ts_paquete* paquete, int bytes);
 void enviar_paquete(ts_paquete* paquete, int socket_cliente);
 void eliminar_paquete(ts_paquete* paquete);
 void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
+void handshake_dispatch(int socket_fd, t_list* lista);
 
 // Serializacion
 void* serializar_lista_ins(t_list*, int);
@@ -80,6 +82,7 @@ t_list* deserializar_lista_inst(void *stream);
 t_list* deserializar_lista_segm(void *stream);
 PCB* deserializar_pcb(void* data, void* inst, void* segm);
 t_list* deserializar_lista_io(void *string);
+t_list* deserializar_lista_tiempos(void* stream);
 
 // Recepcion
 int recibir_operacion(int);

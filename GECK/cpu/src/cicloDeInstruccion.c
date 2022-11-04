@@ -19,7 +19,7 @@ extern uint32_t REG_DX;
 int kernel_fd;
 
 bool inicializados = false;
-bool se_ejecuto_exit = false;
+bool se_devolvio_pcb = false;
 
 void inicializar_registro() {
 	inicializados = true;
@@ -40,13 +40,10 @@ void log_registros() {
 
 void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
 	kernel_fd = kernel_socket;
-
+	se_devolvio_pcb = false;
+	
 	log_trace(logger, "Antes de ejecutar");
 	log_pcb(pcb);
-
-	if(!inicializados) {
-		inicializar_registro(); // No sé si esto hay que hacerlo
-	}
 
 	log_registros();
 
@@ -171,10 +168,24 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 
 	actualizar_pcb(pcb);
 	log_trace(logger, "ENVIANDO PCB A KERNEL POR I/O");
-	enviar_pcb(pcb, kernel_fd, OP_IO);
+	
+	switch(instruccion->param1){
+		case DISCO:
+			enviar_pcb(pcb, kernel_fd, OP_DISCO);
+			enviar_codop(kernel_fd, instruccion->param2);
+			break;
+		case IMPRESORA:
+			enviar_pcb(pcb, kernel_fd, OP_IMPRESORA);
+			enviar_codop(kernel_fd, instruccion->param2);
+			break;
+		case PANTALLA:
+			break;
+		case TECLADO:
+			break;
+	}
+	
 
-	//arreglar
-	se_ejecuto_exit = true;
+	se_devolvio_pcb = true;
 	return EXIT_FAILURE;
 }
 
@@ -186,7 +197,7 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 	
 	free(pcb);
-	se_ejecuto_exit = true;
+	se_devolvio_pcb = true;
 
 	return EXIT_FAILURE;
 }
@@ -206,7 +217,7 @@ void check_interrupt(PCB* pcb) {
 		return;
 	}
 
-	if(!se_ejecuto_exit) {
+	if(!se_devolvio_pcb) {
 		ciclo_de_instruccion(pcb, kernel_fd);
 	}
 }
