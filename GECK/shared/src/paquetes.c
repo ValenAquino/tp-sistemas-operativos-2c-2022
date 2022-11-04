@@ -119,10 +119,8 @@ void* serializar_datos_pcb(PCB *pcb, int size) {
 	memcpy(stream + desplazamiento, &(pcb->estado_actual), sizeof(t_estado_proceso));
 	desplazamiento += sizeof(t_estado_proceso);
 
-	for (int i = 0; i < 4; i++) {
-		memcpy(stream + desplazamiento, &(pcb->registros[i]), sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-	}
+	memcpy(stream + desplazamiento, pcb->registros, 4 * sizeof(uint32_t));
+	desplazamiento += 4 * sizeof(uint32_t);
 	
 	return stream;
 }
@@ -225,10 +223,8 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 	memcpy(&(pcb->estado_actual), data + desplazamiento, sizeof(t_estado_proceso));
 	desplazamiento += sizeof(t_estado_proceso);
 
-	for (int i = 0; i < 4; i++) {
-		memcpy(&(pcb->registros[i]), data + desplazamiento, sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-	}
+	memcpy(pcb->registros, data + desplazamiento, 4 * sizeof(uint32_t));
+	desplazamiento += 4 * sizeof(uint32_t);
 
 	pcb->instrucciones = deserializar_lista_inst(inst);
 	pcb->tablaSegmentos = deserializar_lista_segm(segm);
@@ -244,7 +240,7 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 	ts_paquete* paquete = crear_paquete(op_code);
 
 	// 3 ints de PC, ID, SOCKET + 4 uint32_t de los registros + 1 t_estado_proceso
-	int size_data = sizeof(int) * 3 + sizeof(uint32_t) * 4;
+	int size_data = sizeof(int) * 3 + sizeof(uint32_t) * 4 + sizeof(t_estado_proceso);
 	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
 	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
 
