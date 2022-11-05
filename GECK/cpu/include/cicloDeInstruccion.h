@@ -29,5 +29,6 @@ void check_interrupt();
 
 uint32_t get_valor_registro(reg_cpu registro);
 void actualizar_pcb(PCB* pcb);
+void restaurar_contexto_ejecucion(uint32_t registros[]);
 
 #endif /* CICLODEINSTRUCCION_H_ */

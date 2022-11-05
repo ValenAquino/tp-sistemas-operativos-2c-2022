@@ -4,11 +4,24 @@ extern t_log* logger;
 extern t_configuracion_kernel* config;
 int proccess_counter = 0;
 
+sem_t pantalla_consola, teclado_consola;
+uint32_t respuesta_teclado;
+
+void pasarABlock(PCB* pcb, dispositivos disp) {
+	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
+	pcb->estado_actual = BLOCK_STATE;
+	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
+}
+
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
 	int cliente_socket = args->fd;
 	char* server_name = args->server_name;
 	free(args);
+
+	// De manera provisional
+	sem_init(&pantalla_consola, 0, 0);
+	sem_init(&teclado_consola, 0, 0);
 
 	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
@@ -17,15 +30,12 @@ void manejar_comunicacion(void* void_args) {
 		switch (cod_op) {
 		case ELEMENTOS_CONSOLA:
 			PCB *pcb = crear_pcb(cliente_socket);
-
-			//log_list_inst(pcb->instrucciones);
-			//log_lista_seg(pcb->tablaSegmentos);
 		
 			nuevoProceso(pcb);
 			
+			// Manejar en planificador corto plazo
 			PCB* pcb_a_ejeutar = get_siguiente_proceso();
 			pasarAExec(pcb_a_ejeutar);
-			
 			break;
 
 		case FIN_POR_EXIT: {
@@ -42,7 +52,7 @@ void manejar_comunicacion(void* void_args) {
 			int *dispo1 = malloc(sizeof(int) * 2);
 			dispo1 = list_get(config->tiempos_io, 0);
 
-			log_pcb(pcb);
+			pasarABlock(pcb, DISCO);
 			
 			log_trace(logger, "DISCO");
 			log_trace(logger, "SLEEP DE %d", (dispo1[1] * unidades_de_trabajo / 1000));
@@ -56,14 +66,60 @@ void manejar_comunicacion(void* void_args) {
 			PCB* pcb = recibir_pcb(cliente_socket);
 			int unidades_de_trabajo = recibir_operacion(cliente_socket);
 
-			int *dispo2 = malloc(sizeof(int) * 2); 
-			dispo2 = list_get(config->tiempos_io, 1);
+			int *impresora = malloc(sizeof(int) * 2); 
+			impresora = list_get(config->tiempos_io, 1);
+			
+			pasarABlock(pcb, IMPRESORA);
+
+			log_trace(logger, "IMPRESORA");
+			log_trace(logger, "SLEEP DE %d", (impresora[1] * unidades_de_trabajo / 1000));
+			sleep(impresora[1] * unidades_de_trabajo / 1000);
+			
+			pasarAExec(pcb);
+			break;
+		}
+
+		case OP_PANTALLA: {
+			PCB* pcb = recibir_pcb(cliente_socket);
+			int reg = recibir_operacion(cliente_socket);
+			
+			//log_pcb(pcb);
+
+			enviar_codop(pcb->socket_consola, OP_PANTALLA);
+			enviar_codop(pcb->socket_consola, pcb->registros[reg]);
+			
+			sem_wait(&pantalla_consola);
+			log_debug(logger, "Consola Envio el mensaje %d", respuesta_teclado);
+
+			pasarAExec(pcb);
+			break;
+		}
+
+		case RESPUESTA_PANTALLA: {
+			sem_post(&pantalla_consola);
+
+			break;
+		}
+
+		case OP_TECLADO: {
+			PCB* pcb = recibir_pcb(cliente_socket);
+			reg_cpu reg = recibir_operacion(cliente_socket);
+			
+			enviar_codop(pcb->socket_consola, OP_TECLADO);
+
+			sem_wait(&teclado_consola);
+			pcb->registros[reg] = respuesta_teclado;
+			log_debug(logger, "[registro: %d, respuesta_teclado: %d]", reg, respuesta_teclado);
 
 			log_pcb(pcb);
-			log_trace(logger, "IMPRESORA");
-			log_trace(logger, "SLEEP DE %d", (dispo2[1] * unidades_de_trabajo / 1000));
-			sleep(dispo2[1] * unidades_de_trabajo / 1000);
 			pasarAExec(pcb);
+			break;
+		}
+
+		case RESPUESTA_TECLADO: {
+			respuesta_teclado = recibir_operacion(cliente_socket);
+			sem_post(&teclado_consola);
+
 			break;
 		}
 

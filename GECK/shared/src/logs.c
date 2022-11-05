@@ -79,6 +79,22 @@ char* str_estado(t_estado_proceso estado) {
 	return "UNKNONW";
 }
 
+char* str_dispositivos(reg_cpu disp) {
+	switch (disp) {
+	case DISCO:
+		return "DISCO";
+	case IMPRESORA:
+		return "IMPRESORA";
+	case TECLADO:
+		return "TECLADO";
+	case PANTALLA:
+		return "PANTALLA";
+	default:
+		return "UNKNOWN";
+	}
+	return "UNKNOWN";
+}
+
 char* str_registro(reg_cpu reg) {
 	switch (reg) {
 	case AX:

@@ -14,5 +14,6 @@ void log_cambio_de_estado(int id, t_estado_proceso anterior, t_estado_proceso nu
 char* str_ins(t_ins);
 char* str_estado(t_estado_proceso);
 char* str_registro(reg_cpu reg);
+char* str_dispositivos(reg_cpu disp);
 
 #endif /* LOGGERS_H_ */

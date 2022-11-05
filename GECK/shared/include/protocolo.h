@@ -16,7 +16,9 @@ typedef enum {
 	OP_DISCO,
 	OP_TECLADO,
 	OP_IMPRESORA,
-	TIEMPOS_IO
+	TIEMPOS_IO,
+	RESPUESTA_PANTALLA,
+	RESPUESTA_TECLADO
 } op_code;
 
 typedef struct {

@@ -20,6 +20,7 @@ void manejar_comunicacion(void* void_args) {
 			log_trace(logger, "Recibiendo PCB");
 			PCB* pcb = recibir_pcb(cliente_socket);
 			
+			restaurar_contexto_ejecucion(pcb->registros);
 			log_trace(logger, "Enviando PCB al ciclo de instruccion\n");
 			ciclo_de_instruccion(pcb, cliente_socket);
 			log_trace(logger, "Ciclo de instruccion completado\n");
