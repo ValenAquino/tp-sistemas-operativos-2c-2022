@@ -30,7 +30,6 @@ void inicializar_registro() {
 }
 
 void log_registros() {
-	log_trace(logger, "Imprimiento registros");
 	log_debug (
 		logger,
 		"[AX: %u, BX: %u, CX: %u, DX: %u]",
@@ -42,30 +41,32 @@ void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
 	kernel_fd = kernel_socket;
 	se_devolvio_pcb = false;
 	
-	log_trace(logger, "Antes de ejecutar");
-	log_pcb(pcb);
+	//log_pcb(pcb);
 
 	log_registros();
 
-	log_trace(logger, "FETCH");
 	ts_ins* ins_a_ejecutar = fetch(pcb);
 	
-	log_trace(logger, "DECODE");
 	ins_a_ejecutar = decode(ins_a_ejecutar);
 	
-	log_trace(logger, "EXECUTE");
 	execute(ins_a_ejecutar, pcb);
 
-	log_trace(logger, "CHECK INTERRUPT\n\n");
 	check_interrupt(pcb);
+
+	if(!se_devolvio_pcb) {
+		ciclo_de_instruccion(pcb, kernel_fd);
+	}
 }
 
 ts_ins *fetch(PCB* pcb) {
+	log_trace(logger, "FETCH");
+
 	return list_get(pcb->instrucciones, pcb->programCounter);
 }
 
 ts_ins* decode(ts_ins* instruccion) { 
 	// No debería ser una funcion void?
+	log_trace(logger, "DECODE");
 	switch (instruccion->name) {
 		case SET:
 		case ADD:
@@ -86,6 +87,8 @@ ts_ins* decode(ts_ins* instruccion) {
 }
 
 void execute(ts_ins* instruccion, PCB *pcb) {
+	log_trace(logger, "EXECUTE");
+
 	log_info(
 		logger, 
 		"PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", 
@@ -164,26 +167,31 @@ int execute_add(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_io(ts_ins* instruccion, PCB *pcb) {
-	pcb->programCounter = pcb->programCounter + 1;
+	op_code codigo;
 
+	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
+
 	log_trace(logger, "ENVIANDO PCB A KERNEL POR I/O");
 	
 	switch(instruccion->param1){
 		case DISCO:
-			enviar_pcb(pcb, kernel_fd, OP_DISCO);
-			enviar_codop(kernel_fd, instruccion->param2);
+			codigo = OP_DISCO;
 			break;
 		case IMPRESORA:
-			enviar_pcb(pcb, kernel_fd, OP_IMPRESORA);
-			enviar_codop(kernel_fd, instruccion->param2);
+			codigo = OP_IMPRESORA;
 			break;
 		case PANTALLA:
+			codigo = OP_PANTALLA;
 			break;
 		case TECLADO:
+			codigo = OP_TECLADO;
 			break;
 	}
 	
+	enviar_pcb(pcb, kernel_fd, codigo);
+	enviar_codop(kernel_fd, instruccion->param2);
+	free(pcb);
 
 	se_devolvio_pcb = true;
 	return EXIT_FAILURE;
@@ -191,8 +199,8 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 
 int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	pcb->programCounter = pcb->programCounter + 1;
-	
 	actualizar_pcb(pcb);
+	
 	log_trace(logger, "ENVIANDO PCB A KERNEL POR EXIT");
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 	
@@ -211,14 +219,12 @@ int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
 }
 
 void check_interrupt(PCB* pcb) {
+	log_trace(logger, "CHECK INTERRUPT\n\n");
+
 	if(FLAG_INTERRUPT) {
 		actualizar_pcb(pcb);
 		enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 		return;
-	}
-
-	if(!se_devolvio_pcb) {
-		ciclo_de_instruccion(pcb, kernel_fd);
 	}
 }
 
@@ -241,4 +247,11 @@ void actualizar_pcb(PCB* pcb) {
 	pcb->registros[BX] = REG_BX;
 	pcb->registros[CX] = REG_CX;
 	pcb->registros[DX] = REG_DX;	
+}
+
+void restaurar_contexto_ejecucion(uint32_t registros[]) {
+	REG_AX =  registros[AX];
+	REG_BX =  registros[BX];
+	REG_CX =  registros[CX];
+	REG_DX =  registros[DX];
 }

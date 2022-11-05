@@ -1,6 +1,7 @@
 #include "../include/comunicacion.h"
 
 extern t_log* logger;
+extern int tiempo_pantalla;
 
 int manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -17,16 +18,28 @@ int manejar_comunicacion(void* void_args) {
 			log_debug(logger,"FIN POR EXIT");
 			return 0;
 
-		case OP_DISCO:
-			// recibir valor a imprimir
-			// logearlo
-			// esperar el tiempo de retardo en pantalla
-			break;
+		case OP_PANTALLA: {
+			uint32_t valor = recibir_operacion(cliente_socket);
+			
+			sleep(tiempo_pantalla/1000);
+			log_info(logger, "%d", valor);
 
-		case OP_TECLADO:
-			// readline? scanf? de un uint32_t
-			// enviarlo a KERNEL
+			enviar_codop(cliente_socket, RESPUESTA_PANTALLA);
 			break;
+		}
+
+		case OP_TECLADO: {
+			uint32_t valor;
+
+			printf("Ingresar valor numerico: ");
+			scanf("%u", &valor);
+			log_debug(logger, "se leyo el valor: %u", valor);
+			
+			enviar_codop(cliente_socket, RESPUESTA_TECLADO);
+			enviar_codop(cliente_socket, valor);
+			
+			break;
+		}
 
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");

@@ -71,6 +71,9 @@ dispositivos procesar_dispositivo(char *disp) {
 
 	if(strcmp("PANTALLA", disp) == 0)
 		return PANTALLA;
+	
+	if(strcmp("IMPRESORA", disp) == 0)
+		return IMPRESORA;
 
 	log_error(logger, "el dispositivo '%s' es incorrecto", disp);
 	exit(EXIT_FAILURE);
@@ -116,10 +119,12 @@ void leer_parametros(FILE **f_pseudo, ts_ins *inst) {
 		fscanf(*f_pseudo, "%s", buffer);
 		inst->param1 = procesar_dispositivo(buffer);
 
-		if(inst->param1 == DISCO)
+		if((inst->param1 == DISCO) || (inst->param1 == IMPRESORA))
 			fscanf(*f_pseudo, "%d", &(inst->param2));
-		else
+		else {
+			fscanf(*f_pseudo, "%s", buffer);
 			inst->param2 = procesar_reg(buffer);
+		}
 
 		break;
 

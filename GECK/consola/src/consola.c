@@ -1,8 +1,7 @@
 #include "../include/consola.h"
 
 t_log* logger;
-
-// TODO enviar los mensajes a kernel
+int tiempo_pantalla;
 
 int main(int argc, char** argv) {
 	char* config_path;
@@ -10,7 +9,6 @@ int main(int argc, char** argv) {
 	t_config* config;
 	t_list *lista_inst;
 	t_list *lista_segmentos;
-	int tiempo_pantalla;
 	int kernel_fd;
 
 	// Level trace para que hagamos logs debugs y trace
