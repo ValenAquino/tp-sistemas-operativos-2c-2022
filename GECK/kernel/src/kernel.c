@@ -9,6 +9,8 @@ t_configuracion_kernel *config;
 int cpu_dispatch_fd; // PROBANDO ENVIOS A CPU
 sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
+sem_t mutex_ready;
+sem_t planificar;
 
 int main() {
 	inicializar_kernel();
@@ -67,6 +69,8 @@ void inicializar_kernel() {
 
 	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion); // Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
 	sem_init(&sem_proceso_nuevo, 0, 0);
+	sem_init(&mutex_ready, 1, 1);
+	sem_init(&planificar, 1, 0);
 
 	procesosNew = list_create();
 	procesosReady = list_create();

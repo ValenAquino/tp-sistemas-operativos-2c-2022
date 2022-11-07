@@ -11,6 +11,8 @@ extern int cpu_dispatch_fd;
 
 extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
+extern sem_t mutex_ready;
+extern sem_t planificar;
 
 void planificador_largo_plazo() {
 
@@ -58,28 +60,28 @@ void dispatch_pcb(PCB* pcb) {
 }
 
 void pasarAReady() {
+	sem_wait(&mutex_ready);
+
 	log_trace(
 		logger, 
 		"procesos ready: %d, grado multi: %d", 
 		list_size(procesosReady), config->grado_max_multiprogramacion
 	);
 
-	if(list_size(procesosReady) < config->grado_max_multiprogramacion) {
-		PCB* pcb = list_remove(procesosNew, 0);
-		pcb->estado_actual = READY_STATE;
-		list_add(procesosReady, pcb);
+	PCB* pcb = list_remove(procesosNew, 0);
+	list_add(procesosReady, pcb);
+	imprimir_ready();
 
-		log_cambio_de_estado(pcb->id, NEW_STATE, READY_STATE);
-		imprimir_ready();
-	}
+	sem_post(&mutex_ready);
+	sem_post(&planificar);
+	pcb->estado_actual = READY_STATE;
+	log_cambio_de_estado(pcb->id, NEW_STATE, READY_STATE);
 }
 
 void pasarAExit(PCB* pcb) {
 	pcb->estado_actual = EXIT_STATE;
 	log_cambio_de_estado(pcb->id, EXEC_STATE, EXIT_STATE);
-
 	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
-	
 	list_add(procesosExit, pcb);
 	free(pcb);
 }

@@ -4,7 +4,10 @@ extern t_log* logger;
 extern t_configuracion_kernel* config;
 int proccess_counter = 0;
 
-sem_t pantalla_consola, teclado_consola;
+sem_t pantalla_consola;
+sem_t teclado_consola;
+extern sem_t planificar;
+
 uint32_t respuesta_teclado;
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
@@ -34,6 +37,7 @@ void manejar_comunicacion(void* void_args) {
 			nuevoProceso(pcb);
 			
 			// Manejar en planificador corto plazo
+			sem_wait(&planificar);
 			PCB* pcb_a_ejeutar = get_siguiente_proceso();
 			pasarAExec(pcb_a_ejeutar);
 			break;
@@ -84,6 +88,8 @@ void manejar_comunicacion(void* void_args) {
 			int reg = recibir_operacion(cliente_socket);
 			
 			//log_pcb(pcb);
+			pasarABlock(pcb, PANTALLA);
+
 
 			enviar_codop(pcb->socket_consola, OP_PANTALLA);
 			enviar_codop(pcb->socket_consola, pcb->registros[reg]);
@@ -105,8 +111,8 @@ void manejar_comunicacion(void* void_args) {
 			PCB* pcb = recibir_pcb(cliente_socket);
 			reg_cpu reg = recibir_operacion(cliente_socket);
 			
+			pasarABlock(pcb, TECLADO);
 			enviar_codop(pcb->socket_consola, OP_TECLADO);
-
 			sem_wait(&teclado_consola);
 			pcb->registros[reg] = respuesta_teclado;
 			log_debug(logger, "[registro: %d, respuesta_teclado: %d]", reg, respuesta_teclado);
