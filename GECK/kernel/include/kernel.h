@@ -15,12 +15,14 @@
 #include <servidor.h>
 #include <shared.h>
 #include <semaphore.h>
+#include <paquetes.h>
 
 typedef enum {
 	FIFO,
 	RR,
 	FEEDBACK
 } t_algoritmo_planificacion;
+
 
 #include "comunicacion.h"
 #include "configuracion.h"
@@ -30,6 +32,10 @@ typedef enum {
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
 void hilo_escucha_dispatch();
+
+void hilo_planificador_corto_plazo();
 void hilo_planificador_largo_plazo();
+
+PCB* recibir_pcb_de_cpu(int cliente_socket);
 
 #endif /* KERNEL_MAIN_H_ */

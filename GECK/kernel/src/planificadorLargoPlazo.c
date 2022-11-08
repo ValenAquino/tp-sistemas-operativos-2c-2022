@@ -19,7 +19,8 @@ void planificador_largo_plazo() {
 	while(1) {
 		sem_wait(&sem_proceso_nuevo);
 		sem_wait(&sem_procesos_ready);
-		pasarAReady();
+		PCB* pcb = list_remove(procesosNew, 0);
+		pasarAReady(pcb);
 	}
 
 	return;
@@ -59,7 +60,7 @@ void dispatch_pcb(PCB* pcb) {
 	free(pcb);
 }
 
-void pasarAReady() {
+void pasarAReady(PCB* pcb) {
 	sem_wait(&mutex_ready);
 
 	log_trace(
@@ -68,14 +69,14 @@ void pasarAReady() {
 		list_size(procesosReady), config->grado_max_multiprogramacion
 	);
 
-	PCB* pcb = list_remove(procesosNew, 0);
 	list_add(procesosReady, pcb);
 	imprimir_ready();
 
 	sem_post(&mutex_ready);
-	sem_post(&planificar);
+
+	log_cambio_de_estado(pcb->id, pcb->estado_actual, READY_STATE);
 	pcb->estado_actual = READY_STATE;
-	log_cambio_de_estado(pcb->id, NEW_STATE, READY_STATE);
+	sem_post(&planificar);
 }
 
 void pasarAExit(PCB* pcb) {

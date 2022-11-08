@@ -11,6 +11,7 @@ sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
 sem_t mutex_ready;
 sem_t planificar;
+sem_t cpu_idle;
 
 int main() {
 	inicializar_kernel();
@@ -28,6 +29,7 @@ int main() {
 	send_debug(memoria_fd);
 
 	hilo_planificador_largo_plazo();
+	hilo_planificador_corto_plazo();
 
 	while (server_escuchar(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
@@ -37,6 +39,13 @@ void hilo_planificador_largo_plazo() {
 	pthread_t hilo;
 
 	pthread_create(&hilo, NULL, (void*) planificador_largo_plazo, NULL);
+	pthread_detach(hilo);
+}
+
+void hilo_planificador_corto_plazo() {
+	pthread_t hilo;
+
+	pthread_create(&hilo, NULL, (void*) planificador_corto_plazo, NULL);
 	pthread_detach(hilo);
 }
 
@@ -55,6 +64,14 @@ void hilo_escucha_dispatch() {
 	pthread_detach(hilo);
 }
 
+
+PCB* recibir_pcb_de_cpu(int cliente_socket) {
+	PCB* pcb = recibir_pcb(cliente_socket);
+	sem_post(&cpu_idle);
+	return pcb;
+}
+
+
 int iniciar_servidor_kernel(char* ip, char* puerto) {
 	int server_fd = iniciar_servidor(logger, SERVERNAME, ip, puerto);
 
@@ -71,6 +88,7 @@ void inicializar_kernel() {
 	sem_init(&sem_proceso_nuevo, 0, 0);
 	sem_init(&mutex_ready, 1, 1);
 	sem_init(&planificar, 1, 0);
+	sem_init(&cpu_idle, 1, 1);
 
 	procesosNew = list_create();
 	procesosReady = list_create();

@@ -10,12 +10,12 @@
 
 void planificador_largo_plazo();
 void nuevoProceso(PCB* pcb);
-void pasarAReady();
 
 // PRUEBA
 void dispatch_pcb(PCB* pcb);
 
 void* serializar_pcb(PCB* pcb);
 void pasarAExit(PCB* pcb);
+void pasarAReady(PCB* pcb);
 
 #endif /* PLANIFICADORLARGOPLAZO_H_ */
