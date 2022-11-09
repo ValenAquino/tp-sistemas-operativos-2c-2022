@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
 	while(manejar_comunicacion(comunicacion_args));
 
-	return liberar_memoria(logger, kernel_fd, config);;
+	return liberar_memoria(logger, kernel_fd, config);
 }
 
 t_list *char_to_int(char **segmentos) {
@@ -98,8 +98,8 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
 	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
-	log_list_inst(lista_inst);
-	log_lista_seg(lista_segmentos);
+	// log_list_inst(lista_inst);
+	// log_lista_seg(lista_segmentos);
 	
 	void *ins = serializar_lista_ins(lista_inst, size_ins);
 	void *seg = serializar_lista_seg(lista_segmentos, size_seg);

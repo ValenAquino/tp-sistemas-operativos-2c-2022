@@ -2,56 +2,12 @@
 
 extern t_log* logger;
 extern t_configuracion_kernel* config;
-int proccess_counter = 0;
 
-extern sem_t pantalla_consola;
-extern sem_t teclado_consola;
+extern sem_t mutex_block;
 extern sem_t planificar;
 
+int proccess_counter = 0;
 uint32_t respuesta_teclado;
-
-
-void manejar_op_teclado(void* args) {
-	t_manejar_block_consola* datos = (t_manejar_block_consola *) args;
-
-	sem_wait(&teclado_consola);
-	log_debug(logger, "[registro: %s, respuesta_teclado: %d]", str_registro(datos->reg), respuesta_teclado);
-	datos->pcb->registros[datos->reg] = respuesta_teclado;
-	
-	pasarAReady(datos->pcb);
-	free(args);
-}
-
-void manejar_op_pantallla(void* args) {
-	t_manejar_block_consola* datos = (t_manejar_block_consola *) args;
-
-	sem_wait(&pantalla_consola);
-	log_debug(logger, "registro: %s impreso por Proceso: %d]", str_registro(datos->reg), datos->pcb->id);
-	
-	pasarAReady(datos->pcb);
-	free(args);
-}
-
-void manejar_op_consola(dispositivos dispo, PCB* pcb, reg_cpu reg) {
-	pthread_t hilo;
-
-    t_manejar_block_consola* args = malloc(sizeof(t_manejar_block_consola));
-    args->pcb = pcb;
-    args->reg = reg;
-
-	switch (dispo) {
-	case TECLADO:
-		pthread_create(&hilo, NULL, (void*) manejar_op_teclado, (void*) args);
-		break;
-	case PANTALLA:
-		pthread_create(&hilo, NULL, (void*) manejar_op_pantallla, (void*) args);
-		break;
-	default:
-		break;
-	}
-
-    pthread_detach(hilo);
-}
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -64,14 +20,14 @@ void manejar_comunicacion(void* void_args) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
-		case ELEMENTOS_CONSOLA:
+		case ELEMENTOS_CONSOLA: // unico case en el que entra consola
 			PCB *pcb = crear_pcb(cliente_socket);
 			pasarANew(pcb);
 			break;
 	
 		case FIN_POR_EXIT: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
-			log_pcb(pcb);
+			//log_pcb(pcb);
 			pasarAExit(pcb);
 			break;
 		}
@@ -91,13 +47,14 @@ void manejar_comunicacion(void* void_args) {
 		case OP_PANTALLA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			uint32_t reg = recibir_registro(cliente_socket);
-			
-			pasarABlock(pcb, PANTALLA);
 
 			enviar_codop(pcb->socket_consola, OP_PANTALLA);
-			enviar_registro(pcb->socket_consola, pcb->registros[reg]);
 			
-			manejar_op_consola(PANTALLA, pcb, reg);
+			enviar_valor(pcb->socket_consola, pcb->registros[reg]);
+			enviar_registro(pcb->socket_consola, reg);
+			enviar_pid(pcb->socket_consola, pcb->id);
+			
+			pasarABlock(pcb, PANTALLA);
 			break;
 		}
 
@@ -105,23 +62,29 @@ void manejar_comunicacion(void* void_args) {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			reg_cpu reg = recibir_registro(cliente_socket);
 			
-			pasarABlock(pcb, TECLADO);
-			
-			log_debug(logger, "Enviando codigo de operacion: OP_TECLADO");
 			enviar_codop(pcb->socket_consola, OP_TECLADO);
 			
-			manejar_op_consola(TECLADO, pcb, reg);
+			enviar_registro(pcb->socket_consola, reg);
+			enviar_pid(pcb->socket_consola, pcb->id);
+			
+			pasarABlock(pcb, TECLADO);
 			break;
 		}
 
 		case RESPUESTA_PANTALLA: {
-			sem_post(&pantalla_consola);
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			op_pantallla(pid, reg);
 			break;
-		}
+	    }
 
 		case RESPUESTA_TECLADO: {
-			respuesta_teclado = recibir_respuesta_consola(cliente_socket);
-			sem_post(&teclado_consola);
+			uint32_t valor = recibir_valor(cliente_socket);
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			op_teclado(pid, reg, valor);
 			break;
 		}
 
@@ -146,39 +109,6 @@ void manejar_comunicacion(void* void_args) {
 
 	log_warning(logger, "El cliente se desconecto de %s server", server_name);
 	return;
-}
-
-void suspender_proceso(void* void_args ) {
-	t_manejar_block* args = (t_manejar_block*) void_args;
-	int tiempo = args->tiempo_de_suspension;
-	PCB* pcb = args->pcb;
-	free(args);
-
-	sleep(tiempo);
-
-	pasarAReady(pcb);
-}
-
-void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo) {
-    pthread_t hilo;
-
-    t_manejar_block* args = malloc(sizeof(t_manejar_block));
-    args->pcb = pcb;
-    args->tiempo_de_suspension = tiempo;
-
-    pthread_create(&hilo, NULL, (void*) suspender_proceso, (void*) args);
-    pthread_detach(hilo);
-}
-
-void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket) {
-	int unidades_de_trabajo = recibir_operacion(cliente_socket);
-	int tiempo_por_unidad = obtener_tiempo_io(dispo, config->tiempos_io);
-	int tiempo_de_suspension = tiempo_por_unidad * unidades_de_trabajo / 1000;
-			
-	pasarABlock(pcb, dispo);
-
-	log_trace(logger, "SLEEP DE %d", tiempo_de_suspension);
-	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension);
 }
 
 int server_escuchar(char* server_name, int server_socket) {

@@ -7,15 +7,17 @@ int cpu_dispatch_fd;
 
 t_list* procesosNew;
 t_list* procesosReady;
+t_list* procesosBlock;
 t_list* procesosExit;
 	
 sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
+
 sem_t mutex_ready;
+sem_t mutex_block;
+
 sem_t planificar;
 sem_t cpu_idle;
-sem_t pantalla_consola;
-sem_t teclado_consola;
 
 int main() {
 	inicializar_kernel();
@@ -87,15 +89,16 @@ void inicializar_kernel() {
 	config = procesar_config("kernel.config");
 	test_read_config(config);
 
-	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion); // Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
+	// Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
+	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion);
 	sem_init(&sem_proceso_nuevo, 0, 0);
 	sem_init(&mutex_ready, 1, 1);
 	sem_init(&planificar, 1, 0);
 	sem_init(&cpu_idle, 1, 1);
-	sem_init(&pantalla_consola, 0, 0);
-	sem_init(&teclado_consola, 0, 0);
+	sem_init(&mutex_block, 1, 1);
 
 	procesosNew = list_create();
 	procesosReady = list_create();
 	procesosExit = list_create();
+	procesosBlock = list_create();
 }

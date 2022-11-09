@@ -19,16 +19,23 @@ int manejar_comunicacion(void* void_args) {
 			return 0;
 
 		case OP_PANTALLA: {
-			uint32_t valor = recibir_operacion(cliente_socket);
+			uint32_t valor = recibir_valor(cliente_socket);
+			uint32_t reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
 			
 			sleep(tiempo_pantalla/1000);
 			log_info(logger, "%d", valor);
 
 			enviar_codop(cliente_socket, RESPUESTA_PANTALLA);
+			enviar_registro(cliente_socket, reg);
+			enviar_pid(cliente_socket, pid);
 			break;
 		}
 
 		case OP_TECLADO: {
+			uint32_t reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
 			uint32_t valor;
 
 			printf("Ingresar valor numerico: ");
@@ -36,8 +43,9 @@ int manejar_comunicacion(void* void_args) {
 			log_debug(logger, "se leyo el valor: %u", valor);
 			
 			enviar_codop(cliente_socket, RESPUESTA_TECLADO);
-			enviar_codop(cliente_socket, valor);
-			
+			enviar_valor(cliente_socket, valor);
+			enviar_registro(cliente_socket, reg);
+			enviar_pid(cliente_socket, pid);
 			break;
 		}
 

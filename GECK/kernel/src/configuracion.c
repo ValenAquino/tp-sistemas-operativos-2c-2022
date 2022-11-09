@@ -141,8 +141,9 @@ void test_read_config(t_configuracion_kernel* config) {
 }
 
 int obtener_tiempo_io(dispositivos disp_que_busco, t_list* lista_dispositivos) {
-	
-	bool get_time(void *element) { // nested function
+
+	// nested function
+ 	bool get_time(void *element) {
 		int *array_dispositivo_tiempo = element;
 		return array_dispositivo_tiempo[0] == disp_que_busco;
 	}

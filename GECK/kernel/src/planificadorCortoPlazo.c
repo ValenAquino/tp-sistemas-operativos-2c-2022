@@ -1,7 +1,10 @@
 #include "../include/planificadorCortoPlazo.h"
 
 extern t_list *procesosReady;
+extern t_list *procesosBlock;
+
 extern t_configuracion_kernel *config;
+
 extern sem_t sem_procesos_ready; // GRADO DE MULTIPROGRAMACION
 extern sem_t mutex_ready; // PROTEGE LA LISTA DE READY
 extern sem_t planificar; // SINCRONIZA CORTO PLAZO
@@ -19,6 +22,9 @@ void pasarAExec(PCB* pcb) {
 void pasarABlock(PCB* pcb, dispositivos disp) {
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
+
+	list_add(procesosBlock, pcb);
+	
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
 }
 

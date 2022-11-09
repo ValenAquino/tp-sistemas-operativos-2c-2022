@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <shared.h>
+#include <paquetes.h>
+#include <logs.h>
+
 #include <commons/string.h>
 #include <commons/collections/list.h>
 #include <commons/log.h>
-#include <shared.h>
-#include "kernel.h"
 
 typedef struct t_configuracion_kernel
 {
