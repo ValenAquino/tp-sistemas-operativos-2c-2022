@@ -7,6 +7,7 @@
 #include <commons/collections/list.h>
 #include <commons/log.h>
 #include <stdint.h>
+#include <semaphore.h>
 
 typedef enum  {
 	NEW_STATE,
@@ -28,5 +29,6 @@ typedef struct PCB
 }PCB;
 
 PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos);
+PCB* obtener_proceso_por_pid(int pid, t_list* lista, sem_t mutex);
 
 #endif /* PCB_H_ */

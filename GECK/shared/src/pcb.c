@@ -18,3 +18,18 @@ PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos) {
     log_info(logger, "Se crea el proceso <%d>", id);
     return pcb;
 }
+
+PCB *obtener_proceso_por_pid(int pid, t_list* lista, sem_t mutex) {
+	bool get_element(void *element) {
+		PCB *elementPcb = element;
+		return elementPcb->id == pid;
+	}
+
+	if (pid == -1)
+		return NULL;
+
+	sem_wait(&mutex);
+	PCB *pcb = list_remove_by_condition(lista, get_element);
+	sem_post(&mutex);
+	return pcb;
+}

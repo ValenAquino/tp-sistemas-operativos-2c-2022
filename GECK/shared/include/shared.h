@@ -28,15 +28,19 @@
 #include <commons/string.h>
 #include <commons/collections/list.h>
 
-#define DESCONEXION_CONTROLADA 100 // valor de case para enviar antes de cerrar un socket, ya implicito en liberar_conexion()
+// valor de case para enviar antes de cerrar un socket, ya implicito en liberar_conexion()
+#define DESCONEXION_CONTROLADA 100 
 
-void enviar_codop(int socket_conexion, int cod_op);
 void liberar_conexion(int);
 
-bool config_has_all_properties(t_config*, char**);
 char* leer_archivo_completo(char*);
 t_config* abrir_configuracion(char*);
+
+void enviar_codop(int socket_conexion, int cod_op);
+void enviar_pid(int socket_conexion, int pid);
 void enviar_registro(int socket_conexion, uint32_t reg);
+void enviar_valor(int socket_conexion, uint32_t reg);
+void enviar_valor(int socket_conexion, uint32_t reg);
 
 typedef enum {
 	FIFO,
