@@ -28,9 +28,11 @@ typedef struct t_configuracion_kernel
 
 t_configuracion_kernel* procesar_config(char *);
 t_algoritmo_planificacion procesar_algoritmo(char* algoritmo);
-char* get_algoritmo_string(t_algoritmo_planificacion algoritmo);
 t_list* string_to_int(char **segmentos);
+
 void test_read_config(t_configuracion_kernel* config);
 t_list* procesar_tiempos_io(char **tiempos, char **dispositivos);
+
+int obtener_tiempo_io(dispositivos disp_que_busco, t_list* lista_dispositivos);
 
 #endif /* CONFIGURACION_H_ */

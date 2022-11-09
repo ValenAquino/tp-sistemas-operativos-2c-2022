@@ -1,17 +1,21 @@
 #include "../include/kernel.h"
 
 t_log* logger;
+t_configuracion_kernel *config;
+
+int cpu_dispatch_fd;
+
 t_list* procesosNew;
 t_list* procesosReady;
 t_list* procesosExit;
-t_configuracion_kernel *config;
 	
-int cpu_dispatch_fd; // PROBANDO ENVIOS A CPU
 sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
 sem_t mutex_ready;
 sem_t planificar;
 sem_t cpu_idle;
+sem_t pantalla_consola;
+sem_t teclado_consola;
 
 int main() {
 	inicializar_kernel();
@@ -21,8 +25,6 @@ int main() {
 	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
 	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
-
-	handshake_dispatch(cpu_dispatch_fd, config->tiempos_io);
 	
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
@@ -83,12 +85,15 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 void inicializar_kernel() {
 	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_TRACE);
 	config = procesar_config("kernel.config");
+	test_read_config(config);
 
 	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion); // Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
 	sem_init(&sem_proceso_nuevo, 0, 0);
 	sem_init(&mutex_ready, 1, 1);
 	sem_init(&planificar, 1, 0);
 	sem_init(&cpu_idle, 1, 1);
+	sem_init(&pantalla_consola, 0, 0);
+	sem_init(&teclado_consola, 0, 0);
 
 	procesosNew = list_create();
 	procesosReady = list_create();

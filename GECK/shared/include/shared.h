@@ -36,5 +36,12 @@ void liberar_conexion(int);
 bool config_has_all_properties(t_config*, char**);
 char* leer_archivo_completo(char*);
 t_config* abrir_configuracion(char*);
+void enviar_registro(int socket_conexion, uint32_t reg);
+
+typedef enum {
+	FIFO,
+	RR,
+	FEEDBACK
+} t_algoritmo_planificacion;
 
 #endif /* SHARED_H_ */

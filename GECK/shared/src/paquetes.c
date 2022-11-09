@@ -269,29 +269,6 @@ PCB* recibir_pcb(int cliente_socket) {
 	return pcb;
 }
 
-void handshake_dispatch(int socket_fd, t_list* lista) {
-	ts_paquete* paquete = crear_paquete(TIEMPOS_IO);
-
-	int size = sizeof(int) * 2 * list_size(lista);
-	int desplazamiento = 0;
-	void* stream = malloc(size);
-
-	for (int i = 0; i < 2; i++) {
-		int *tiempo = list_get(lista, i);
-		
-		memcpy(stream + desplazamiento, &(tiempo[0]), sizeof(int));
-		desplazamiento += sizeof(int);	
-
-		memcpy(stream + desplazamiento, &(tiempo[1]), sizeof(int));
-		desplazamiento += sizeof(int);
-	}
-
-	agregar_a_paquete(paquete, stream, size);
-
-	enviar_paquete(paquete, socket_fd);
-	eliminar_paquete(paquete);
-}
-
 t_list* deserializar_lista_tiempos(void* stream) {
 	t_list* lista = list_create();
 	int desplazamiento = 0;

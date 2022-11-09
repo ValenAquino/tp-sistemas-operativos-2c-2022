@@ -6,5 +6,7 @@
 int iniciar_servidor(t_log* logger, const char* name, char* ip, char* puerto);
 int esperar_cliente(t_log* logger, const char* name, int server_fd);
 int recibir_operacion(int);
+uint32_t recibir_registro(int socket_cliente);
+uint32_t recibir_respuesta_consola(int socket_cliente);
 
 #endif /* SERVIDOR_H_ */

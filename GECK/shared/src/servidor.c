@@ -59,3 +59,18 @@ int recibir_operacion(int socket_cliente) {
 		return -1;
 	}
 }
+
+uint32_t recibir_registro(int socket_cliente) {
+	uint32_t cod_op;
+	if (recv(socket_cliente, &cod_op, sizeof(uint32_t), MSG_WAITALL) > 0)
+		return cod_op;
+	else
+	{
+		close(socket_cliente);
+		return -1;
+	}
+}
+
+uint32_t recibir_respuesta_consola(int socket_cliente) {
+	return recibir_registro(socket_cliente);
+}

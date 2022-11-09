@@ -8,6 +8,11 @@ typedef struct {
 	int tiempo_de_suspension;
 } t_manejar_block;
 
+typedef struct {
+	PCB* pcb;
+	uint32_t reg;
+} t_manejar_block_consola;
+
 void pasarAExec(PCB* pcb);
 void pasarABlock(PCB* pcb, dispositivos disp);
 

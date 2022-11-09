@@ -70,7 +70,6 @@ void* serializar_paquete(ts_paquete* paquete, int bytes);
 void enviar_paquete(ts_paquete* paquete, int socket_cliente);
 void eliminar_paquete(ts_paquete* paquete);
 void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
-void handshake_dispatch(int socket_fd, t_list* lista);
 
 // Serializacion
 void* serializar_lista_ins(t_list*, int);
