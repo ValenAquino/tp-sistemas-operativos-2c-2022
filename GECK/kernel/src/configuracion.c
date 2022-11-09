@@ -103,21 +103,6 @@ t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
     exit(EXIT_FAILURE);
 }
 
-char* get_algoritmo_string(t_algoritmo_planificacion algoritmo) {
-
-	switch (algoritmo) {
-	case FIFO:
-		return "FIFO";
-	case RR:
-		return "RR";
-	case FEEDBACK:
-		return "FEEDBACK";
-	}
-
-    log_error(logger, "El algoritmo es incorrecto");
-    exit(EXIT_FAILURE);
-}
-
 void test_read_config(t_configuracion_kernel* config) {
 	int *dispo1 = malloc(sizeof(int) * 2);
 	int *dispo2 = malloc(sizeof(int) * 2); 
@@ -147,10 +132,22 @@ void test_read_config(t_configuracion_kernel* config) {
 		config->puerto_kernel,
 		config->puerto_cpu_dispatch,
 		config->puerto_cpu_interrupt,
-		get_algoritmo_string(config->algoritmo_planificacion),
+		str_algoritmo(config->algoritmo_planificacion),
 		config->grado_max_multiprogramacion,
 		config->quantum_rr,
 		dispo1[0], dispo1[1],
 		dispo2[0], dispo2[1]
 	);
+}
+
+int obtener_tiempo_io(dispositivos disp_que_busco, t_list* lista_dispositivos) {
+	
+	bool get_time(void *element) { // nested function
+		int *array_dispositivo_tiempo = element;
+		return array_dispositivo_tiempo[0] == disp_que_busco;
+	}
+
+	int *array_dispositivo_tiempo = list_find(lista_dispositivos, get_time);
+
+	return array_dispositivo_tiempo[1];
 }

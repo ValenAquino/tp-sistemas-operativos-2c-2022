@@ -118,3 +118,20 @@ void log_cambio_de_estado(int id, t_estado_proceso anterior, t_estado_proceso nu
 		id, str_estado(anterior), str_estado(nuevo)
 	);
 }
+
+
+
+char* str_algoritmo(t_algoritmo_planificacion algoritmo) {
+
+	switch (algoritmo) {
+	case FIFO:
+		return "FIFO";
+	case RR:
+		return "RR";
+	case FEEDBACK:
+		return "FEEDBACK";
+	}
+
+    log_error(logger, "El algoritmo es incorrecto");
+    exit(EXIT_FAILURE);
+}

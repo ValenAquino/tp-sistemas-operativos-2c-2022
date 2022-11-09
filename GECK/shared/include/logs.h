@@ -15,5 +15,6 @@ char* str_ins(t_ins);
 char* str_estado(t_estado_proceso);
 char* str_registro(reg_cpu reg);
 char* str_dispositivos(reg_cpu disp);
+char* str_algoritmo(t_algoritmo_planificacion algoritmo);
 
 #endif /* LOGGERS_H_ */

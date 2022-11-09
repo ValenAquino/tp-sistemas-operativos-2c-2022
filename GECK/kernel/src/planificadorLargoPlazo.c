@@ -26,7 +26,7 @@ void planificador_largo_plazo() {
 	return;
 }
 
-void nuevoProceso(PCB* pcb) { // cambiar a pasarANew()
+void pasarANew(PCB* pcb) {
 	list_add(procesosNew, pcb);
 	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
@@ -49,7 +49,7 @@ void imprimir_ready() {
 	log_info(
 		logger, 
 		"Cola Ready <%s>: [%s]", 
-		get_algoritmo_string(config->algoritmo_planificacion), pids
+		str_algoritmo(config->algoritmo_planificacion), pids
 	);
 
 	free(pids);

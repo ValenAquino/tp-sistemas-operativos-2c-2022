@@ -17,13 +17,6 @@
 #include <semaphore.h>
 #include <paquetes.h>
 
-typedef enum {
-	FIFO,
-	RR,
-	FEEDBACK
-} t_algoritmo_planificacion;
-
-
 #include "comunicacion.h"
 #include "configuracion.h"
 

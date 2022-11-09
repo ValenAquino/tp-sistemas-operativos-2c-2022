@@ -9,7 +9,7 @@
 #include "kernel.h"
 
 void planificador_largo_plazo();
-void nuevoProceso(PCB* pcb);
+void pasarANew(PCB* pcb);
 
 // PRUEBA
 void dispatch_pcb(PCB* pcb);
