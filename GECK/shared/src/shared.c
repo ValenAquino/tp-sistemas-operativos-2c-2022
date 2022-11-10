@@ -28,9 +28,16 @@ void liberar_conexion(int socket_cliente) {
 }
 
 t_config* abrir_configuracion(char* path) {
-	t_config* config;
-
-	config = config_create(path);
-
+	t_config* config = config_create(path);
+	if (config == NULL) {
+		mostrar_mensaje_para_finalizar("No se pudo abrir el archivo de configuracion en ese path\n");
+		exit(EXIT_FAILURE);
+	}
 	return config;
+}
+
+void mostrar_mensaje_para_finalizar(char* mensaje) {
+	printf("%s\n", mensaje);
+	printf("Presiona Enter para finalizar.");
+	getchar();
 }

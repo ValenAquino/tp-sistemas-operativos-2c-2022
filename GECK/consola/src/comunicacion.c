@@ -1,6 +1,6 @@
 #include "../include/comunicacion.h"
 
-extern t_log* logger;
+extern t_log* logger_debug;
 extern int tiempo_pantalla;
 
 int manejar_comunicacion(void* void_args) {
@@ -15,7 +15,7 @@ int manejar_comunicacion(void* void_args) {
 
 		switch (cod_op) {
 		case FIN_POR_EXIT:
-			log_debug(logger,"FIN POR EXIT");
+			log_debug(logger_debug,"FIN POR EXIT");
 			return 0;
 
 		case OP_PANTALLA: {
@@ -24,7 +24,7 @@ int manejar_comunicacion(void* void_args) {
 			int pid = recibir_pid(cliente_socket);
 			
 			sleep(tiempo_pantalla/1000);
-			log_info(logger, "%d", valor);
+			log_info(logger_debug, "%d", valor);
 
 			enviar_codop(cliente_socket, RESPUESTA_PANTALLA);
 			enviar_registro(cliente_socket, reg);
@@ -40,7 +40,7 @@ int manejar_comunicacion(void* void_args) {
 
 			printf("Ingresar valor numerico: ");
 			scanf("%u", &valor);
-			log_debug(logger, "se leyo el valor: %u", valor);
+			log_debug(logger_debug, "se leyo el valor: %u", valor);
 			
 			enviar_codop(cliente_socket, RESPUESTA_TECLADO);
 			enviar_valor(cliente_socket, valor);
@@ -50,15 +50,15 @@ int manejar_comunicacion(void* void_args) {
 		}
 
 		case DEBUG:
-			log_debug(logger, "Estoy debuggeando!");
+			log_debug(logger_debug, "Estoy debuggeando!");
 			return 1;
 
 		case -1:
-			log_error(logger, "El cliente se desconecto. Terminando servidor");
+			log_error(logger_debug, "El cliente se desconecto. Terminando servidor");
 			return 0;
 
 		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			log_warning(logger_debug,"Operacion desconocida. No quieras meter la pata");
 			return 0;
 		}
 	}

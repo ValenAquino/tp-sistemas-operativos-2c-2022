@@ -42,6 +42,8 @@ void enviar_registro(int socket_conexion, uint32_t reg);
 void enviar_valor(int socket_conexion, uint32_t reg);
 void enviar_valor(int socket_conexion, uint32_t reg);
 
+void mostrar_mensaje_para_finalizar(char* mensaje);
+
 typedef enum {
 	FIFO,
 	RR,

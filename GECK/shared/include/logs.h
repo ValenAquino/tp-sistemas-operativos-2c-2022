@@ -6,6 +6,8 @@
 
 extern t_log* logger;
 
+void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug, int mostrar_logs);
+
 void log_list_inst(t_list*);
 void log_lista_seg(t_list*);
 void log_pcb(PCB*);

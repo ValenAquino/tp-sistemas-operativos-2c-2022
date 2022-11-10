@@ -1,5 +1,41 @@
 #include "../include/logs.h"
 
+void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug, int mostrar_logs) {
+	char* file_name_debug = malloc(sizeof(module_name) + sizeof("-debug.log"));
+	char* logger_debug_name = malloc(sizeof(module_name) + sizeof("-DEBUG"));
+	char* file_name = malloc(sizeof(module_name) + sizeof(".log"));
+
+	int mostrar_logs_tp;
+	int mostrar_logs_debug;
+
+	switch (mostrar_logs) { // 0 -> SOLO LOGS OBLIGATORIOS / 1 -> SOLO LOGS DEBUG Y OTRAS YERBAS / 2 -> AMBOS
+	case 0:
+		mostrar_logs_tp = 1;
+		mostrar_logs_debug = 0;
+		break;
+	case 1:
+		mostrar_logs_tp = 0;
+		mostrar_logs_debug = 1;
+		break;
+	case 2:
+	default:
+		mostrar_logs_tp = 1;
+		mostrar_logs_debug = 1;
+		break;
+	}
+
+	sprintf(file_name_debug, "%s-debug.log", module_name);
+	sprintf(logger_debug_name, "%s-DEBUG", module_name);
+	sprintf(file_name, "%s.log", module_name);
+
+	*logger_debug = log_create(file_name_debug, logger_debug_name, mostrar_logs_debug, LOG_LEVEL_TRACE);
+	*logger_prod = log_create(file_name, module_name, mostrar_logs_tp, LOG_LEVEL_INFO);
+
+	free(file_name_debug);
+	free(logger_debug_name);
+	free(file_name);
+}
+
 void log_list_inst(t_list* instrucciones) {
 	for(int i = 0; i < list_size(instrucciones); i++) {
 		ts_ins *inst = list_get(instrucciones, i);
