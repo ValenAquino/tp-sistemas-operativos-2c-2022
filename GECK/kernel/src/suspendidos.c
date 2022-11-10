@@ -37,7 +37,7 @@ void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket) {
 			
 	pasarABlock(pcb, dispo);
 
-	log_trace(logger, "SLEEP DE %d", tiempo_de_suspension);
+	log_trace(logger_debug, "SLEEP DE %d", tiempo_de_suspension);
 	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension);
 }
 
@@ -46,7 +46,7 @@ void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket) {
 void op_teclado(int pid, reg_cpu reg, uint32_t valor) {
 	PCB* pcb = obtener_proceso_por_pid(pid, procesosBlock, mutex_block);
 
-	log_debug(logger, "[registro: %s, respuesta_teclado: [%d]", str_registro(reg), valor);
+	log_debug(logger_debug, "[registro: %s, respuesta_teclado: [%d]", str_registro(reg), valor);
 	
 	pcb->registros[reg] = valor;
 	
@@ -55,7 +55,7 @@ void op_teclado(int pid, reg_cpu reg, uint32_t valor) {
 
 void op_pantallla(int pid, reg_cpu reg) {
 	PCB* pcb = obtener_proceso_por_pid(pid, procesosBlock, mutex_block);
-	log_debug(logger, "registro: [%s] impreso por Proceso: <%d>", str_registro(reg), pcb->id);
+	log_debug(logger_debug, "registro: [%s] impreso por Proceso: <%d>", str_registro(reg), pcb->id);
 
 	pasarAReady(pcb);
 }

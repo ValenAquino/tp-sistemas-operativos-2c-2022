@@ -1,16 +1,10 @@
 #include "../include/configuracion.h"
 
-extern t_log* logger;
+extern t_log* logger_debug;
 
-t_configuracion_kernel* procesar_config(char *config_path) {
+t_configuracion_kernel* procesar_config(t_config *nuevo_config) {
 	char **listaDispositivos;
 	char **listaTiempos;
-	t_config* nuevo_config = config_create(config_path);
-
-	if (nuevo_config== NULL) {
-			log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
-			exit(EXIT_FAILURE);
-	}
 
 	char *ip_kernel = config_get_string_value(nuevo_config, "IP_KERNEL");                             // leo ip de kernel
 	char *ip_memoria = config_get_string_value(nuevo_config, "IP_MEMORIA");                           // leo ip de memoria
@@ -111,7 +105,7 @@ void test_read_config(t_configuracion_kernel* config) {
 	dispo2 = list_get(config->tiempos_io, 1);
 	
 	log_debug(
-		logger,
+		logger_debug,
 		"Leyendo de config: \n"
 		"IP_MEMORIA: %s \n"
 		"PUERTO_ESCUCHA: %s \n"

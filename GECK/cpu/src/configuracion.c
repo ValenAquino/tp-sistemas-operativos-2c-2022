@@ -1,13 +1,8 @@
 #include "../include/configuracion.h"
 
-extern t_log *logger;
+extern t_log *logger_debug;
 
-t_configuracion_cpu* procesar_config(char *config_path) {
-	t_config* config = config_create(config_path);
-	if (config== NULL) {
-		log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
-		exit(EXIT_FAILURE);
-	}
+t_configuracion_cpu* procesar_config(t_config* config) {
 
 	int entradas_tlb = config_get_int_value(config, "ENTRADAS_TLB");
 	int retardo_instruccion = config_get_int_value(config, "RETARDO_INSTRUCCION");
@@ -48,7 +43,7 @@ t_configuracion_cpu* procesar_config(char *config_path) {
 }
 
 void test_read_config(t_configuracion_cpu* config) {
-	log_debug(logger,"Leyendo de config: \n"
+	log_debug(logger_debug,"Leyendo de config: \n"
 			"ENTRADAS_TLB: %d \n"
 			"RETARDO_INSTRUCCION: %d \n"
 			"PUERTO_MEMORIA: %s \n"

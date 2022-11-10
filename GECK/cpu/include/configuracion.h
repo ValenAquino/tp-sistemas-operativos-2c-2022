@@ -19,7 +19,7 @@ typedef struct t_configuracion_cpu
     char *ip_cpu; // IP del servidor de CPU
 } t_configuracion_cpu;
 
-t_configuracion_cpu* procesar_config(char *);
+t_configuracion_cpu* procesar_config(t_config* config);
 void test_read_config(t_configuracion_cpu*);
 
 #endif /* CONFIGURACION_H_ */

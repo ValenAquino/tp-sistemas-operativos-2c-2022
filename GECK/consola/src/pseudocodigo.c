@@ -1,6 +1,6 @@
 #include "../include/pseudocodigo.h"
 
-extern t_log* logger;
+extern t_log* logger_debug;
 
 t_list* parsear_pseudocod(char* pseudo_path) {
 	ts_ins *inst;
@@ -8,7 +8,7 @@ t_list* parsear_pseudocod(char* pseudo_path) {
 	t_list* lista_inst = list_create();
 
 	if(f_pseudo == NULL) {
-		log_error(logger, "No se ha podido abrir el archivo de pseudocodigo");
+		log_error(logger_debug, "No se ha podido abrir el archivo de pseudocodigo");
 		exit(EXIT_FAILURE);
 	}
 
@@ -41,7 +41,7 @@ t_ins procesar_inst(char* inst) {
 	if(strcmp("EXIT", inst) == 0)
 		return EXIT;
 
-	log_error(logger, "la instruccion '%s' es incorrecta", inst);
+	log_error(logger_debug, "la instruccion '%s' es incorrecta", inst);
 	exit(EXIT_FAILURE);
 }
 
@@ -58,7 +58,7 @@ reg_cpu procesar_reg(char *reg) {
 	if(strcmp("DX", reg) == 0)
 		return DX;
 
-	log_error(logger, "el registro '%s' es incorrecto", reg);
+	log_error(logger_debug, "el registro '%s' es incorrecto", reg);
 	exit(EXIT_FAILURE);
 }
 
@@ -75,7 +75,7 @@ dispositivos procesar_dispositivo(char *disp) {
 	if(strcmp("IMPRESORA", disp) == 0)
 		return IMPRESORA;
 
-	log_error(logger, "el dispositivo '%s' es incorrecto", disp);
+	log_error(logger_debug, "el dispositivo '%s' es incorrecto", disp);
 	exit(EXIT_FAILURE);
 }
 
@@ -134,7 +134,7 @@ void leer_parametros(FILE **f_pseudo, ts_ins *inst) {
 		break;
 
 	default:
-		log_error(logger, "Se ha recibido una instruccion incorrecta");
+		log_error(logger_debug, "Se ha recibido una instruccion incorrecta");
 		exit(EXIT_FAILURE);
 		break;
 	}

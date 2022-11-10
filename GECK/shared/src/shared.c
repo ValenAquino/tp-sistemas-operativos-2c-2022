@@ -28,9 +28,29 @@ void liberar_conexion(int socket_cliente) {
 }
 
 t_config* abrir_configuracion(char* path) {
-	t_config* config;
-
-	config = config_create(path);
-
+	t_config* config = config_create(path);
+	if (config == NULL) {
+		mostrar_mensaje_para_finalizar("No se pudo abrir el archivo de configuracion en ese path\n");
+		exit(EXIT_FAILURE);
+	}
 	return config;
+}
+
+void mostrar_mensaje_para_finalizar(char* mensaje) {
+	printf("%s\n", mensaje);
+	printf("Presiona Enter para finalizar.");
+	getchar();
+}
+
+t_list *array_char_to_list_int(char **array) {
+	t_list *lista_segmentos = list_create();
+
+	for (int i = 0; array[i] != NULL; i++) {
+		int *entero = malloc(sizeof(int));
+		*entero = atoi(array[i]);
+
+		list_add(lista_segmentos, entero);
+	}
+
+	return lista_segmentos;
 }

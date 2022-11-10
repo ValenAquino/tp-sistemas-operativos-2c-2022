@@ -1,5 +1,6 @@
 #include "../include/comunicacion.h"
 extern t_log* logger;
+extern t_log* logger_debug;
 
 extern int FLAG_INTERRUPT;
 extern t_list* tiempos_io;
@@ -12,22 +13,22 @@ void manejar_comunicacion(void* void_args) {
 
 	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
-		log_trace(logger, "Esperando codigo de operacion [%s]", server_name);
+		log_trace(logger_debug, "Esperando codigo de operacion [%s]", server_name);
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
 		case DISPATCH_PCB:
-			log_trace(logger, "Recibiendo PCB");
+			log_trace(logger_debug, "Recibiendo PCB");
 			PCB* pcb = recibir_pcb(cliente_socket);
 			
 			restaurar_contexto_ejecucion(pcb->registros);
-			log_trace(logger, "Enviando PCB al ciclo de instruccion\n");
+			log_trace(logger_debug, "Enviando PCB al ciclo de instruccion\n");
 			ciclo_de_instruccion(pcb, cliente_socket);
-			log_trace(logger, "Ciclo de instruccion completado\n");
+			log_trace(logger_debug, "Ciclo de instruccion completado\n");
 			break;
 
 		case DEBUG:
-			log_debug(logger, "Estoy debuggeando!\n");
+			log_debug(logger_debug, "Estoy debuggeando!\n");
 			break;
 		
 		case INTERRUPT:
@@ -36,23 +37,23 @@ void manejar_comunicacion(void* void_args) {
 			break;
 
 		case -1:
-			log_error(logger, "El cliente se desconecto. Terminando servidor [%s]", server_name);
+			log_error(logger_debug, "El cliente se desconecto. Terminando servidor [%s]", server_name);
 			// close(cliente_socket);
 			// exit(EXIT_FAILURE);
 			return;
 
 		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			log_warning(logger_debug,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
 
-	log_warning(logger, "El cliente se desconecto de %s server", server_name);
+	log_warning(logger_debug, "El cliente se desconecto de %s server", server_name);
 	return;
 }
 
 int server_escuchar(char* server_name, int server_socket) {
-    int cliente_socket = esperar_cliente(logger, server_name, server_socket);
+    int cliente_socket = esperar_cliente(logger_debug, server_name, server_socket);
 
     if (cliente_socket != -1) {
         pthread_t hilo;

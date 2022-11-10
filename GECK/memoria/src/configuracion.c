@@ -2,13 +2,7 @@
 
 extern t_log* logger;
 
-t_configuracion_memoria* procesar_config(char *config_path) {
-	t_config* config = config_create(config_path);
-	if (config == NULL) {
-		log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
-		exit(EXIT_FAILURE);
-	}
-
+t_configuracion_memoria* procesar_config(t_config* config) {
 	char *ip_memoria = config_get_string_value(config, "IP_MEMORIA");
 	char *puerto_escucha =  config_get_string_value(config, "PUERTO_ESCUCHA");
 	int  tam_memoria = config_get_int_value(config, "TAM_MEMORIA");

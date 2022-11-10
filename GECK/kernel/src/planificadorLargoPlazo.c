@@ -1,6 +1,8 @@
 #include "../include/planificadorLargoPlazo.h"
 
 extern t_log* logger;
+extern t_log* logger_debug;
+
 extern t_configuracion_kernel *config;
 
 extern t_list* procesosNew;
@@ -28,7 +30,7 @@ void planificador_largo_plazo() {
 
 void pasarANew(PCB* pcb) {
 	list_add(procesosNew, pcb);
-	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
+	log_info(logger_debug, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
 	sem_post(&sem_proceso_nuevo);
 }
@@ -64,7 +66,7 @@ void pasarAReady(PCB* pcb) {
 	sem_wait(&mutex_ready);
 
 	log_trace(
-		logger, 
+		logger_debug,
 		"procesos ready: %d, grado multi: %d", 
 		list_size(procesosReady), config->grado_max_multiprogramacion
 	);

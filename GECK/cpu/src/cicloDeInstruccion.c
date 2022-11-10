@@ -1,6 +1,7 @@
 #include "../include/cicloDeInstruccion.h"
 
 extern t_log* logger;
+extern t_log* logger_debug;
 extern t_configuracion_cpu *config;
 extern int FLAG_INTERRUPT;
 extern t_list* tiempos_io;
@@ -59,20 +60,20 @@ void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
 }
 
 ts_ins *fetch(PCB* pcb) {
-	log_trace(logger, "FETCH");
+	log_trace(logger_debug, "FETCH");
 
 	return list_get(pcb->instrucciones, pcb->programCounter);
 }
 
 ts_ins* decode(ts_ins* instruccion) { 
 	// No debería ser una funcion void?
-	log_trace(logger, "DECODE");
+	log_trace(logger_debug, "DECODE");
 	switch (instruccion->name) {
 		case SET:
 		case ADD:
-			log_trace(logger, "Ejecutando un retardo de instruccion de: %d ms", config->retardo_instruccion);
+			log_trace(logger_debug, "Ejecutando un retardo de instruccion de: %d ms", config->retardo_instruccion);
 			sleep(config->retardo_instruccion / 1000); // Sleep recibe tiempo en segundos
-			log_trace(logger, "FIN retardo de instruccion");
+			log_trace(logger_debug, "FIN retardo de instruccion");
 			return instruccion;
 		case MOV_IN:
 		case MOV_OUT:
@@ -87,7 +88,7 @@ ts_ins* decode(ts_ins* instruccion) {
 }
 
 void execute(ts_ins* instruccion, PCB *pcb) {
-	log_trace(logger, "EXECUTE");
+	log_trace(logger_debug, "EXECUTE");
 
 	log_info(
 		logger, 
@@ -172,7 +173,7 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
 
-	log_trace(logger, "ENVIANDO PCB A KERNEL POR I/O");
+	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O");
 	
 	switch(instruccion->param1){
 		case DISCO:
@@ -201,7 +202,7 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
 	
-	log_trace(logger, "ENVIANDO PCB A KERNEL POR EXIT");
+	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 	
 	free(pcb);
