@@ -33,6 +33,13 @@ void manejar_comunicacion(void* void_args) {
 			break;
 		}
 
+		case DESALOJO_QUANTUM: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+
+			log_info(logger, "PID: <%d> - Desalojado por fin de Quantum", pcb->id);
+			pasarAReady(pcb);
+			break;
+		}
 		case OP_DISCO: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			manejar_suspension_por(DISCO, pcb, cliente_socket);
@@ -90,46 +97,34 @@ void manejar_comunicacion(void* void_args) {
 		}
 
 		case DEBUG:
-			log_debug(logger, "Estoy debuggeando!");
+			log_debug(logger_debug, "Estoy debuggeando!");
 			break;
 
 		case DESCONEXION_CONTROLADA:
-			log_info(logger, "El cliente se desconecto de manera esperada");
+			log_info(logger_debug, "El cliente se desconecto de manera esperada");
 			close(cliente_socket);
 			return;
 
 		case -1:
-			log_error(logger, "El cliente se desconecto. Terminando servidor");
+			log_error(logger_debug, "El cliente se desconecto. Terminando servidor");
 			return;
 
 		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			log_warning(logger_debug,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
 
-	log_warning(logger, "El cliente se desconecto de %s server", server_name);
+	log_warning(logger_debug, "El cliente se desconecto de %s server", server_name);
 	return;
 }
 
-int server_escuchar(char* server_name, int server_socket) {
-    int cliente_socket = esperar_cliente(logger, server_name, server_socket);
-
-    if (cliente_socket != -1) {
-        pthread_t hilo;
-        t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
-        args->fd = cliente_socket;
-        args->server_name = server_name;
-        pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
-        pthread_detach(hilo);
-        return 1;
-    }
-
-    return 0;
+int server_kernel(char* server_name, int server_socket) {
+    return server_escuchar(logger_debug, server_name, server_socket, manejar_comunicacion);
 }
 
 int conectar_con(char *servername, char *ip, char *puerto) {
-	log_info(logger, "Iniciando conexion con %s - Puerto: %s - IP: %s", ip, puerto, servername);
+	log_info(logger_debug, "Iniciando conexion con %s - Puerto: %s - IP: %s", ip, puerto, servername);
 
 	int file_descriptor = crear_conexion(ip, puerto);
 

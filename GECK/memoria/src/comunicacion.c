@@ -32,18 +32,6 @@ void manejar_comunicacion(void* void_args) {
 	    return;
 }
 
-int server_escuchar(char* server_name, int server_socket) {
-    int cliente_socket = esperar_cliente(logger_debug, server_name, server_socket);
-
-    if (cliente_socket != -1) {
-        pthread_t hilo;
-        t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
-        args->fd = cliente_socket;
-        args->server_name = server_name;
-        pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
-        pthread_detach(hilo);
-        return 1;
-    }
-
-    return 0;
+int server_memoria(char* server_name, int server_socket) {
+	return server_escuchar(logger_debug, server_name, server_socket, manejar_comunicacion);
 }

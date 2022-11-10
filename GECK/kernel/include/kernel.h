@@ -24,10 +24,15 @@
 
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
+
+void hilo_cpu_interrupt();
 void hilo_escucha_dispatch();
 
 void hilo_planificador_corto_plazo();
 void hilo_planificador_largo_plazo();
+
+void hilo_quantum_rr();
+void fin_de_quantum();
 
 PCB* recibir_pcb_de_cpu(int cliente_socket);
 

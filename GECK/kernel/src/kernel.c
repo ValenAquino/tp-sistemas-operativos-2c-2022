@@ -6,6 +6,7 @@ t_log* logger_debug;
 t_configuracion_kernel *config;
 
 int cpu_dispatch_fd;
+int cpu_interrupt_fd;
 
 t_list* procesosNew;
 t_list* procesosReady;
@@ -26,7 +27,7 @@ int main() {
 
 	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
 
-	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
+	hilo_cpu_interrupt();
 	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 	
@@ -37,7 +38,11 @@ int main() {
 	hilo_planificador_largo_plazo();
 	hilo_planificador_corto_plazo();
 
-	while (server_escuchar(SERVERNAME, server_fd));
+	// TODO: Chequear el momento indicado para empezar a correrlo
+	// Talvez solo si la config tiene este algoritmo para planificar.
+	hilo_quantum_rr();
+
+	while (server_kernel(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
 }
 
@@ -52,6 +57,21 @@ void hilo_planificador_corto_plazo() {
 	pthread_t hilo;
 
 	pthread_create(&hilo, NULL, (void*) planificador_corto_plazo, NULL);
+	pthread_detach(hilo);
+}
+
+void hilo_cpu_interrupt() {
+	pthread_t hilo;
+
+	cpu_interrupt_fd = conectar_con(
+		"CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt
+	);
+
+	t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
+	args->fd = cpu_interrupt_fd;
+	args->server_name = "CPU - Interrupt";
+
+	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
 	pthread_detach(hilo);
 }
 
@@ -70,6 +90,19 @@ void hilo_escucha_dispatch() {
 	pthread_detach(hilo);
 }
 
+void hilo_quantum_rr() {
+	pthread_t hilo;
+
+	pthread_create(&hilo, NULL, (void*) fin_de_quantum, (void*) NULL);
+	pthread_detach(hilo);
+}
+
+void fin_de_quantum() {
+	while(1) {
+		sleep(config->quantum_rr / 1000);
+		enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
+	}
+}
 
 PCB* recibir_pcb_de_cpu(int cliente_socket) {
 	PCB* pcb = recibir_pcb(cliente_socket);

@@ -8,7 +8,7 @@ int main() {
 	iniciar_memoria();
 	int memoria_fd = crear_conexion(config->ip_memoria, config->puerto_escucha);
 
-	while (server_escuchar(SERVERNAME, memoria_fd));
+	while (server_memoria(SERVERNAME, memoria_fd));
 
 	return EXIT_SUCCESS;
 }

@@ -9,6 +9,6 @@
 #include <shared.h>
 
 void manejar_comunicacion(void* void_args);
-int server_escuchar(char* server_name, int server_socket);
+int server_memoria(char* server_name, int server_socket);
 
 #endif /* COMUNICACION_H_ */

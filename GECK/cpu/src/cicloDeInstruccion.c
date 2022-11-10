@@ -4,6 +4,8 @@ extern t_log* logger;
 extern t_log* logger_debug;
 extern t_configuracion_cpu *config;
 extern int FLAG_INTERRUPT;
+extern int FLAG_FIN_QUANTUM;
+
 extern t_list* tiempos_io;
 
 // Anotacion:
@@ -220,11 +222,21 @@ int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
 }
 
 void check_interrupt(PCB* pcb) {
-	log_trace(logger, "CHECK INTERRUPT\n\n");
+	log_trace(logger_debug, "CHECK INTERRUPT\n\n");
 
-	if(FLAG_INTERRUPT) {
+	if (FLAG_FIN_QUANTUM) {
+		FLAG_FIN_QUANTUM = 0;
+		actualizar_pcb(pcb);
+		enviar_pcb(pcb, kernel_fd, DESALOJO_QUANTUM);
+		se_devolvio_pcb = true;
+		return;
+	}
+
+	if (FLAG_INTERRUPT) {
+		FLAG_INTERRUPT = 0;
 		actualizar_pcb(pcb);
 		enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
+		se_devolvio_pcb = true;
 		return;
 	}
 }
