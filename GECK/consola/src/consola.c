@@ -1,8 +1,8 @@
 #include "../include/consola.h"
 
 t_log* logger;
-
-// TODO enviar los mensajes a kernel
+t_log* logger_debug;
+int tiempo_pantalla;
 
 int main(int argc, char** argv) {
 	char* config_path;
@@ -10,26 +10,29 @@ int main(int argc, char** argv) {
 	t_config* config;
 	t_list *lista_inst;
 	t_list *lista_segmentos;
-	int tiempo_pantalla;
 	int kernel_fd;
 
 	// Level trace para que hagamos logs debugs y trace
 	// Así los logs minimos quedan al level info
-	logger = log_create("Consola.log", "logger", true, LOG_LEVEL_TRACE);
-
+	//	logger = log_create("Consola.log", "logger", true, LOG_LEVEL_TRACE);
 	if (argc < 3) {
-		log_error(logger, "Se necesitan mas argumentos para inicializar correctamente la consola");
+		mostrar_mensaje_para_finalizar("Se necesitan mas argumentos para inicializar correctamente la consola");
 		return EXIT_FAILURE;
 	}
 
 	config_path = argv[1];
 	pseudo_path = argv[2];
 
-	log_debug(logger, "config: %s", config_path);
-	log_debug(logger, "pseudo: %s", pseudo_path);
+	config = abrir_configuracion(config_path);
+	crear_loggers("consola", &logger, &logger_debug, config);
 
-	lista_inst = parsear_pseudocod(pseudo_path);	
-	config = procesar_config(config_path, &lista_segmentos, &tiempo_pantalla);
+	log_debug(logger_debug, "config: %s", config_path);
+	log_debug(logger_debug, "pseudo: %s", pseudo_path);
+
+	lista_inst = parsear_pseudocod(pseudo_path);
+
+	procesar_config(config, &lista_segmentos, &tiempo_pantalla);
+
 	kernel_fd = connect_to_kernel(config);
 
 	// TODO agregar logs para trackear que va pasando
@@ -39,57 +42,36 @@ int main(int argc, char** argv) {
 	comunicacion_args->fd = kernel_fd;
 	comunicacion_args->server_name = "CONSOLA - KERNEL";
 
-	while(manejar_comunicacion(comunicacion_args))
+	while(manejar_comunicacion(comunicacion_args));
 
-	return liberar_memoria(logger, kernel_fd, config);
+	return liberar_memoria(logger, logger_debug, kernel_fd, config);
 }
 
-t_list *char_to_int(char **segmentos) {
-	t_list *lista_segmentos = list_create();
-
-	for (int i = 0; segmentos[i] != NULL; i++) {
-		int *seg = malloc(sizeof(int));
-		*seg = atoi(segmentos[i]);
-		
-		list_add(lista_segmentos, seg);
-	}
-
-	return lista_segmentos;
-}
-
-t_config* procesar_config(char *config_path, t_list **lista_segmentos, int* tiempo_pantalla) {
+void procesar_config(t_config* config, t_list **lista_segmentos, int* tiempo_pantalla) {
 	char **segmentos;
-	t_config* config = config_create(config_path);
-
-	if (config== NULL) {
-		log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
-		exit(EXIT_FAILURE);
-	}
 
 	*tiempo_pantalla = config_get_int_value(config, "TIEMPO_PANTALLA");
 	segmentos = config_get_array_value(config, "SEGMENTOS");
 
-	*lista_segmentos = char_to_int(segmentos);
+	*lista_segmentos = array_char_to_list_int(segmentos);
 
-	log_info(logger, "tiempo_pantalla: %d", *tiempo_pantalla);
-
-	return config;
+	log_info(logger_debug, "tiempo_pantalla: %d", *tiempo_pantalla);
 }
 
 int connect_to_kernel(t_config* config) {
 	char* ip = config_get_string_value(config, "IP_KERNEL");
 	char* puerto = config_get_string_value(config, "PUERTO_KERNEL");
 
-	log_info(logger, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
+	log_info(logger_debug, "Iniciando conexion con el Kernel - Puerto: %s - IP: %s", ip, puerto);
 	int kernel_fd = crear_conexion(ip, puerto);
 
 	if(kernel_fd == -1) {
-		log_error(logger, "No se ha podido iniciar la conexion con el kernel");
+		log_error(logger_debug, "No se ha podido iniciar la conexion con el kernel");
 		exit(EXIT_FAILURE);
 	}
 
 	send_debug(kernel_fd);
-	log_debug(logger, "kernel file descriptor: %d", kernel_fd);
+	log_debug(logger_debug, "kernel file descriptor: %d", kernel_fd);
 
 	return kernel_fd;
 }
@@ -100,8 +82,8 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
 	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
-	log_list_inst(lista_inst);
-	log_lista_seg(lista_segmentos);
+	// log_list_inst(lista_inst);
+	// log_lista_seg(lista_segmentos);
 	
 	void *ins = serializar_lista_ins(lista_inst, size_ins);
 	void *seg = serializar_lista_seg(lista_segmentos, size_seg);
@@ -113,9 +95,11 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	eliminar_paquete(paquete);
 }
 
-int liberar_memoria(t_log* logg, int fd, t_config* config) {
+int liberar_memoria(t_log* logger_debug, t_log* logger, int fd, t_config* config) {
+	log_trace(logger, "Finalizando consola");
 	liberar_conexion(fd);
 	config_destroy(config);
-	log_destroy(logg);
+	log_destroy(logger_debug);
+	log_destroy(logger);
 	return EXIT_SUCCESS;
 }

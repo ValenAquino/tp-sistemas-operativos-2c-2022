@@ -7,14 +7,20 @@
 #include <commons/collections/list.h>
 #include <commons/log.h>
 #include <stdint.h>
+#include <semaphore.h>
+
+typedef enum  {
+	NEW_STATE,
+	READY_STATE,
+	EXEC_STATE,
+	BLOCK_STATE,
+	EXIT_STATE
+} t_estado_proceso;
 
 typedef struct PCB
 {
-	// TODO: Descomentar la linea de abajo y tener en cuenta
-	// que haciendo eso, tambien hay que modificar la serializacion
-	// y deserializacion.
-	//int socket_consola;
-	// TODO: Agregar estado del proceso.
+	int socket_consola;
+	t_estado_proceso estado_actual;
     int id;
     int programCounter;
     uint32_t registros[4];
@@ -22,6 +28,7 @@ typedef struct PCB
     t_list* tablaSegmentos; //lo resuelve memoria a peticion del kernel
 }PCB;
 
-PCB* nuevoPcb(int id,  t_list* instr, t_list* tablaSegmentos);
+PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos);
+PCB* obtener_proceso_por_pid(int pid, t_list* lista, sem_t mutex);
 
 #endif /* PCB_H_ */

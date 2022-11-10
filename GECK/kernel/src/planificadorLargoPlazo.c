@@ -1,6 +1,8 @@
 #include "../include/planificadorLargoPlazo.h"
 
 extern t_log* logger;
+extern t_log* logger_debug;
+
 extern t_configuracion_kernel *config;
 
 extern t_list* procesosNew;
@@ -9,11 +11,28 @@ extern t_list* procesosExit;
 
 extern int cpu_dispatch_fd;
 
-void nuevoProceso(PCB* pcb) {
-	list_add(procesosNew, pcb);
-	log_info(logger, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
+extern sem_t sem_procesos_ready;
+extern sem_t sem_proceso_nuevo;
+extern sem_t mutex_ready;
+extern sem_t planificar;
 
-	pasarAReady();
+void planificador_largo_plazo() {
+
+	while(1) {
+		sem_wait(&sem_proceso_nuevo);
+		sem_wait(&sem_procesos_ready);
+		PCB* pcb = list_remove(procesosNew, 0);
+		pasarAReady(pcb);
+	}
+
+	return;
+}
+
+void pasarANew(PCB* pcb) {
+	list_add(procesosNew, pcb);
+	log_info(logger_debug, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
+
+	sem_post(&sem_proceso_nuevo);
 }
 
 void imprimir_ready() {
@@ -29,36 +48,43 @@ void imprimir_ready() {
 	PCB *pcb = list_get(procesosReady, size-1);
 	string_append(&pids, string_itoa(pcb->id));
 
-	log_info(logger, "Cola Ready <%s>: [%s]", str([config->algoritmo_planificacion]), pids);
+	log_info(
+		logger, 
+		"Cola Ready <%s>: [%s]", 
+		str_algoritmo(config->algoritmo_planificacion), pids
+	);
+
 	free(pids);
 }
 
 void dispatch_pcb(PCB* pcb) {
-	// desencolar por id
-	enviar_pcb(pcb, cpu_dispatch_fd);
-	//free(pcb);
-	// algo mas?
+	enviar_pcb(pcb, cpu_dispatch_fd, DISPATCH_PCB);
+	free(pcb);
 }
 
-void pasarAReady() {
-	log_trace(logger, "procesos ready: %d, grado multi: %d", list_size(procesosReady), config->grado_max_multiprogramacion);
+void pasarAReady(PCB* pcb) {
+	sem_wait(&mutex_ready);
 
-	if(list_size(procesosReady) < config->grado_max_multiprogramacion) {
-		PCB* pcb = list_remove(procesosNew, 0);
-		list_add(procesosReady, pcb);
-		log_info(logger, "PID: <%d> - Estado Anterior: <NEW> - Estado Actual: <READY>", pcb->id);
-		imprimir_ready();
-	}
+	log_trace(
+		logger_debug,
+		"procesos ready: %d, grado multi: %d", 
+		list_size(procesosReady), config->grado_max_multiprogramacion
+	);
+
+	list_add(procesosReady, pcb);
+	imprimir_ready();
+
+	sem_post(&mutex_ready);
+
+	log_cambio_de_estado(pcb->id, pcb->estado_actual, READY_STATE);
+	pcb->estado_actual = READY_STATE;
+	sem_post(&planificar);
 }
 
-void pasarAExit(PCB* pcb, int cliente_socket) {
-	enviar_codop(cliente_socket, FIN_POR_EXIT);
+void pasarAExit(PCB* pcb) {
+	pcb->estado_actual = EXIT_STATE;
+	log_cambio_de_estado(pcb->id, EXEC_STATE, EXIT_STATE);
+	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
 	list_add(procesosExit, pcb);
+	free(pcb); // lo estamos enlistando y liberando, perdemos ese espacio de memoria
 }
-
-/*
-void finalizarProceso(int processId) {
-	PCB* proceso = list_find(procesosNew, )
-	list_remove(procesosNew, proceso );
-}
-*/

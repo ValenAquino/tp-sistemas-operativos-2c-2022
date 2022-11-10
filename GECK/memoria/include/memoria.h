@@ -14,6 +14,7 @@
 #include <commons/log.h>
 #include <servidor.h>
 #include <shared.h>
+#include <logs.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"

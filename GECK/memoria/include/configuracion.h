@@ -29,7 +29,7 @@ typedef struct t_configuracion_memoria
     int tamanio_swap; //Tamaño del archivo de SWAP.
 } t_configuracion_memoria;
 
-t_configuracion_memoria* procesar_config(char *);
+t_configuracion_memoria* procesar_config(t_config* config);
 void test_read_config(t_configuracion_memoria*);
 
 #endif /* CONFIGURACION_H_ */

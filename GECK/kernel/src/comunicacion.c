@@ -1,8 +1,14 @@
 #include "../include/comunicacion.h"
 
 extern t_log* logger;
-//extern t_list* procesosNew; //seria una cola
+extern t_log* logger_debug;
+extern t_configuracion_kernel* config;
+
+extern sem_t mutex_block;
+extern sem_t planificar;
+
 int proccess_counter = 0;
+uint32_t respuesta_teclado;
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -15,75 +21,87 @@ void manejar_comunicacion(void* void_args) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
-		case ELEMENTOS_CONSOLA:
-			t_list *listas = recibir_paquete(cliente_socket);
-
-			void* ins = list_get(listas, 0);
-			void* seg = list_get(listas, 1);
-
-			t_list *lista_ins = deserializar_lista_inst(ins);
-			t_list *lista_segm = deserializar_lista_segm(seg);
-
-			PCB *pcb = nuevoPcb(proccess_counter, lista_ins, lista_segm);
-			proccess_counter++;
-
-			log_list_inst(pcb->instrucciones);
-			log_lista_seg(pcb->tablaSegmentos);
-
-			nuevoProceso(pcb);
-			dispatch_pcb(pcb); // PRUEBA
-
+		case ELEMENTOS_CONSOLA: // unico case en el que entra consola
+			PCB *pcb = crear_pcb(cliente_socket);
+			pasarANew(pcb);
 			break;
-		case DISPATCH_PCB: {
-			t_list *listas = recibir_paquete(cliente_socket);
-
-			void* datos = list_get(listas, 0);
-			void* inst  = list_get(listas, 1);
-			void* segm  = list_get(listas, 2);
-
-			log_trace(logger, "size list: %d", list_size(listas));
-			list_destroy(listas);
-			
-			PCB* pcb = deserializar_pcb(datos, inst, segm);
-
-			log_pcb(pcb);
-			
-			free(datos);
-			free(inst);
-			free(segm);
-			free(pcb);
-
+	
+		case FIN_POR_EXIT: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			//log_pcb(pcb);
+			pasarAExit(pcb);
 			break;
 		}
-		case MANEJAR_EXIT: {
-			// TODO: Actualmente cliente_socket es el file descriptor de la CPU
-			// Necesitamos para este caso el socket de la consola para avisarle
-			// que tiene que terminar el proceso.
-			t_list *listas = recibir_paquete(cliente_socket);
 
-			void* datos = list_get(listas, 0);
-			void* inst  = list_get(listas, 1);
-			void* segm  = list_get(listas, 2);
-
-			log_trace(logger, "size list: %d", list_size(listas));
-			list_destroy(listas);
-
-			PCB* pcb = deserializar_pcb(datos, inst, segm);
-
-			pasarAExit(pcb, cliente_socket);
-
-			free(datos);
-			free(inst);
-			free(segm);
-			// Aca no se hace el free del pcb porque en pasarAExit se usa.
+		case OP_DISCO: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			manejar_suspension_por(DISCO, pcb, cliente_socket);
 			break;
 		}
+
+		case OP_IMPRESORA: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			manejar_suspension_por(IMPRESORA, pcb, cliente_socket);
+			break;
+		}
+
+		case OP_PANTALLA: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			uint32_t reg = recibir_registro(cliente_socket);
+
+			enviar_codop(pcb->socket_consola, OP_PANTALLA);
+			
+			enviar_valor(pcb->socket_consola, pcb->registros[reg]);
+			enviar_registro(pcb->socket_consola, reg);
+			enviar_pid(pcb->socket_consola, pcb->id);
+			
+			pasarABlock(pcb, PANTALLA);
+			break;
+		}
+
+		case OP_TECLADO: {
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			reg_cpu reg = recibir_registro(cliente_socket);
+			
+			enviar_codop(pcb->socket_consola, OP_TECLADO);
+			
+			enviar_registro(pcb->socket_consola, reg);
+			enviar_pid(pcb->socket_consola, pcb->id);
+			
+			pasarABlock(pcb, TECLADO);
+			break;
+		}
+
+		case RESPUESTA_PANTALLA: {
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			op_pantallla(pid, reg);
+			break;
+	    }
+
+		case RESPUESTA_TECLADO: {
+			uint32_t valor = recibir_valor(cliente_socket);
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			op_teclado(pid, reg, valor);
+			break;
+		}
+
 		case DEBUG:
 			log_debug(logger, "Estoy debuggeando!");
 			break;
+
+		case DESCONEXION_CONTROLADA:
+			log_info(logger, "El cliente se desconecto de manera esperada");
+			close(cliente_socket);
+			return;
+
 		case -1:
 			log_error(logger, "El cliente se desconecto. Terminando servidor");
 			return;
+
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
@@ -121,4 +139,20 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 	}
 
 	return file_descriptor;
+}
+
+PCB* crear_pcb(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	void* ins = list_get(listas, 0);
+	void* seg = list_get(listas, 1);
+
+	t_list *lista_ins = deserializar_lista_inst(ins);
+	t_list *lista_segm = deserializar_lista_segm(seg);
+
+	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
+	
+	proccess_counter++;
+
+	return pcb;
 }

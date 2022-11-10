@@ -14,41 +14,21 @@
 #include <commons/log.h>
 #include <servidor.h>
 #include <shared.h>
+#include <semaphore.h>
+#include <paquetes.h>
 
 #include "comunicacion.h"
+#include "configuracion.h"
 
 #define SERVERNAME "KERNEL_SERVER"
 
-typedef enum {
-	FIFO,
-	RR,
-	FEEDBACK
-} t_algoritmo_planificacion;
-
-
-
-typedef struct t_configuracion_kernel
-{
-    char *ip_memoria;
-    char *ip_kernel;
-    char *puerto_memoria;
-    char *ip_cpu;
-    char *puerto_cpu_dispatch;
-    char *puerto_cpu_interrupt;
-    char *puerto_kernel;
-    char *puerto_escucha;
-    t_algoritmo_planificacion algoritmo_planificacion;
-    int grado_max_multiprogramacion;
-    int quantum_rr;
-    char **dispositivos_io;
-    char **tiempos_io;
-} t_configuracion_kernel;
-
-t_configuracion_kernel* procesar_config(char *);
-t_algoritmo_planificacion procesar_algoritmo(char* algoritmo);
-
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
+void hilo_escucha_dispatch();
 
+void hilo_planificador_corto_plazo();
+void hilo_planificador_largo_plazo();
+
+PCB* recibir_pcb_de_cpu(int cliente_socket);
 
 #endif /* KERNEL_MAIN_H_ */

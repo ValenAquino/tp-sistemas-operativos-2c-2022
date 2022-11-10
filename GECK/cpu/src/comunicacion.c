@@ -1,5 +1,9 @@
 #include "../include/comunicacion.h"
 extern t_log* logger;
+extern t_log* logger_debug;
+
+extern int FLAG_INTERRUPT;
+extern t_list* tiempos_io;
 
 void manejar_comunicacion(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -9,53 +13,47 @@ void manejar_comunicacion(void* void_args) {
 
 	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
+		log_trace(logger_debug, "Esperando codigo de operacion [%s]", server_name);
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
 		case DISPATCH_PCB:
-			t_list *listas = recibir_paquete(cliente_socket);
-
-			void* datos = list_get(listas, 0);
-			void* inst  = list_get(listas, 1);
-			void* segm  = list_get(listas, 2);
-
-			log_trace(logger, "size list: %d", list_size(listas));
-			list_destroy(listas);
+			log_trace(logger_debug, "Recibiendo PCB");
+			PCB* pcb = recibir_pcb(cliente_socket);
 			
-			PCB* pcb = deserializar_pcb(datos, inst, segm);
-			log_pcb(pcb);
-			
-		    pcb->registros[0] = 12;
-			pcb->registros[1] = 34;
-			pcb->registros[2] = 56;
-			pcb->registros[3] = 78;
-
-			enviar_pcb(pcb, cliente_socket);
-
-			free(datos);
-			free(inst);
-			free(segm);
-			free(pcb);
-			
+			restaurar_contexto_ejecucion(pcb->registros);
+			log_trace(logger_debug, "Enviando PCB al ciclo de instruccion\n");
+			ciclo_de_instruccion(pcb, cliente_socket);
+			log_trace(logger_debug, "Ciclo de instruccion completado\n");
 			break;
+
 		case DEBUG:
-			log_debug(logger, "Estoy debuggeando!");
+			log_debug(logger_debug, "Estoy debuggeando!\n");
 			break;
+		
+		case INTERRUPT:
+			FLAG_INTERRUPT = 1;
+			//manejar_interrupcion();
+			break;
+
 		case -1:
-			log_error(logger, "El cliente se desconecto. Terminando servidor");
+			log_error(logger_debug, "El cliente se desconecto. Terminando servidor [%s]", server_name);
+			// close(cliente_socket);
+			// exit(EXIT_FAILURE);
 			return;
+
 		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			log_warning(logger_debug,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
 
-	log_warning(logger, "El cliente se desconecto de %s server", server_name);
+	log_warning(logger_debug, "El cliente se desconecto de %s server", server_name);
 	return;
 }
 
 int server_escuchar(char* server_name, int server_socket) {
-    int cliente_socket = esperar_cliente(logger, server_name, server_socket);
+    int cliente_socket = esperar_cliente(logger_debug, server_name, server_socket);
 
     if (cliente_socket != -1) {
         pthread_t hilo;

@@ -1,28 +1,25 @@
 #include "../include/kernel.h"
 
 t_log* logger;
+t_log* logger_debug;
+
+t_configuracion_kernel *config;
+
+int cpu_dispatch_fd;
+
 t_list* procesosNew;
 t_list* procesosReady;
+t_list* procesosBlock;
 t_list* procesosExit;
-t_configuracion_kernel *config;
 	
-int cpu_dispatch_fd; // PROBANDO ENVIOS A CPU
+sem_t sem_procesos_ready;
+sem_t sem_proceso_nuevo;
 
+sem_t mutex_ready;
+sem_t mutex_block;
 
-void hilo_escucha_dispatch() {
-	pthread_t hilo;
-	
-	cpu_dispatch_fd = conectar_con(
-		"CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch
-	);
-	
-	t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
-	args->fd = cpu_dispatch_fd;
-	args->server_name = "CPU - Dispatch";
-	
-	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
-	pthread_detach(hilo);
-}
+sem_t planificar;
+sem_t cpu_idle;
 
 int main() {
 	inicializar_kernel();
@@ -32,97 +29,78 @@ int main() {
 	int cpu_interrupt_fd = conectar_con("CPU (interrupt)", config->ip_cpu, config->puerto_cpu_interrupt);
 	hilo_escucha_dispatch();
 	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
-
+	
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);
 
+	hilo_planificador_largo_plazo();
+	hilo_planificador_corto_plazo();
 
 	while (server_escuchar(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
 }
 
+void hilo_planificador_largo_plazo() {
+	pthread_t hilo;
+
+	pthread_create(&hilo, NULL, (void*) planificador_largo_plazo, NULL);
+	pthread_detach(hilo);
+}
+
+void hilo_planificador_corto_plazo() {
+	pthread_t hilo;
+
+	pthread_create(&hilo, NULL, (void*) planificador_corto_plazo, NULL);
+	pthread_detach(hilo);
+}
+
+void hilo_escucha_dispatch() {
+	pthread_t hilo;
+
+	cpu_dispatch_fd = conectar_con(
+		"CPU (dispatch)", config->ip_cpu, config->puerto_cpu_dispatch
+	);
+
+	t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
+	args->fd = cpu_dispatch_fd;
+	args->server_name = "CPU - Dispatch";
+
+	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
+	pthread_detach(hilo);
+}
+
+
+PCB* recibir_pcb_de_cpu(int cliente_socket) {
+	PCB* pcb = recibir_pcb(cliente_socket);
+	sem_post(&cpu_idle);
+	return pcb;
+}
+
+
 int iniciar_servidor_kernel(char* ip, char* puerto) {
-	int server_fd = iniciar_servidor(logger, SERVERNAME, ip, puerto);
-
-	log_info(logger, "Kernel listo para recibir al cliente");
-
+	int server_fd = iniciar_servidor(logger_debug, SERVERNAME, ip, puerto);
+	log_info(logger_debug, "Kernel listo para recibir al cliente");
 	return server_fd;
 }
 
 void inicializar_kernel() {
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_DEBUG);
-	config = procesar_config("kernel.config");
+	t_config *config_file = abrir_configuracion("kernel.config");
+	crear_loggers("kernel", &logger, &logger_debug, config_file);
+	config = procesar_config(config_file);
+
+	test_read_config(config);
+
+	// Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
+	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion);
+	sem_init(&sem_proceso_nuevo, 0, 0);
+	sem_init(&mutex_ready, 1, 1);
+	sem_init(&planificar, 1, 0);
+	sem_init(&cpu_idle, 1, 1);
+	sem_init(&mutex_block, 1, 1);
+
 	procesosNew = list_create();
 	procesosReady = list_create();
 	procesosExit = list_create();
+	procesosBlock = list_create();
 }
-
-t_configuracion_kernel* procesar_config(char *config_path) {
-	char **listaDispositivos;
-	char **listaTiempos;
-	t_config* nuevo_config = config_create(config_path);
-
-	if (nuevo_config== NULL) {
-			log_error(logger, "No se pudo abrir el archivo de configuracion en ese path");
-			exit(EXIT_FAILURE);
-	}
-
-	char *ip_kernel = config_get_string_value(nuevo_config, "IP_KERNEL");                           // leo ip de kernel
-	char *ip_memoria = config_get_string_value(nuevo_config, "IP_MEMORIA");                           // leo ip de memoria
-	char *puerto_memoria = config_get_string_value(nuevo_config, "PUERTO_MEMORIA");                   // leo puerto
-	char *ip_cpu = config_get_string_value(nuevo_config, "IP_CPU");                                   // leo ip de cpu
-	char *puerto_kernel = config_get_string_value(nuevo_config, "PUERTO_KERNEL");                           // leo ip de kernel
-	char *puerto_cpu_dispatch = config_get_string_value(nuevo_config, "PUERTO_CPU_DISPATCH");         // leo puerto de cpu dispatch
-	char *puerto_cpu_interrupt = config_get_string_value(nuevo_config, "PUERTO_CPU_INTERRUPT");       // leo puerto de cpu interrupt
-	char *puerto_escucha = config_get_string_value(nuevo_config, "PUERTO_ESCUCHA");                   // leo puerto de escucha
-
-	char *algoritmo_planificacion_str = config_get_string_value(nuevo_config, "ALGORITMO_PLANIFICACION"); // leo algoritmo de planificacion
-	t_algoritmo_planificacion algoritmo_planificacion = procesar_algoritmo(algoritmo_planificacion_str);
-
-	int grado_max_multiprogramacion = config_get_int_value(nuevo_config, "GRADO_MAX_MULTIPROGRAMACION"); // leo grado multiprogramacion
-	int quantum_rr = config_get_int_value(nuevo_config, "QUANTUM_RR"); // leo tiempo maximo bloqueado
-	listaDispositivos = config_get_array_value(nuevo_config, "DISPOSITIVOS_IO");
-	listaTiempos = config_get_array_value(nuevo_config, "TIEMPOS_IO");
-
-	t_configuracion_kernel *datos = malloc(sizeof(t_configuracion_kernel)); // creo estructura de datos de conexion
-	datos->ip_kernel = malloc(strlen(ip_kernel) + 1);
-	strcpy(datos->ip_kernel, ip_kernel);
-	datos->ip_memoria = malloc(strlen(ip_memoria) + 1);
-	strcpy(datos->ip_memoria, ip_memoria);
-	datos->puerto_memoria = malloc(strlen(puerto_memoria) + 1);
-	strcpy(datos->puerto_memoria, puerto_memoria);
-	datos->ip_cpu = malloc(strlen(ip_cpu) + 1);
-	strcpy(datos->ip_cpu, ip_cpu);
-	datos->puerto_cpu_dispatch = malloc(strlen(puerto_cpu_dispatch) + 1);
-	strcpy(datos->puerto_cpu_dispatch, puerto_cpu_dispatch);
-	datos->puerto_cpu_interrupt = malloc(strlen(puerto_cpu_interrupt) + 1);
-	strcpy(datos->puerto_cpu_interrupt, puerto_cpu_interrupt);
-	datos->puerto_kernel = malloc(strlen(puerto_kernel) + 1);
-	strcpy(datos->puerto_kernel, puerto_kernel);
-	datos->puerto_escucha = malloc(strlen(puerto_escucha) + 1);
-	strcpy(datos->puerto_escucha, puerto_escucha);
-	datos->algoritmo_planificacion = algoritmo_planificacion;
-	datos->grado_max_multiprogramacion = grado_max_multiprogramacion;
-	datos->quantum_rr = quantum_rr;
-	datos->dispositivos_io = listaDispositivos;
-	datos->tiempos_io = listaTiempos;
-
-	config_destroy(nuevo_config); // libero la memoria del config
-	return datos;
-}
-
-t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
-    if(strcmp("FIFO", algoritmo) == 0)
-        return FIFO;
-
-    if(strcmp("RR", algoritmo) == 0)
-        return RR;
-
-    if(strcmp("FEEDBACK", algoritmo) == 0)
-        return FEEDBACK;
-
-    log_error(logger, "El algoritmo '%s' es incorrecta", algoritmo);
-    exit(EXIT_FAILURE);
-}
-
