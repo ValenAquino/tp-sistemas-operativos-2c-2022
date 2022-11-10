@@ -1,6 +1,7 @@
 #include "../include/cpu.h"
 
 t_log* logger;
+t_log* logger_debug;
 t_configuracion_cpu *config;
 int FLAG_INTERRUPT;
 t_list* tiempos_io;
@@ -22,8 +23,11 @@ int main() {
 }
 
 void iniciar_cpu() {
-	logger = log_create("cpu.log", "CPU", 1, LOG_LEVEL_TRACE);
-	config = procesar_config("cpu.config");
+
+	t_config *config_file = abrir_configuracion("cpu.config");
+	int mostrar_logs = config_get_int_value(config_file, "MOSTRAR_LOGS");
+	crear_loggers("cpu", &logger, &logger_debug, mostrar_logs);
+	config = procesar_config(config_file);
 	test_read_config(config);
 }
 

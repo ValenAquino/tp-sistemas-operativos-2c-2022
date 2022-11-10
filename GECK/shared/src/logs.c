@@ -8,7 +8,8 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 	int mostrar_logs_tp;
 	int mostrar_logs_debug;
 
-	switch (mostrar_logs) { // 0 -> SOLO LOGS OBLIGATORIOS / 1 -> SOLO LOGS DEBUG Y OTRAS YERBAS / 2 -> AMBOS
+	// 0 -> SOLO LOGS OBLIGATORIOS / 1 -> SOLO LOGS DEBUG Y OTRAS YERBAS / 2 -> AMBOS / 3 -> NINGUNO
+	switch (mostrar_logs) {
 	case 0:
 		mostrar_logs_tp = 1;
 		mostrar_logs_debug = 0;
@@ -18,9 +19,13 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 		mostrar_logs_debug = 1;
 		break;
 	case 2:
-	default:
 		mostrar_logs_tp = 1;
 		mostrar_logs_debug = 1;
+		break;
+	case 3:
+	default:
+		mostrar_logs_tp = 0;
+		mostrar_logs_debug = 0;
 		break;
 	}
 
