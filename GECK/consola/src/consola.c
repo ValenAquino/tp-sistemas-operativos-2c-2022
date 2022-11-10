@@ -24,8 +24,7 @@ int main(int argc, char** argv) {
 	pseudo_path = argv[2];
 
 	config = abrir_configuracion(config_path);
-	int mostrar_logs = config_get_int_value(config, "MOSTRAR_LOGS");
-	crear_loggers("consola", &logger, &logger_debug, mostrar_logs);
+	crear_loggers("consola", &logger, &logger_debug, config);
 
 	log_debug(logger_debug, "config: %s", config_path);
 	log_debug(logger_debug, "pseudo: %s", pseudo_path);
@@ -48,26 +47,13 @@ int main(int argc, char** argv) {
 	return liberar_memoria(logger, logger_debug, kernel_fd, config);
 }
 
-t_list *char_to_int(char **segmentos) {
-	t_list *lista_segmentos = list_create();
-
-	for (int i = 0; segmentos[i] != NULL; i++) {
-		int *seg = malloc(sizeof(int));
-		*seg = atoi(segmentos[i]);
-		
-		list_add(lista_segmentos, seg);
-	}
-
-	return lista_segmentos;
-}
-
 void procesar_config(t_config* config, t_list **lista_segmentos, int* tiempo_pantalla) {
 	char **segmentos;
 
 	*tiempo_pantalla = config_get_int_value(config, "TIEMPO_PANTALLA");
 	segmentos = config_get_array_value(config, "SEGMENTOS");
 
-	*lista_segmentos = char_to_int(segmentos);
+	*lista_segmentos = array_char_to_list_int(segmentos);
 
 	log_info(logger_debug, "tiempo_pantalla: %d", *tiempo_pantalla);
 }

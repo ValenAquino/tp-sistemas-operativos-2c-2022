@@ -1,6 +1,7 @@
 #include "../include/comunicacion.h"
 
 extern t_log* logger;
+extern t_log* logger_debug;
 extern t_configuracion_kernel* config;
 
 extern sem_t mutex_block;

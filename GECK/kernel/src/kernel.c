@@ -1,6 +1,8 @@
 #include "../include/kernel.h"
 
 t_log* logger;
+t_log* logger_debug;
+
 t_configuracion_kernel *config;
 
 int cpu_dispatch_fd;
@@ -77,16 +79,16 @@ PCB* recibir_pcb_de_cpu(int cliente_socket) {
 
 
 int iniciar_servidor_kernel(char* ip, char* puerto) {
-	int server_fd = iniciar_servidor(logger, SERVERNAME, ip, puerto);
-
-	log_info(logger, "Kernel listo para recibir al cliente");
-
+	int server_fd = iniciar_servidor(logger_debug, SERVERNAME, ip, puerto);
+	log_info(logger_debug, "Kernel listo para recibir al cliente");
 	return server_fd;
 }
 
 void inicializar_kernel() {
-	logger = log_create("kernel.log", "Kernel", 1, LOG_LEVEL_TRACE);
-	config = procesar_config("kernel.config");
+	t_config *config_file = abrir_configuracion("kernel.config");
+	crear_loggers("kernel", &logger, &logger_debug, config_file);
+	config = procesar_config(config_file);
+
 	test_read_config(config);
 
 	// Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.

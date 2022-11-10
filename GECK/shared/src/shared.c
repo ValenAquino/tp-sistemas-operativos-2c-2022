@@ -41,3 +41,16 @@ void mostrar_mensaje_para_finalizar(char* mensaje) {
 	printf("Presiona Enter para finalizar.");
 	getchar();
 }
+
+t_list *array_char_to_list_int(char **array) {
+	t_list *lista_segmentos = list_create();
+
+	for (int i = 0; array[i] != NULL; i++) {
+		int *entero = malloc(sizeof(int));
+		*entero = atoi(array[i]);
+
+		list_add(lista_segmentos, entero);
+	}
+
+	return lista_segmentos;
+}

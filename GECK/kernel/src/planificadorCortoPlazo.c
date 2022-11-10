@@ -48,7 +48,7 @@ PCB* get_siguiente_proceso() {
 			return siguiente_proceso_FEEDBACK();
 	}
 
-	log_error(logger, "Algoritmo de planificacion invalido.");
+	log_error(logger_debug, "Algoritmo de planificacion invalido.");
 	exit(EXIT_FAILURE);
 }
 

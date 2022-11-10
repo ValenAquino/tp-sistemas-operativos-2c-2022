@@ -1,40 +1,22 @@
 #include "../include/logs.h"
 
-void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug, int mostrar_logs) {
+void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug, t_config* config) {
+	char **mostrar_logs_char = config_get_array_value(config, "MOSTRAR_LOGS");
+	t_list *mostrar_logs = array_char_to_list_int(mostrar_logs_char);
+
 	char* file_name_debug = malloc(sizeof(module_name) + sizeof("-debug.log"));
 	char* logger_debug_name = malloc(sizeof(module_name) + sizeof("-DEBUG"));
 	char* file_name = malloc(sizeof(module_name) + sizeof(".log"));
 
-	int mostrar_logs_tp;
-	int mostrar_logs_debug;
-
-	// 0 -> SOLO LOGS OBLIGATORIOS / 1 -> SOLO LOGS DEBUG Y OTRAS YERBAS / 2 -> AMBOS / 3 -> NINGUNO
-	switch (mostrar_logs) {
-	case 0:
-		mostrar_logs_tp = 1;
-		mostrar_logs_debug = 0;
-		break;
-	case 1:
-		mostrar_logs_tp = 0;
-		mostrar_logs_debug = 1;
-		break;
-	case 2:
-		mostrar_logs_tp = 1;
-		mostrar_logs_debug = 1;
-		break;
-	case 3:
-	default:
-		mostrar_logs_tp = 0;
-		mostrar_logs_debug = 0;
-		break;
-	}
+	int* mostrar_logs_tp = (int *) list_get(mostrar_logs, 0);
+	int* mostrar_logs_debug = (int *) list_get(mostrar_logs, 1);
 
 	sprintf(file_name_debug, "%s-debug.log", module_name);
 	sprintf(logger_debug_name, "%s-DEBUG", module_name);
 	sprintf(file_name, "%s.log", module_name);
 
-	*logger_debug = log_create(file_name_debug, logger_debug_name, mostrar_logs_debug, LOG_LEVEL_TRACE);
-	*logger_prod = log_create(file_name, module_name, mostrar_logs_tp, LOG_LEVEL_INFO);
+	*logger_debug = log_create(file_name_debug, logger_debug_name, *mostrar_logs_debug, LOG_LEVEL_TRACE);
+	*logger_prod = log_create(file_name, module_name, *mostrar_logs_tp, LOG_LEVEL_INFO);
 
 	free(file_name_debug);
 	free(logger_debug_name);

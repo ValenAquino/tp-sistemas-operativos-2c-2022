@@ -29,7 +29,7 @@ typedef struct t_configuracion_kernel
     t_list* tiempos_io;
 } t_configuracion_kernel;
 
-t_configuracion_kernel* procesar_config(char *);
+t_configuracion_kernel* procesar_config(t_config *nuevo_config);
 t_algoritmo_planificacion procesar_algoritmo(char* algoritmo);
 t_list* string_to_int(char **segmentos);
 
