@@ -28,7 +28,7 @@ void log_list_inst(t_list* instrucciones) {
 		ts_ins *inst = list_get(instrucciones, i);
 
 		log_debug(
-			logger,
+			logger_debug,
 			"Instruccion = [n: %d, p1: %d, p2: %d]",
 			inst->name, inst->param1, inst->param2
 		);
@@ -38,7 +38,7 @@ void log_list_inst(t_list* instrucciones) {
 void log_lista_seg(t_list* tablaSegmentos) {
 	for(int i = 0; i < list_size(tablaSegmentos); i++) {
 		int *seg = list_get(tablaSegmentos, i);
-		log_debug(logger, "segmento[%d] = %d", i, *seg);
+		log_debug(logger_debug, "segmento[%d] = %d", i, *seg);
 	}
 }
 
@@ -46,9 +46,9 @@ void log_pcb(PCB* pcb) {
 	t_list* instrucciones = pcb->instrucciones;
 	t_list* segmentos = pcb->tablaSegmentos;
 
-    log_trace(logger, "IMPRIMIENDO PCB");
-	log_debug(logger, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
-	log_debug(logger, "STATE: %d, FD: %d", pcb->estado_actual, pcb->socket_consola);
+    log_trace(logger_debug, "IMPRIMIENDO PCB");
+	log_debug(logger_debug, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
+	log_debug(logger_debug, "STATE: %d, FD: %d", pcb->estado_actual, pcb->socket_consola);
 
 	log_debug (
 		logger,
@@ -59,7 +59,7 @@ void log_pcb(PCB* pcb) {
 	log_list_inst(instrucciones);
 	log_lista_seg(segmentos);
 	
-    log_trace(logger, "FIN PCB");
+    log_trace(logger_debug, "FIN PCB");
 }
 
 char* str_ins(t_ins ins) {
@@ -155,6 +155,6 @@ char* str_algoritmo(t_algoritmo_planificacion algoritmo) {
 		return "FEEDBACK";
 	}
 
-    log_error(logger, "El algoritmo es incorrecto");
+    log_error(logger_debug, "El algoritmo es incorrecto");
     exit(EXIT_FAILURE);
 }
