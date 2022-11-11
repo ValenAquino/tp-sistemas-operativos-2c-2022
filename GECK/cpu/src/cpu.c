@@ -4,7 +4,6 @@ t_log* logger;
 t_log* logger_debug;
 
 t_configuracion_cpu *config;
-int FLAG_INTERRUPT;
 int FLAG_FIN_QUANTUM;
 
 t_list* tiempos_io;
@@ -35,7 +34,7 @@ void iniciar_cpu() {
 int crear_servidor(char* ip, char* puerto, char* server_name) {
 	int server_fd = iniciar_servidor(logger, server_name, ip, puerto);
 
-	log_info(logger, "%s listo para recibir al cliente", server_name);
+	log_info(logger_debug, "%s listo para recibir al cliente", server_name);
 
 	return server_fd;
 }

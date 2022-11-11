@@ -4,6 +4,8 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 	char **mostrar_logs_char = config_get_array_value(config, "MOSTRAR_LOGS");
 	t_list *mostrar_logs = array_char_to_list_int(mostrar_logs_char);
 
+	// TODO: Agregar validacion y default value si no existe la key en config.
+
 	char* file_name_debug = malloc(sizeof(module_name) + sizeof("-debug.log"));
 	char* logger_debug_name = malloc(sizeof(module_name) + sizeof("-DEBUG"));
 	char* file_name = malloc(sizeof(module_name) + sizeof(".log"));

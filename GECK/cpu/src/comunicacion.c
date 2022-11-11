@@ -2,7 +2,6 @@
 extern t_log* logger;
 extern t_log* logger_debug;
 
-extern int FLAG_INTERRUPT;
 extern int FLAG_FIN_QUANTUM;
 
 void manejar_comunicacion_dispatch(void* void_args) {
@@ -65,11 +64,6 @@ void manejar_comunicacion_interrupt(void* void_args) {
 		case INTERRUPCION_QUANTUM:
 			log_debug(logger_debug, "INTERRUPCION POR FIN DE QUANTUM!\n");
 			FLAG_FIN_QUANTUM = 1;
-			break;
-		case INTERRUPT:
-			log_debug(logger_debug, "INTERRUPT!\n");
-			FLAG_INTERRUPT = 1;
-			//manejar_interrupcion();
 			break;
 		case -1:
 			log_error(logger_debug, "El cliente se desconecto. Terminando servidor [%s]", server_name);

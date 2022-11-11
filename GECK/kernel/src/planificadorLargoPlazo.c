@@ -33,6 +33,8 @@ void pasarANew(PCB* pcb) {
 	log_info(logger_debug, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 
 	sem_post(&sem_proceso_nuevo);
+	// CREAR HILO DE QUANTUM.
+
 }
 
 void imprimir_ready() {
@@ -71,6 +73,7 @@ void pasarAReady(PCB* pcb) {
 		list_size(procesosReady), config->grado_max_multiprogramacion
 	);
 
+	log_pcb(pcb);
 	list_add(procesosReady, pcb);
 	imprimir_ready();
 

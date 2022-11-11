@@ -11,12 +11,17 @@ extern sem_t planificar; // SINCRONIZA CORTO PLAZO
 extern sem_t cpu_idle; // GRADO DE MULTIPROCESAMIENTO
 
 int current_pcb_id;
+extern bool esta_usando_rr;
+extern bool volvio_pcb;
 
 void pasarAExec(PCB* pcb) {
 	pcb->estado_actual = EXEC_STATE;
 	log_cambio_de_estado(pcb->id, READY_STATE, EXEC_STATE);
 	dispatch_pcb(pcb);
 	sem_post(&sem_procesos_ready);
+	//	if (esta_usando_rr) {
+		crear_hilo_quantum();
+	//	}
 }
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
@@ -24,7 +29,6 @@ void pasarABlock(PCB* pcb, dispositivos disp) {
 	pcb->estado_actual = BLOCK_STATE;
 
 	list_add(procesosBlock, pcb);
-	
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
 }
 

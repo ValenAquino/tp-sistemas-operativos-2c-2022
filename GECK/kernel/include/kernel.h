@@ -31,7 +31,8 @@ void hilo_escucha_dispatch();
 void hilo_planificador_corto_plazo();
 void hilo_planificador_largo_plazo();
 
-void hilo_quantum_rr();
+void crear_hilo_quantum();
+void matar_hilo_quantum();
 void fin_de_quantum();
 
 PCB* recibir_pcb_de_cpu(int cliente_socket);

@@ -8,6 +8,9 @@ t_configuracion_kernel *config;
 int cpu_dispatch_fd;
 int cpu_interrupt_fd;
 
+bool esta_usando_rr;
+bool volvio_pcb = false; // Tener en cuenta para IO/EXIT/PAGE_FAULT, etc.
+
 t_list* procesosNew;
 t_list* procesosReady;
 t_list* procesosBlock;
@@ -21,6 +24,8 @@ sem_t mutex_block;
 
 sem_t planificar;
 sem_t cpu_idle;
+
+pthread_t hilo_quantum;
 
 int main() {
 	inicializar_kernel();
@@ -37,10 +42,6 @@ int main() {
 
 	hilo_planificador_largo_plazo();
 	hilo_planificador_corto_plazo();
-
-	// TODO: Chequear el momento indicado para empezar a correrlo
-	// Talvez solo si la config tiene este algoritmo para planificar.
-	hilo_quantum_rr();
 
 	while (server_kernel(SERVERNAME, server_fd));
 	return EXIT_SUCCESS;
@@ -90,22 +91,34 @@ void hilo_escucha_dispatch() {
 	pthread_detach(hilo);
 }
 
-void hilo_quantum_rr() {
-	pthread_t hilo;
+void crear_hilo_quantum() {
+	log_debug(logger_debug, "Estoy creando el hilo de quantum :D");
+	pthread_create(&hilo_quantum, NULL, (void*) fin_de_quantum, (void*) NULL);
+	pthread_detach(hilo_quantum);
+}
 
-	pthread_create(&hilo, NULL, (void*) fin_de_quantum, (void*) NULL);
-	pthread_detach(hilo);
+void matar_hilo_quantum() {
+	int success = pthread_cancel(hilo_quantum);
+	if (success != 0) {
+		log_error(logger_debug, "Error intentando matar al hilo de quantum :`(");
+	} else {
+		log_debug(logger_debug, "Mate al hilo de quantum >:)");
+	}
 }
 
 void fin_de_quantum() {
 	while(1) {
+		log_debug(logger_debug, "Voy a dormir %d segundos antes de mandar interrupcion de quantum", config->quantum_rr / 1000);
 		sleep(config->quantum_rr / 1000);
+		log_debug(logger_debug, "Termino sleep de quantum -> Enviando interrupcion de quantum");
 		enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
 	}
 }
 
 PCB* recibir_pcb_de_cpu(int cliente_socket) {
+	log_debug(logger_debug, "Recibi un pcb de CPU");
 	PCB* pcb = recibir_pcb(cliente_socket);
+	matar_hilo_quantum();
 	sem_post(&cpu_idle);
 	return pcb;
 }
@@ -121,6 +134,8 @@ void inicializar_kernel() {
 	t_config *config_file = abrir_configuracion("kernel.config");
 	crear_loggers("kernel", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
+
+	esta_usando_rr = config->algoritmo_planificacion == RR;
 
 	test_read_config(config);
 

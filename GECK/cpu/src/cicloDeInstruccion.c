@@ -3,10 +3,7 @@
 extern t_log* logger;
 extern t_log* logger_debug;
 extern t_configuracion_cpu *config;
-extern int FLAG_INTERRUPT;
 extern int FLAG_FIN_QUANTUM;
-
-extern t_list* tiempos_io;
 
 // Anotacion:
 // capaz que acá conviene un array y que se acceda con el enum como indice: regisros[REG_AX]
@@ -62,7 +59,8 @@ void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
 }
 
 ts_ins *fetch(PCB* pcb) {
-	log_trace(logger_debug, "FETCH");
+	log_trace(logger_debug, "FETCH: ");
+	log_pcb(pcb);
 
 	return list_get(pcb->instrucciones, pcb->programCounter);
 }
@@ -90,13 +88,14 @@ ts_ins* decode(ts_ins* instruccion) {
 }
 
 void execute(ts_ins* instruccion, PCB *pcb) {
-	log_trace(logger_debug, "EXECUTE");
-
+	log_trace(logger_debug, "EXECUTE: ");
+	log_pcb(pcb);
 	log_info(
 		logger, 
 		"PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", 
 		pcb->id, str_ins(instruccion->name), instruccion->param1, instruccion->param2
 	);
+
 
 	int success;
 	switch (instruccion->name) {
@@ -175,8 +174,6 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
 
-	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O");
-	
 	switch(instruccion->param1){
 		case DISCO:
 			codigo = OP_DISCO;
@@ -192,6 +189,9 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 			break;
 	}
 	
+	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O: ");
+	log_pcb(pcb);
+
 	enviar_pcb(pcb, kernel_fd, codigo);
 	enviar_codop(kernel_fd, instruccion->param2);
 	free(pcb);
@@ -205,8 +205,9 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	actualizar_pcb(pcb);
 	
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
+	log_pcb(pcb);
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
-	
+
 	free(pcb);
 	se_devolvio_pcb = true;
 
@@ -224,18 +225,17 @@ int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
 void check_interrupt(PCB* pcb) {
 	log_trace(logger_debug, "CHECK INTERRUPT\n\n");
 
-	if (FLAG_FIN_QUANTUM) {
+	if (se_devolvio_pcb) {
 		FLAG_FIN_QUANTUM = 0;
-		actualizar_pcb(pcb);
-		enviar_pcb(pcb, kernel_fd, DESALOJO_QUANTUM);
-		se_devolvio_pcb = true;
 		return;
 	}
 
-	if (FLAG_INTERRUPT) {
-		FLAG_INTERRUPT = 0;
+	if (FLAG_FIN_QUANTUM) {
+		log_debug(logger_debug, "CHECK INTERRUPT - FLAG_FIN_QUANTUM\n\n");
+
+		FLAG_FIN_QUANTUM = 0;
 		actualizar_pcb(pcb);
-		enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
+		enviar_pcb(pcb, kernel_fd, DESALOJO_QUANTUM);
 		se_devolvio_pcb = true;
 		return;
 	}
