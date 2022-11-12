@@ -32,6 +32,14 @@ void pasarABlock(PCB* pcb, dispositivos disp) {
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
 }
 
+void pasarABlockPageFault(PCB* pcb) {
+	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
+	pcb->estado_actual = BLOCK_STATE;
+
+	list_add(procesosBlock, pcb);
+	log_info(logger, "PID: <%d> - Bloqueado por: <PAGE_FAULT>", pcb->id);
+}
+
 void planificador_corto_plazo() {
 	while(1) {
 		sem_wait(&planificar);

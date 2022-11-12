@@ -25,6 +25,7 @@
 int iniciar_servidor_kernel(char* ip, char* puerto);
 void inicializar_kernel();
 
+void hilo_memoria();
 void hilo_cpu_interrupt();
 void hilo_escucha_dispatch();
 

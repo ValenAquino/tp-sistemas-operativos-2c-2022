@@ -7,6 +7,7 @@ t_configuracion_kernel *config;
 
 int cpu_dispatch_fd;
 int cpu_interrupt_fd;
+int memoria_fd;
 
 bool esta_usando_rr;
 bool volvio_pcb = false; // Tener en cuenta para IO/EXIT/PAGE_FAULT, etc.
@@ -32,10 +33,11 @@ int main() {
 
 	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
 
+	hilo_memoria();
 	hilo_cpu_interrupt();
 	hilo_escucha_dispatch();
-	int memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 	
+
 	send_debug(cpu_interrupt_fd);
 	send_debug(cpu_dispatch_fd);
 	send_debug(memoria_fd);
@@ -58,6 +60,19 @@ void hilo_planificador_corto_plazo() {
 	pthread_t hilo;
 
 	pthread_create(&hilo, NULL, (void*) planificador_corto_plazo, NULL);
+	pthread_detach(hilo);
+}
+
+void hilo_memoria() {
+	pthread_t hilo;
+
+	memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
+
+	t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
+	args->fd = memoria_fd;
+	args->server_name = "Memoria";
+
+	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
 	pthread_detach(hilo);
 }
 

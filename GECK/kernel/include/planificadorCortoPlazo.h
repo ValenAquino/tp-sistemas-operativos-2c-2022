@@ -5,6 +5,7 @@
 
 void pasarAExec(PCB* pcb);
 void pasarABlock(PCB* pcb, dispositivos disp);
+void pasarABlockPageFault(PCB* pcb);
 
 void planificador_corto_plazo();
 

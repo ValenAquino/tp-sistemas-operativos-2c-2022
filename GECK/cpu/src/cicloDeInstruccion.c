@@ -215,7 +215,20 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
-	return EXIT_SUCCESS;
+	// TODO: Adaptar esta instruccion!
+	// Actualmente solo devuelve PAGE_FAULT
+	pcb->programCounter = pcb->programCounter + 1;
+	actualizar_pcb(pcb);
+
+	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
+	log_pcb(pcb);
+
+	enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
+	enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
+	free(pcb);
+
+	se_devolvio_pcb = true;
+	return EXIT_FAILURE;
 }
 
 int execute_mov_out(ts_ins* instruccion, PCB *pcb) {

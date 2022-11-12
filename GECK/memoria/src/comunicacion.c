@@ -13,6 +13,16 @@ void manejar_comunicacion(void* void_args) {
 			int cod_op = recibir_operacion(cliente_socket);
 
 			switch (cod_op) {
+
+			case PAGINA_SOLICITADA:
+				PCB* pcb = recibir_pcb(cliente_socket);
+				int pagina_solicitada = recibir_valor(cliente_socket);
+
+				log_debug(logger_debug, "Se esta solicitando la pagina: %d para pcb id: %d", pagina_solicitada, pcb->id);
+				//TODO: MODIFICAR es solo para testing el sleep(2).
+				sleep(2);
+				enviar_pcb(pcb, cliente_socket, PAGINA_ENCONTRADA);
+				break;
 			case DEBUG:
 				log_debug(logger_debug, "Estoy debuggeando!");
 				break;
