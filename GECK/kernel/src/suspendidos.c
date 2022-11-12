@@ -63,12 +63,13 @@ void op_pantallla(int pid, reg_cpu reg) {
 }
 
 // PAGE FAULT
-void ejecutar_bloqueo_page_fault(PCB* pcb, int pagina_solicitada) {
+void ejecutar_bloqueo_page_fault(PCB* pcb, int segmento_solicitado, int pagina_solicitada) {
 	pthread_t hilo;
 
 	t_manejar_page_fault* args = malloc(sizeof(t_manejar_page_fault));
 	args->pcb = pcb;
 	args->pagina_solicitada = pagina_solicitada;
+	args->segmento_solicitado = segmento_solicitado;
 
 	pthread_create(&hilo, NULL, (void*) hilo_page_fault, (void*) args);
 	pthread_detach(hilo);
@@ -77,11 +78,12 @@ void ejecutar_bloqueo_page_fault(PCB* pcb, int pagina_solicitada) {
 void hilo_page_fault(void* void_args) {
 	t_manejar_page_fault* args = (t_manejar_page_fault*) void_args;
 	int num_pagina = args->pagina_solicitada;
+	int num_segmento = args->segmento_solicitado;
 	PCB* pcb = args->pcb;
 	free(args);
 
 	pasarABlockPageFault(pcb);
 
-	solicitar_pagina(pcb, memoria_fd, num_pagina);
+	solicitar_pagina(pcb, memoria_fd, num_segmento, num_pagina);
 }
 

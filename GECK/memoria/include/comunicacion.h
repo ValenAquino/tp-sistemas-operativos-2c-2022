@@ -10,6 +10,8 @@
 #include <pcb.h>
 #include <paquetes.h>
 
+#include "interfaz.h"
+
 void manejar_comunicacion(void* void_args);
 int server_memoria(char* server_name, int server_socket);
 

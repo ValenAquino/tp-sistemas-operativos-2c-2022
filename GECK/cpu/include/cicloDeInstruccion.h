@@ -6,11 +6,13 @@
 #include <string.h>
 #include <commons/log.h>
 #include <servidor.h>
+#include <semaphore.h>
 #include <shared.h>
 #include <logs.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"
+#include "cpu.h"
 
 void ciclo_de_instruccion(PCB* pcb, int kernel_socket);
 

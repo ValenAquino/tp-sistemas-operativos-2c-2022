@@ -4,6 +4,11 @@ extern t_log* logger;
 extern t_log* logger_debug;
 extern t_configuracion_cpu *config;
 extern int FLAG_FIN_QUANTUM;
+extern int FLAG_PAGE_FAULT;
+extern int MARCO_MEMORIA;
+
+extern sem_t sem_acceso_memoria;
+extern sem_t sem_respuesta_memoria;
 
 // Anotacion:
 // capaz que acá conviene un array y que se acceda con el enum como indice: regisros[REG_AX]
@@ -17,6 +22,7 @@ extern uint32_t REG_CX;
 extern uint32_t REG_DX;
 
 int kernel_fd;
+extern int memoria_fd;
 
 bool inicializados = false;
 bool se_devolvio_pcb = false;
@@ -215,24 +221,61 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
-	// TODO: Adaptar esta instruccion!
-	// Actualmente solo devuelve PAGE_FAULT
-	pcb->programCounter = pcb->programCounter + 1;
-	actualizar_pcb(pcb);
+	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
+	sem_wait(&sem_acceso_memoria);
 
-	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
-	log_pcb(pcb);
+	if (FLAG_PAGE_FAULT) {
+		FLAG_PAGE_FAULT = 0;
+		MARCO_MEMORIA = -1;
+		actualizar_pcb(pcb);
 
-	enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-	enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
-	free(pcb);
+		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
 
-	se_devolvio_pcb = true;
-	return EXIT_FAILURE;
+		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
+		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
+		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
+
+		free(pcb);
+
+		se_devolvio_pcb = true;
+		return EXIT_FAILURE;
+	} else {
+		log_trace(logger_debug, "Voy a leer la memoria en el marco: %d", MARCO_MEMORIA);
+		leer_de_memoria(MARCO_MEMORIA);
+		FLAG_PAGE_FAULT = 0;
+		MARCO_MEMORIA = -1;
+		sem_wait(&sem_respuesta_memoria);
+		return EXIT_SUCCESS;
+	}
 }
 
 int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
-	return EXIT_SUCCESS;
+	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
+	sem_wait(&sem_acceso_memoria);
+
+	if (FLAG_PAGE_FAULT) {
+		FLAG_PAGE_FAULT = 0;
+		MARCO_MEMORIA = -1;
+		actualizar_pcb(pcb);
+
+		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
+
+		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
+		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
+		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
+
+		free(pcb);
+
+		se_devolvio_pcb = true;
+		return EXIT_FAILURE;
+	} else {
+		log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d", MARCO_MEMORIA);
+		escribir_en_memoria(MARCO_MEMORIA, instruccion->param1);
+		FLAG_PAGE_FAULT = 0;
+		MARCO_MEMORIA = -1;
+		sem_wait(&sem_respuesta_memoria);
+		return EXIT_SUCCESS;
+	}
 }
 
 void check_interrupt(PCB* pcb) {

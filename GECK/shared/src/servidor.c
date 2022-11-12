@@ -101,8 +101,9 @@ int server_escuchar(t_log* logger, char* server_name, int server_socket, void* f
     return 0;
 }
 
-void solicitar_pagina(PCB* pcb, int socket_conexion, int num_pagina) {
+void solicitar_pagina(PCB* pcb, int socket_conexion, int num_segmento, int num_pagina) {
 	enviar_pcb(pcb, socket_conexion, PAGINA_SOLICITADA);
-	enviar_codop(socket_conexion, num_pagina);
+	enviar_valor(socket_conexion, num_segmento);
+	enviar_valor(socket_conexion, num_pagina);
 }
 
