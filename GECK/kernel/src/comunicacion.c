@@ -7,7 +7,7 @@ extern t_configuracion_kernel* config;
 extern sem_t mutex_block;
 extern sem_t planificar;
 
-int proccess_counter = 0;
+int proccess_counter = 1;
 uint32_t respuesta_teclado;
 
 void manejar_comunicacion(void* void_args) {
@@ -40,6 +40,7 @@ void manejar_comunicacion(void* void_args) {
 			pasarAReady(pcb);
 			break;
 		}
+
 		case OP_DISCO: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			manejar_suspension_por(DISCO, pcb, cliente_socket);

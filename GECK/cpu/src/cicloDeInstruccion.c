@@ -60,7 +60,6 @@ void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
 
 ts_ins *fetch(PCB* pcb) {
 	log_trace(logger_debug, "FETCH: ");
-	log_pcb(pcb);
 
 	return list_get(pcb->instrucciones, pcb->programCounter);
 }
@@ -89,7 +88,6 @@ ts_ins* decode(ts_ins* instruccion) {
 
 void execute(ts_ins* instruccion, PCB *pcb) {
 	log_trace(logger_debug, "EXECUTE: ");
-	log_pcb(pcb);
 	log_info(
 		logger, 
 		"PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", 
@@ -190,7 +188,6 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 	}
 	
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O: ");
-	log_pcb(pcb);
 
 	enviar_pcb(pcb, kernel_fd, codigo);
 	enviar_codop(kernel_fd, instruccion->param2);
@@ -205,7 +202,6 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	actualizar_pcb(pcb);
 	
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
-	log_pcb(pcb);
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 
 	free(pcb);

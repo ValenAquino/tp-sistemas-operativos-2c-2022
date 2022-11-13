@@ -1,5 +1,6 @@
 #include "../include/comunicacion.h"
 
+extern t_log* logger;
 extern t_log* logger_debug;
 extern int tiempo_pantalla;
 
@@ -24,7 +25,7 @@ int manejar_comunicacion(void* void_args) {
 			int pid = recibir_pid(cliente_socket);
 			
 			sleep(tiempo_pantalla/1000);
-			log_info(logger_debug, "%d", valor);
+			log_info(logger, "%d", valor);
 
 			enviar_codop(cliente_socket, RESPUESTA_PANTALLA);
 			enviar_registro(cliente_socket, reg);

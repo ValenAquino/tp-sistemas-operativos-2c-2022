@@ -12,8 +12,17 @@ uint32_t REG_BX;
 uint32_t REG_CX;
 uint32_t REG_DX;
 
-int main() {
+char* config_path;
+
+int main(int argc, char** argv) {
+	if (argc < 2) {
+		config_path = "cpu.config";
+	}
+
+	config_path = argv[1];
+
 	iniciar_cpu();
+	log_debug(logger_debug, "config: %s", config_path);
 
 	int server_interrupt_fd = crear_servidor(config->ip_cpu, config->puerto_escucha_interrupt, INTERRUPT_SERVER_NAME);
 	int server_dispatch_fd = crear_servidor(config->ip_cpu, config->puerto_escucha_dispatch, DISPATCH_SERVER_NAME);
@@ -25,7 +34,7 @@ int main() {
 }
 
 void iniciar_cpu() {
-	t_config *config_file = abrir_configuracion("cpu.config");
+	t_config *config_file = abrir_configuracion(config_path);
 	crear_loggers("cpu", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
 	test_read_config(config);
