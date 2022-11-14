@@ -16,11 +16,15 @@ uint32_t REG_DX;
 
 sem_t sem_acceso_memoria;
 sem_t sem_respuesta_memoria;
-
 int memoria_fd;
-
-int main() {
+char* config_path;
+int main(int argc, char** argv) {
+	if (argc < 2) {
+		config_path = "cpu.config";
+	}
+	config_path = argv[1];
 	iniciar_cpu();
+	log_debug(logger_debug, "config: %s", config_path);
 
 	hilo_memoria();
 	send_debug(memoria_fd);
@@ -48,7 +52,7 @@ void hilo_memoria() {
 }
 
 void iniciar_cpu() {
-	t_config *config_file = abrir_configuracion("cpu.config");
+	t_config *config_file = abrir_configuracion(config_path);
 	crear_loggers("cpu", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
 	test_read_config(config);

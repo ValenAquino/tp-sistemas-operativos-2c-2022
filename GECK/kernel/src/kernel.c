@@ -28,8 +28,17 @@ sem_t cpu_idle;
 
 pthread_t hilo_quantum;
 
-int main() {
+char* config_path;
+
+int main(int argc, char** argv) {
+	if (argc < 2) {
+		config_path = "kernel.config";
+	}
+
+	config_path = argv[1];
+
 	inicializar_kernel();
+	log_debug(logger_debug, "config: %s", config_path);
 
 	int server_fd = iniciar_servidor_kernel(config->ip_kernel, config->puerto_kernel);
 
@@ -122,22 +131,18 @@ void matar_hilo_quantum() {
 }
 
 void fin_de_quantum() {
-	while(1) {
-		log_debug(logger_debug, "Voy a dormir %d segundos antes de mandar interrupcion de quantum", config->quantum_rr / 1000);
-		sleep(config->quantum_rr / 1000);
-		log_debug(logger_debug, "Termino sleep de quantum -> Enviando interrupcion de quantum");
-		enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
-	}
+	log_debug(logger_debug, "Voy a dormir %d segundos antes de mandar interrupcion de quantum", config->quantum_rr / 1000);
+	sleep(config->quantum_rr / 1000);
+	log_debug(logger_debug, "Termino sleep de quantum -> Enviando interrupcion de quantum");
+	enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
 }
 
 PCB* recibir_pcb_de_cpu(int cliente_socket) {
-	log_debug(logger_debug, "Recibi un pcb de CPU");
 	PCB* pcb = recibir_pcb(cliente_socket);
 	matar_hilo_quantum();
 	sem_post(&cpu_idle);
 	return pcb;
 }
-
 
 int iniciar_servidor_kernel(char* ip, char* puerto) {
 	int server_fd = iniciar_servidor(logger_debug, SERVERNAME, ip, puerto);
@@ -146,7 +151,7 @@ int iniciar_servidor_kernel(char* ip, char* puerto) {
 }
 
 void inicializar_kernel() {
-	t_config *config_file = abrir_configuracion("kernel.config");
+	t_config *config_file = abrir_configuracion(config_path);
 	crear_loggers("kernel", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
 
