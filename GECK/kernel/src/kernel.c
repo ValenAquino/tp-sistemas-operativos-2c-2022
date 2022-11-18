@@ -13,6 +13,7 @@ bool volvio_pcb = false; // Tener en cuenta para IO/EXIT/PAGE_FAULT, etc.
 
 t_list* procesosNew;
 t_list* procesosReady;
+t_list* procesosBajaPrioridad;
 t_list* procesosBlock;
 t_list* procesosExit;
 	
@@ -21,6 +22,7 @@ sem_t sem_proceso_nuevo;
 
 sem_t mutex_ready;
 sem_t mutex_block;
+sem_t mutex_baja_prioridad;
 
 sem_t planificar;
 sem_t cpu_idle;
@@ -152,6 +154,10 @@ void inicializar_kernel() {
 	sem_init(&cpu_idle, 1, 1);
 	sem_init(&mutex_block, 1, 1);
 
+	if(config->algoritmo_planificacion == FEEDBACK){
+		procesosBajaPrioridad = list_create();
+		sem_init(&mutex_baja_prioridad, 1, 1);
+	}
 	procesosNew = list_create();
 	procesosReady = list_create();
 	procesosExit = list_create();

@@ -1,6 +1,7 @@
 #include "../include/planificadorCortoPlazo.h"
 
 extern t_list *procesosReady;
+extern t_list *procesosBajaPrioridad;
 extern t_list *procesosBlock;
 
 extern t_configuracion_kernel *config;
@@ -18,10 +19,9 @@ void pasarAExec(PCB* pcb) {
 	pcb->estado_actual = EXEC_STATE;
 	log_cambio_de_estado(pcb->id, READY_STATE, EXEC_STATE);
 	dispatch_pcb(pcb);
-	sem_post(&sem_procesos_ready);
-	//	if (esta_usando_rr) {
+		if (esta_usando_rr) {
 		crear_hilo_quantum();
-	//	}
+		}
 }
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
@@ -45,8 +45,10 @@ void planificador_corto_plazo() {
 PCB* get_siguiente_proceso() {
 	switch (config->algoritmo_planificacion) {
 		case FIFO:
+			esta_usando_rr = false;
 			return siguiente_proceso_FIFO();
 		case RR:
+			esta_usando_rr = true;
 			return siguiente_proceso_RR();
 		case FEEDBACK:
 			return siguiente_proceso_FEEDBACK();
@@ -75,11 +77,19 @@ PCB* remove_and_get_ready() {
 }
 
 PCB* siguiente_proceso_RR() {
-	return NULL;
+	PCB* pcb = list_get(procesosReady, 0);
+		current_pcb_id = pcb->id;
+		return remove_and_get_ready();
 }
 
 PCB* siguiente_proceso_FEEDBACK() {
-	return NULL;
+	if(list_size(procesosReady) == 0){
+		PCB* pcb = list_get(procesosBajaPrioridad, 0);
+		current_pcb_id = pcb->id;
+		return remove_and_get_ready();
+	} else {
+		return siguiente_proceso_RR();
+	}
 }
 
 

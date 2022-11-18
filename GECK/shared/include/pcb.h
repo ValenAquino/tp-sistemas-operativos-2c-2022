@@ -21,6 +21,7 @@ typedef struct PCB
 {
 	int socket_consola;
 	t_estado_proceso estado_actual;
+	// t_estado_proceso estado_anterior;
     int id;
     int programCounter;
     uint32_t registros[4];

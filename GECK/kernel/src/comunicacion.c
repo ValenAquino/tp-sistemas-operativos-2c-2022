@@ -37,7 +37,7 @@ void manejar_comunicacion(void* void_args) {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 
 			log_info(logger, "PID: <%d> - Desalojado por fin de Quantum", pcb->id);
-			pasarAReady(pcb);
+			pasarAReady(pcb, true); // Revisar si tiene que pasar directo a ready o si tiene que bloquearse (ver grado multiprogramacion)
 			break;
 		}
 
