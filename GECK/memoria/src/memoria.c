@@ -8,9 +8,9 @@ char* config_path;
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		config_path = "memoria.config";
+	} else {
+		config_path = argv[1];
 	}
-
-	config_path = argv[1];
 
 	iniciar_memoria();
 	log_debug(logger_debug, "config: %s", config_path);
