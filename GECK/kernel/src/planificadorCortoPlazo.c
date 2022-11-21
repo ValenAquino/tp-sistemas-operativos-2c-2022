@@ -1,12 +1,15 @@
 #include "../include/planificadorCortoPlazo.h"
 
 extern t_list *procesosReady;
+extern t_list *procesosBajaPrioridad;
 extern t_list *procesosBlock;
 
 extern t_configuracion_kernel *config;
 
 extern sem_t sem_procesos_ready; // GRADO DE MULTIPROGRAMACION
 extern sem_t mutex_ready; // PROTEGE LA LISTA DE READY
+extern sem_t mutex_baja_prioridad;  // PROTEGE LA LISTA DE READY-FIFO EN FEEDBACK.
+extern sem_t mutex_block;
 extern sem_t planificar; // SINCRONIZA CORTO PLAZO
 extern sem_t cpu_idle; // GRADO DE MULTIPROCESAMIENTO
 
@@ -18,18 +21,23 @@ void pasarAExec(PCB* pcb) {
 	pcb->estado_actual = EXEC_STATE;
 	log_cambio_de_estado(pcb->id, READY_STATE, EXEC_STATE);
 	dispatch_pcb(pcb);
-	sem_post(&sem_procesos_ready);
-	//	if (esta_usando_rr) {
+	if (esta_usando_rr) {
 		crear_hilo_quantum();
-	//	}
+	}
 }
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
+	log_pcb(pcb);
+
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
 
+	sem_wait(&mutex_block);
 	list_add(procesosBlock, pcb);
+	sem_post(&mutex_block);
+
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
+	sem_post(&sem_procesos_ready);
 }
 
 void pasarABlockPageFault(PCB* pcb) {
@@ -67,7 +75,7 @@ PCB* get_siguiente_proceso() {
 PCB* siguiente_proceso_FIFO() {
 	PCB* pcb = list_get(procesosReady, 0);
 	current_pcb_id = pcb->id;
-	return remove_and_get_ready();
+	return remove_and_get_ready(procesosReady, mutex_ready);
 }
 
 bool filter_pcb_by_id(void* item) {
@@ -75,19 +83,29 @@ bool filter_pcb_by_id(void* item) {
     return pcb->id == current_pcb_id;
 }
 
-PCB* remove_and_get_ready() {
-	sem_wait(&mutex_ready);
-	PCB* pcb = list_remove_by_condition(procesosReady, filter_pcb_by_id);
-	sem_post(&mutex_ready);
+PCB* remove_and_get_ready(t_list* lista_procesos, sem_t mutex) {
+	sem_wait(&mutex);
+	PCB* pcb = list_remove_by_condition(lista_procesos, filter_pcb_by_id);
+	sem_post(&mutex);
 	return pcb;
 }
 
 PCB* siguiente_proceso_RR() {
-	return NULL;
+	PCB* pcb = list_get(procesosReady, 0);
+	current_pcb_id = pcb->id;
+	return remove_and_get_ready(procesosReady, mutex_ready);
 }
 
 PCB* siguiente_proceso_FEEDBACK() {
-	return NULL;
+	if(list_size(procesosReady) == 0){
+		esta_usando_rr = false;
+		PCB* pcb = list_get(procesosBajaPrioridad, 0);
+		current_pcb_id = pcb->id;
+		return remove_and_get_ready(procesosBajaPrioridad, mutex_baja_prioridad);
+	} else {
+		esta_usando_rr = true;
+		return siguiente_proceso_RR();
+	}
 }
 
 

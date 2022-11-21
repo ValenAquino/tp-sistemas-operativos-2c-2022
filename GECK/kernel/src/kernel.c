@@ -14,6 +14,7 @@ bool volvio_pcb = false; // Tener en cuenta para IO/EXIT/PAGE_FAULT, etc.
 
 t_list* procesosNew;
 t_list* procesosReady;
+t_list* procesosBajaPrioridad;
 t_list* procesosBlock;
 t_list* procesosExit;
 	
@@ -22,6 +23,7 @@ sem_t sem_proceso_nuevo;
 
 sem_t mutex_ready;
 sem_t mutex_block;
+sem_t mutex_baja_prioridad;
 
 sem_t planificar;
 sem_t cpu_idle;
@@ -31,11 +33,12 @@ pthread_t hilo_quantum;
 char* config_path;
 
 int main(int argc, char** argv) {
+
 	if (argc < 2) {
 		config_path = "kernel.config";
+	} else {
+		config_path = argv[1];
 	}
-
-	config_path = argv[1];
 
 	inicializar_kernel();
 	log_debug(logger_debug, "config: %s", config_path);
@@ -139,7 +142,9 @@ void fin_de_quantum() {
 
 PCB* recibir_pcb_de_cpu(int cliente_socket) {
 	PCB* pcb = recibir_pcb(cliente_socket);
-	matar_hilo_quantum();
+	if (esta_usando_rr) {
+		matar_hilo_quantum();
+	}
 	sem_post(&cpu_idle);
 	return pcb;
 }
@@ -167,6 +172,11 @@ void inicializar_kernel() {
 	sem_init(&cpu_idle, 1, 1);
 	sem_init(&mutex_block, 1, 1);
 
+	if(config->algoritmo_planificacion == FEEDBACK) {
+		log_debug(logger_debug, "Inicializando para algoritmo FEEDBACK");
+		procesosBajaPrioridad = list_create();
+		sem_init(&mutex_baja_prioridad, 1, 1);
+	}
 	procesosNew = list_create();
 	procesosReady = list_create();
 	procesosExit = list_create();
