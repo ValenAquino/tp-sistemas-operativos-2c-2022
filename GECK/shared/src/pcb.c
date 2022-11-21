@@ -1,6 +1,7 @@
 #include "../include/pcb.h"
 
 extern t_log* logger;
+extern t_log* logger_debug;
 
 PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos) {
     PCB* pcb = (PCB*) malloc(sizeof(PCB));
@@ -19,16 +20,17 @@ PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos) {
     return pcb;
 }
 
-PCB *obtener_proceso_por_pid(int pid, t_list* lista, sem_t mutex) {
+PCB *obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex) {
 
 	bool get_element(void *element) {
 		PCB *elementPcb = element;
 		return elementPcb->id == pid;
 	}
 
-	sem_wait(&mutex);
+	pthread_mutex_lock(&mutex);
+	log_debug(logger_debug, "tamanio de la lista antes de remover item: %d", list_size(lista));
 	PCB *pcb = list_remove_by_condition(lista, get_element);
-	sem_post(&mutex);
+	pthread_mutex_unlock(&mutex);
 
 	return pcb;
 }

@@ -12,7 +12,7 @@ echo $PROJECT_PATH
 echo "Ejecutando GECK - Prueba plani base"
 cd $PRUEBAS_PATH && sh ./run_all_by_config.sh plani_base
 
-sleep 5
+sleep 2
 
 cd $PROJECT_PATH
 

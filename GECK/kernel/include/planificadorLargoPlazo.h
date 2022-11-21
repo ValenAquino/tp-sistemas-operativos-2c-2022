@@ -7,6 +7,7 @@
 #include <cliente.h>
 #include <protocolo.h>
 #include "kernel.h"
+#include <pthread.h>
 
 void planificador_largo_plazo();
 void pasarANew(PCB* pcb);

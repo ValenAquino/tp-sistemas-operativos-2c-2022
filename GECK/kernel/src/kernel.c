@@ -20,9 +20,9 @@ t_list* procesosExit;
 sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
 
-sem_t mutex_ready;
-sem_t mutex_block;
-sem_t mutex_baja_prioridad;
+pthread_mutex_t mutex_ready;
+pthread_mutex_t mutex_block;
+pthread_mutex_t mutex_baja_prioridad;
 
 sem_t planificar;
 sem_t cpu_idle;
@@ -152,15 +152,15 @@ void inicializar_kernel() {
 	// Si el segundo parametro es distinto de 0, el semaforo se comparte entre hilos de un mismo proceso.
 	sem_init(&sem_procesos_ready, 1, config->grado_max_multiprogramacion);
 	sem_init(&sem_proceso_nuevo, 0, 0);
-	sem_init(&mutex_ready, 1, 1);
+	pthread_mutex_init(&mutex_ready, NULL);
 	sem_init(&planificar, 1, 0);
 	sem_init(&cpu_idle, 1, 1);
-	sem_init(&mutex_block, 1, 1);
+	pthread_mutex_init(&mutex_block, NULL);
 
 	if(config->algoritmo_planificacion == FEEDBACK) {
 		log_debug(logger_debug, "Inicializando para algoritmo FEEDBACK");
 		procesosBajaPrioridad = list_create();
-		sem_init(&mutex_baja_prioridad, 1, 1);
+		pthread_mutex_init(&mutex_baja_prioridad, NULL);
 	}
 	procesosNew = list_create();
 	procesosReady = list_create();
