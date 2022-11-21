@@ -3,7 +3,14 @@
 t_log* logger;
 t_log* logger_debug;
 t_configuracion_memoria* config;
+
 char* config_path;
+
+uint32_t espacio_disponible_swap;
+void* area_swap;
+
+uint32_t memoria_disponible;
+void* memoria_principal;
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -34,4 +41,38 @@ int crear_conexion(char* ip, char* puerto) {
 	log_info(logger_debug, "%s lista para recibir al cliente", SERVERNAME);
 
 	return server_fd;
+}
+
+
+int crear_archivo_swap(t_configuracion_memoria* config, char* path, uint32_t tamanio) {
+    log_info(logger_debug, "Creando SWAP en <<%s>>", path);
+    int fd_swap = open(path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+    if (fd_swap == -1) {
+        log_error(logger_debug, "No se pudo crear el area de SWAP. (errno %i)", errno);
+        return EXIT_FAILURE;
+    }
+
+    ftruncate(fd_swap, config->tamanio_swap);
+
+    area_swap = mmap(NULL, config->tamanio_swap, PROT_READ | PROT_WRITE, MAP_SHARED, fd_swap, 0);
+    if (errno!=0) log_error(logger_debug, "Error en mmap: errno %i", errno);
+
+    memset(area_swap, 0, config->tamanio_swap);
+
+    close(fd_swap);
+
+    return EXIT_SUCCESS;
+}
+
+int cargar_memoria(t_configuracion_memoria* config,) {
+    memoria_principal = malloc(config->tam_memoria);   // void*
+    if (memoria_principal == NULL) {
+        log_error(logger, "Fallo en el malloc a memoria_principal");
+        return EXIT_FAILURE;
+    }
+    memset(memoria_principal, 0, config->tam_memoria);
+    memoria_disponible = config->tam_memoria;
+
+    return EXIT_SUCCESS;
 }
