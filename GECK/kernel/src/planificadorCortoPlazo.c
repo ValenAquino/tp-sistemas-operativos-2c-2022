@@ -9,6 +9,7 @@ extern t_configuracion_kernel *config;
 extern sem_t sem_procesos_ready; // GRADO DE MULTIPROGRAMACION
 extern sem_t mutex_ready; // PROTEGE LA LISTA DE READY
 extern sem_t mutex_baja_prioridad;  // PROTEGE LA LISTA DE READY-FIFO EN FEEDBACK.
+extern sem_t mutex_block;
 extern sem_t planificar; // SINCRONIZA CORTO PLAZO
 extern sem_t cpu_idle; // GRADO DE MULTIPROCESAMIENTO
 
@@ -26,10 +27,15 @@ void pasarAExec(PCB* pcb) {
 }
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
+	log_pcb(pcb);
+
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
 
+	sem_wait(&mutex_block);
 	list_add(procesosBlock, pcb);
+	sem_post(&mutex_block);
+
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
 	sem_post(&sem_procesos_ready);
 }

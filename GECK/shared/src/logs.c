@@ -53,7 +53,7 @@ void log_pcb(PCB* pcb) {
 	log_debug(logger_debug, "STATE: %d, FD: %d", pcb->estado_actual, pcb->socket_consola);
 
 	log_debug (
-		logger,
+		logger_debug,
 		"[AX: %u, BX: %u, CX: %u, DX: %u]",
 		pcb->registros[0], pcb->registros[1], pcb->registros[2], pcb->registros[3]
 	);
