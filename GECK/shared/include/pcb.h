@@ -38,7 +38,7 @@ typedef struct {
 	int bit_u;
 	int bit_m;
 	int frame;
-};
+} pagina;
 
 PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos);
 PCB* obtener_proceso_por_pid(int pid, t_list* lista, sem_t mutex);
