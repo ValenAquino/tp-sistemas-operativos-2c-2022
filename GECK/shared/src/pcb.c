@@ -28,7 +28,6 @@ PCB *obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex) {
 	}
 
 	pthread_mutex_lock(&mutex);
-	log_debug(logger_debug, "tamanio de la lista antes de remover item: %d", list_size(lista));
 	PCB *pcb = list_remove_by_condition(lista, get_element);
 	pthread_mutex_unlock(&mutex);
 

@@ -115,5 +115,4 @@ void pasarAExit(PCB* pcb) {
 	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
 	list_add(procesosExit, pcb);
 	sem_post(&sem_procesos_ready);
-	//free(pcb); // lo estamos enlistando y liberando, perdemos ese espacio de memoria
 }

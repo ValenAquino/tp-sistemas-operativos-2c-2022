@@ -134,7 +134,6 @@ PCB* recibir_pcb_de_cpu(int cliente_socket) {
 	if (esta_usando_rr) {
 		matar_hilo_quantum();
 	}
-	sem_post(&cpu_idle);
 	return pcb;
 }
 

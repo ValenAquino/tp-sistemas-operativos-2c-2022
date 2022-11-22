@@ -6,6 +6,7 @@ extern t_configuracion_kernel* config;
 
 extern pthread_mutex_t mutex_block;
 extern pthread_mutex_t planificar;
+extern sem_t cpu_idle;
 
 int proccess_counter = 1;
 uint32_t respuesta_teclado;
@@ -28,27 +29,29 @@ void manejar_comunicacion(void* void_args) {
 	
 		case FIN_POR_EXIT: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
-			//log_pcb(pcb);
+			sem_post(&cpu_idle);
 			pasarAExit(pcb);
 			break;
 		}
 
 		case DESALOJO_QUANTUM: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
-
 			log_info(logger, "PID: <%d> - Desalojado por fin de Quantum", pcb->id);
+			sem_post(&cpu_idle);
 			pasarAReady(pcb, true); // Revisar si tiene que pasar directo a ready o si tiene que bloquearse (ver grado multiprogramacion)
 			break;
 		}
 
 		case OP_DISCO: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			sem_post(&cpu_idle);
 			manejar_suspension_por(DISCO, pcb, cliente_socket);
 			break;
 		}
 
 		case OP_IMPRESORA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			sem_post(&cpu_idle);
 			manejar_suspension_por(IMPRESORA, pcb, cliente_socket);
 			break;
 		}
@@ -56,11 +59,10 @@ void manejar_comunicacion(void* void_args) {
 		case OP_PANTALLA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			uint32_t reg = recibir_registro(cliente_socket);
-
+			sem_post(&cpu_idle);
 			pasarABlock(pcb, PANTALLA);
 
 			enviar_codop(pcb->socket_consola, OP_PANTALLA);
-			
 			enviar_valor(pcb->socket_consola, pcb->registros[reg]);
 			enviar_registro(pcb->socket_consola, reg);
 			enviar_pid(pcb->socket_consola, pcb->id);
@@ -70,7 +72,7 @@ void manejar_comunicacion(void* void_args) {
 		case OP_TECLADO: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			reg_cpu reg = recibir_registro(cliente_socket);
-			
+			sem_post(&cpu_idle);
 			pasarABlock(pcb, TECLADO);
 
 			log_debug(logger_debug, "Recibo OP_TECLADO.");
@@ -79,8 +81,6 @@ void manejar_comunicacion(void* void_args) {
 			
 			enviar_registro(pcb->socket_consola, reg);
 			enviar_pid(pcb->socket_consola, pcb->id);
-			
-
 			break;
 		}
 
