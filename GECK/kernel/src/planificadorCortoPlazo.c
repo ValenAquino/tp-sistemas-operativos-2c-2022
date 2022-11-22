@@ -63,8 +63,8 @@ PCB* get_siguiente_proceso() {
 
 PCB* siguiente_proceso_FIFO() {
 	PCB* pcb = list_get(procesosReady, 0);
-	current_pcb_id = pcb->id;
-	return remove_and_get_ready(procesosReady, mutex_ready);
+	
+	return obtener_proceso_por_pid(pcb->id, procesosReady, mutex_ready);
 }
 
 bool filter_pcb_by_id(void* item) {
@@ -81,21 +81,17 @@ PCB* remove_and_get_ready(t_list* lista_procesos, pthread_mutex_t mutex) {
 
 PCB* siguiente_proceso_RR() {
 	PCB* pcb = list_get(procesosReady, 0);
-	current_pcb_id = pcb->id;
-	return remove_and_get_ready(procesosReady, mutex_ready);
+	
+	return obtener_proceso_por_pid(pcb->id, procesosReady, mutex_ready);
 }
 
 PCB* siguiente_proceso_FEEDBACK() {
 	if(list_size(procesosReady) == 0){
 		esta_usando_rr = false;
 		PCB* pcb = list_get(procesosBajaPrioridad, 0);
-		current_pcb_id = pcb->id;
-		return remove_and_get_ready(procesosBajaPrioridad, mutex_baja_prioridad);
+		return obtener_proceso_por_pid(pcb->id, procesosBajaPrioridad, mutex_ready);
 	} else {
 		esta_usando_rr = true;
 		return siguiente_proceso_RR();
 	}
 }
-
-
-

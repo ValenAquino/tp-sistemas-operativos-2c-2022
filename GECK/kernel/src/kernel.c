@@ -119,8 +119,12 @@ void matar_hilo_quantum() {
 }
 
 void fin_de_quantum() {
-	log_debug(logger_debug, "Voy a dormir %d segundos antes de mandar interrupcion de quantum", config->quantum_rr / 1000);
-	sleep(config->quantum_rr / 1000);
+	// 1 milisegundo = 1000 microsegundos
+	int usegs = config->quantum_rr * 1000;
+	log_debug(logger_debug, "Voy a dormir %d ms antes de mandar interrupcion de quantum", config->quantum_rr);
+	// usando sleep se enviaba la parte entera de: quantum_en_ms/1000 (para pasar a segundos)
+	// ej: q = 1500ms => q/1000 = 1,5 seg pero sleep recibia 1 seg
+	usleep(usegs);
 	log_debug(logger_debug, "Termino sleep de quantum -> Enviando interrupcion de quantum");
 	enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
 }

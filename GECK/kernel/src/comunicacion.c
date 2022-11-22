@@ -74,7 +74,6 @@ void manejar_comunicacion(void* void_args) {
 			pasarABlock(pcb, TECLADO);
 
 			log_debug(logger_debug, "Recibo OP_TECLADO.");
-			log_pcb(pcb);
 
 			enviar_codop(pcb->socket_consola, OP_TECLADO);
 			

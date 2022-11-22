@@ -26,5 +26,5 @@ echo Ejecutando CPU en una terminal nueva...
 gnome-terminal --working-directory=$PROJECT_PATH/cpu -e "./Debug/cpu $PRUEBAS_PATH/$1/cpu.config"
 
 echo Ejecutando Kernel en una terminal nueva...
-gnome-terminal --working-directory=$PROJECT_PATH/kernel -e "valgrind ./Debug/kernel $PRUEBAS_PATH/$1/kernel.config"
+gnome-terminal --working-directory=$PROJECT_PATH/kernel -e "./Debug/kernel $PRUEBAS_PATH/$1/kernel.config"
 
