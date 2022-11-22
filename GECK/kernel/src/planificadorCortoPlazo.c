@@ -7,9 +7,9 @@ extern t_list *procesosBlock;
 extern t_configuracion_kernel *config;
 
 extern sem_t sem_procesos_ready; // GRADO DE MULTIPROGRAMACION
-extern sem_t mutex_ready; // PROTEGE LA LISTA DE READY
-extern sem_t mutex_baja_prioridad;  // PROTEGE LA LISTA DE READY-FIFO EN FEEDBACK.
-extern sem_t mutex_block;
+extern pthread_mutex_t mutex_ready; // PROTEGE LA LISTA DE READY
+extern pthread_mutex_t mutex_baja_prioridad;  // PROTEGE LA LISTA DE READY-FIFO EN FEEDBACK.
+extern pthread_mutex_t mutex_block;
 extern sem_t planificar; // SINCRONIZA CORTO PLAZO
 extern sem_t cpu_idle; // GRADO DE MULTIPROCESAMIENTO
 
@@ -27,17 +27,14 @@ void pasarAExec(PCB* pcb) {
 }
 
 void pasarABlock(PCB* pcb, dispositivos disp) {
-	log_pcb(pcb);
-
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
 
-	sem_wait(&mutex_block);
+	pthread_mutex_lock(&mutex_block);
 	list_add(procesosBlock, pcb);
-	sem_post(&mutex_block);
+	pthread_mutex_unlock(&mutex_block);
 
 	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
-	sem_post(&sem_procesos_ready);
 }
 
 void pasarABlockPageFault(PCB* pcb) {
@@ -73,9 +70,11 @@ PCB* get_siguiente_proceso() {
 }
 
 PCB* siguiente_proceso_FIFO() {
+	pthread_mutex_lock(&mutex_ready);
 	PCB* pcb = list_get(procesosReady, 0);
-	current_pcb_id = pcb->id;
-	return remove_and_get_ready(procesosReady, mutex_ready);
+	pthread_mutex_unlock(&mutex_ready);
+	
+	return obtener_proceso_por_pid(pcb->id, procesosReady, mutex_ready);
 }
 
 bool filter_pcb_by_id(void* item) {
@@ -83,30 +82,30 @@ bool filter_pcb_by_id(void* item) {
     return pcb->id == current_pcb_id;
 }
 
-PCB* remove_and_get_ready(t_list* lista_procesos, sem_t mutex) {
-	sem_wait(&mutex);
+PCB* remove_and_get_ready(t_list* lista_procesos, pthread_mutex_t mutex) {
+	pthread_mutex_lock(&mutex);
 	PCB* pcb = list_remove_by_condition(lista_procesos, filter_pcb_by_id);
-	sem_post(&mutex);
+	pthread_mutex_unlock(&mutex);
 	return pcb;
 }
 
 PCB* siguiente_proceso_RR() {
+	pthread_mutex_lock(&mutex_ready);
 	PCB* pcb = list_get(procesosReady, 0);
-	current_pcb_id = pcb->id;
-	return remove_and_get_ready(procesosReady, mutex_ready);
+	pthread_mutex_unlock(&mutex_ready);
+
+	return obtener_proceso_por_pid(pcb->id, procesosReady, mutex_ready);
 }
 
 PCB* siguiente_proceso_FEEDBACK() {
 	if(list_size(procesosReady) == 0){
 		esta_usando_rr = false;
+		pthread_mutex_lock(&mutex_baja_prioridad);
 		PCB* pcb = list_get(procesosBajaPrioridad, 0);
-		current_pcb_id = pcb->id;
-		return remove_and_get_ready(procesosBajaPrioridad, mutex_baja_prioridad);
+		pthread_mutex_unlock(&mutex_baja_prioridad);
+		return obtener_proceso_por_pid(pcb->id, procesosBajaPrioridad, mutex_block);
 	} else {
 		esta_usando_rr = true;
 		return siguiente_proceso_RR();
 	}
 }
-
-
-

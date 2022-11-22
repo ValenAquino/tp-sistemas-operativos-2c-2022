@@ -14,9 +14,9 @@ extern int cpu_dispatch_fd;
 
 extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
-extern sem_t mutex_ready;
+extern pthread_mutex_t mutex_ready;
 extern sem_t planificar;
-extern sem_t mutex_baja_prioridad;
+extern pthread_mutex_t mutex_baja_prioridad;
 
 void planificador_largo_plazo() {
 
@@ -77,30 +77,30 @@ void pasarAReady(PCB* pcb, bool desalojado_por_quantum) {
 	switch (config->algoritmo_planificacion) {
 	case FIFO:
 	case RR:
-			sem_wait(&mutex_ready);
-			list_add(procesosReady, pcb);
-			imprimir_ready(procesosReady, "");
-			sem_post(&mutex_ready);
-			break;
+		pthread_mutex_lock(&mutex_ready);
+		list_add(procesosReady, pcb);
+		imprimir_ready(procesosReady, "");
+		pthread_mutex_unlock(&mutex_ready);
+		break;
 	case FEEDBACK:
 		if(desalojado_por_quantum){
-			sem_wait(&mutex_baja_prioridad);
+			pthread_mutex_lock(&mutex_baja_prioridad);
 			list_add(procesosBajaPrioridad, pcb);
-			sem_post(&mutex_baja_prioridad);
+			pthread_mutex_unlock(&mutex_baja_prioridad);
 		}
 		else {
-			sem_wait(&mutex_ready);
+			pthread_mutex_lock(&mutex_ready);
 			list_add(procesosReady, pcb);
-			sem_post(&mutex_ready);
+			pthread_mutex_unlock(&mutex_ready);
 		}
 
-		sem_wait(&mutex_ready);
+		pthread_mutex_lock(&mutex_ready);
 		imprimir_ready(procesosReady, "RR");
-		sem_post(&mutex_ready);
+		pthread_mutex_unlock(&mutex_ready);
 
-		sem_wait(&mutex_baja_prioridad);
+		pthread_mutex_lock(&mutex_baja_prioridad);
 		imprimir_ready(procesosBajaPrioridad, "FIFO");
-		sem_post(&mutex_baja_prioridad);
+		pthread_mutex_unlock(&mutex_baja_prioridad);
 		break;
 	}
 
@@ -115,5 +115,4 @@ void pasarAExit(PCB* pcb) {
 	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
 	list_add(procesosExit, pcb);
 	sem_post(&sem_procesos_ready);
-	//free(pcb); // lo estamos enlistando y liberando, perdemos ese espacio de memoria
 }

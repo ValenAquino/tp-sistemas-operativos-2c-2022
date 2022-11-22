@@ -5,7 +5,7 @@ extern t_configuracion_kernel* config;
 
 extern t_list* procesosBlock;
 extern sem_t planificar;
-extern sem_t mutex_block;
+extern pthread_mutex_t mutex_block;
 extern sem_t sem_procesos_ready;
 
 extern int memoria_fd;
@@ -19,8 +19,9 @@ void suspender_proceso(void* void_args ) {
 	free(args);
 
 	sleep(tiempo);
-	sem_wait(&sem_procesos_ready);
-	pasarAReady(pcb, false);
+
+	PCB* pcb_obtenido = obtener_proceso_por_pid(pcb->id, procesosBlock, mutex_block);
+	pasarAReady(pcb_obtenido, false);
 }
 
 void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo) {
@@ -54,14 +55,13 @@ void op_teclado(int pid, reg_cpu reg, uint32_t valor) {
 	
 	pcb->registros[reg] = valor;
 	
-	sem_wait(&sem_procesos_ready);
 	pasarAReady(pcb, false);
 }
 
 void op_pantallla(int pid, reg_cpu reg) {
 	PCB* pcb = obtener_proceso_por_pid(pid, procesosBlock, mutex_block);
 	log_debug(logger_debug, "registro: [%s] impreso por Proceso: <%d>", str_registro(reg), pcb->id);
-	sem_wait(&sem_procesos_ready);
+
 	pasarAReady(pcb, false);
 }
 
