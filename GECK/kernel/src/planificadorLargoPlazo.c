@@ -11,6 +11,7 @@ extern t_list* procesosBajaPrioridad;
 extern t_list* procesosExit;
 
 extern int cpu_dispatch_fd;
+extern int memoria_fd;
 
 extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
@@ -106,6 +107,12 @@ void pasarAReady(PCB* pcb, bool desalojado_por_quantum) {
 
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, READY_STATE);
 	pcb->estado_actual = READY_STATE;
+
+	// TODO: Aca se estaria enviando cada vez que entra a ready.
+	// Hay que revisar si hay que implementar alguna logica para ver si es necesario volver a crear las estructuras en memoria
+
+	enviar_solicitud_crear_estructuras_memoria(pcb->tamanios_segmentos, memoria_fd);
+
 	sem_post(&planificar);
 }
 

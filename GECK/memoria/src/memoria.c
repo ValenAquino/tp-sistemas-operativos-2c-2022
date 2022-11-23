@@ -12,6 +12,8 @@ void* area_swap;
 uint32_t memoria_disponible;
 void* memoria_principal;
 
+t_list *tablas_de_paginas;
+
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		config_path = "memoria.config";
@@ -33,6 +35,7 @@ void iniciar_memoria() {
 	crear_loggers("memoria", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
 	test_read_config(config);
+	tablas_de_paginas = list_create();
 }
 
 int crear_conexion(char* ip, char* puerto) {

@@ -104,6 +104,22 @@ void manejar_comunicacion(void* void_args) {
 			break;
 		}
 
+		case RESPUESTA_INDICES_T_PS: {
+			t_list* indices = recibir_indices_tablas_de_paginas(cliente_socket);
+
+
+			// Aca habria que mapear estos indices a los segmentos pero no tenemos el pcb
+			// en la comunicacion el kernel envia los tamanios de los segmentos
+			// y aca se reciben los indices de las tablas de paginas del proceso.
+			// tal vez tenemos que pasar y devolver el pcb?
+			log_debug(logger_debug, "RESPUESTA_INDICES_T_PS - RECIBI INDICES");
+			void iterar(int* index) {
+				log_debug(logger_debug, "RESPUESTA_INDICES_T_PS, indice: %d", *index);
+			}
+
+			list_iterate(indices, (void*) iterar);
+			break;
+		}
 		case PAGE_FAULT_CPU: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			int segmento_solicitado = recibir_valor(cliente_socket);

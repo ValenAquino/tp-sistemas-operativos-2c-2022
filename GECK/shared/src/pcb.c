@@ -20,19 +20,6 @@ PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tamanio_segmentos) 
     return pcb;
 }
 
-//t_list *crear_segmentos(t_list* tamanio_segmentos) {
-//	t_list * tabla_de_segmentos = list_create();
-//
-//	void crear_segmento(void *tamanio) {
-//
-//		list_add(tabla_de_segmentos, )
-//		return elementPcb->id == pid;
-//	}
-//
-//	list_iterate(tamanio_segmentos, (void*) crear_segmento);
-//}
-
-
 
 PCB *obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex) {
 

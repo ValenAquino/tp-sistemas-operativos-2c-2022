@@ -28,8 +28,7 @@ typedef struct PCB
     t_list* instrucciones;
     t_list* tablaSegmentos;
     t_list* tamanios_segmentos;
-
-}PCB;
+} PCB;
 
 typedef struct {
 	int tamanio_segmento;
