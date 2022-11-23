@@ -1,35 +1,37 @@
 #include "../include/suspendidos.h"
 
-extern t_log* logger;
 extern t_configuracion_kernel* config;
 
 extern t_list* procesosBlock;
-extern sem_t planificar;
 extern pthread_mutex_t mutex_block;
-extern sem_t sem_procesos_ready;
+extern sem_t sem_disco;
+extern sem_t sem_impresora;
 
 extern int memoria_fd;
 
 // IO usando sleep
 
-void suspender_proceso(void* void_args ) {
+void suspender_proceso(void* void_args) {
 	t_manejar_block* args = (t_manejar_block*) void_args;
 	int tiempo = args->tiempo_de_suspension;
 	PCB* pcb = args->pcb;
+	dispositivos dispositivo = args->dispositivo;
 	free(args);
 
 	sleep(tiempo);
+	manejar_post_dispositivo(dispositivo);
 
 	PCB* pcb_obtenido = obtener_proceso_por_pid(pcb->id, procesosBlock, mutex_block);
 	pasarAReady(pcb_obtenido, false);
 }
 
-void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo) {
+void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo) {
     pthread_t hilo;
 
     t_manejar_block* args = malloc(sizeof(t_manejar_block));
     args->pcb = pcb;
     args->tiempo_de_suspension = tiempo;
+    args->dispositivo = dispositivo;
 
     pthread_create(&hilo, NULL, (void*) suspender_proceso, (void*) args);
     pthread_detach(hilo);
@@ -42,9 +44,44 @@ void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket) {
 			
 	pasarABlock(pcb, dispo);
 
+	manejar_wait_dispositivo(dispo);
+
 	log_trace(logger_debug, "SLEEP DE %d", tiempo_de_suspension);
-	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension);
+	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension, dispo);
 }
+
+void manejar_wait_dispositivo(dispositivos dispositivo) {
+	switch (dispositivo) {
+		case IMPRESORA:
+			sem_wait(&sem_impresora);
+		break;
+		case DISCO:
+			sem_wait(&sem_disco);
+		break;
+		default:
+			log_error(logger_debug, "Dispositivo desconocido. No se puede manejar la suspension.");
+			exit(EXIT_FAILURE);
+		break;
+	}
+}
+
+
+void manejar_post_dispositivo(dispositivos dispositivo) {
+	switch (dispositivo) {
+		case IMPRESORA:
+			sem_post(&sem_impresora);
+		break;
+		case DISCO:
+			sem_post(&sem_disco);
+		break;
+		default:
+			log_error(logger_debug, "Dispositivo desconocido. Error al hacer el post para desbloquear el dispositivo.");
+			exit(EXIT_FAILURE);
+		break;
+	}
+}
+
+
 
 // IO con consola
 

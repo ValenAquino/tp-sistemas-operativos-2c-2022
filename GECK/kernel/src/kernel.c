@@ -27,6 +27,8 @@ pthread_mutex_t mutex_baja_prioridad;
 
 sem_t planificar;
 sem_t cpu_idle;
+sem_t sem_disco;
+sem_t sem_impresora;
 
 pthread_t hilo_quantum;
 
@@ -173,6 +175,8 @@ void inicializar_kernel() {
 	pthread_mutex_init(&mutex_ready, NULL);
 	sem_init(&planificar, 1, 0);
 	sem_init(&cpu_idle, 1, 1);
+	sem_init(&sem_impresora, 1, 1);
+	sem_init(&sem_disco, 1, 1);
 	pthread_mutex_init(&mutex_block, NULL);
 
 	if(config->algoritmo_planificacion == FEEDBACK) {
