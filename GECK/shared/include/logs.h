@@ -11,6 +11,7 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 
 void log_list_inst(t_list*);
 void log_lista_seg(t_list*);
+void log_lista_tamanios_seg(t_list*);
 void log_pcb(PCB*);
 void log_cambio_de_estado(int id, t_estado_proceso anterior, t_estado_proceso nuevo);
 

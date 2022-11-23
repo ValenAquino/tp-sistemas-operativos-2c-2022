@@ -37,16 +37,30 @@ void log_list_inst(t_list* instrucciones) {
 	}
 }
 
-void log_lista_seg(t_list* tablaSegmentos) {
-	for(int i = 0; i < list_size(tablaSegmentos); i++) {
-		int *seg = list_get(tablaSegmentos, i);
-		log_debug(logger_debug, "segmento[%d] = %d", i, *seg);
+void log_lista_tamanios_seg(t_list* tabla_tamanios) {
+	for(int i = 0; i < list_size(tabla_tamanios); i++) {
+		int *tamanio = list_get(tabla_tamanios, i);
+		log_debug(logger_debug, "tamanio segmento [%d] = %d", i, *tamanio);
+	}
+}
+
+void log_lista_seg(t_list* tabla_segmentos) {
+
+	if (list_size(tabla_segmentos) == 0) {
+		log_debug(logger_debug, "Todavia no hay segmentos en este proceso");
+		return;
+	}
+
+	for(int i = 0; i < list_size(tabla_segmentos); i++) {
+		segmento_t *seg = list_get(tabla_segmentos, i);
+		log_debug(logger_debug, "segmento [%d] = { tam: %d, id_tabla_de_pags: %d }", i, seg->tamanio_segmento, seg->num_pagina);
 	}
 }
 
 void log_pcb(PCB* pcb) {
 	t_list* instrucciones = pcb->instrucciones;
 	t_list* segmentos = pcb->tablaSegmentos;
+	t_list* tamanios_segmentos = pcb->tamanios_segmentos;
 
     log_trace(logger_debug, "IMPRIMIENDO PCB");
 	log_debug(logger_debug, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
@@ -59,6 +73,7 @@ void log_pcb(PCB* pcb) {
 	);
 
 	log_list_inst(instrucciones);
+	log_lista_tamanios_seg(tamanios_segmentos);
 	log_lista_seg(segmentos);
 	
     log_trace(logger_debug, "FIN PCB");

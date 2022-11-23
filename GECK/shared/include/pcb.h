@@ -26,22 +26,24 @@ typedef struct PCB
     int programCounter;
     uint32_t registros[4];
     t_list* instrucciones;
-    t_list* tablaSegmentos; //lo resuelve memoria a peticion del kernel
+    t_list* tablaSegmentos;
+    t_list* tamanios_segmentos;
+
 }PCB;
 
 typedef struct {
 	int tamanio_segmento;
 	int num_pagina;
-} segmento;
+} segmento_t;
 
 typedef struct {
 	int bit_p;
 	int bit_u;
 	int bit_m;
 	int frame;
-} pagina;
+} pagina_t;
 
-PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tablaSegmentos);
+PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tamanio_segmentos);
 PCB* obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex);
 
 #endif /* PCB_H_ */

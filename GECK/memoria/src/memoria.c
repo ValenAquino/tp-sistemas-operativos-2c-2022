@@ -65,7 +65,7 @@ int crear_archivo_swap(t_configuracion_memoria* config, char* path, uint32_t tam
     return EXIT_SUCCESS;
 }
 
-int cargar_memoria(t_configuracion_memoria* config,) {
+int cargar_memoria(t_configuracion_memoria* config) {
     memoria_principal = malloc(config->tam_memoria);   // void*
     if (memoria_principal == NULL) {
         log_error(logger, "Fallo en el malloc a memoria_principal");

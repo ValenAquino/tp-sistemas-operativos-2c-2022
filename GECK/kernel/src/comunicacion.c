@@ -118,7 +118,7 @@ void manejar_comunicacion(void* void_args) {
 		case PAGINA_ENCONTRADA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			log_debug(logger_debug, "Memoria encontro la pagina solicitada!");
-			pasarAReady(pcb);
+//			pasarAReady(pcb);
 
 			break;
 		}
@@ -169,7 +169,7 @@ PCB* crear_pcb(int cliente_socket) {
 	void* seg = list_get(listas, 1);
 
 	t_list *lista_ins = deserializar_lista_inst(ins);
-	t_list *lista_segm = deserializar_lista_segm(seg);
+	t_list *lista_segm = deserializar_lista_tamanios_segm(seg);
 
 	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
 	

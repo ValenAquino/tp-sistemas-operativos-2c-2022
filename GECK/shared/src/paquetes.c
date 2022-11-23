@@ -1,7 +1,6 @@
 #include "../include/paquetes.h"
 
 // ENVIOS
-
 ts_paquete* crear_paquete(op_code codigo) {
 	ts_paquete* paquete = malloc(sizeof(ts_paquete));
 	paquete->code = codigo;
@@ -81,7 +80,7 @@ void* serializar_lista_ins(t_list *lista, int size) {
 	return stream;
 }
 
-void* serializar_lista_seg(t_list *lista, int size) {
+void* serializar_lista_tamanios_seg(t_list *lista, int size) {
 	int desplazamiento = 0;
 
 	int cant_elementos = list_size(lista);
@@ -95,6 +94,31 @@ void* serializar_lista_seg(t_list *lista, int size) {
 		int *valor = list_get(lista, i);
 
 		memcpy(stream + desplazamiento, valor, size_elemento);
+		desplazamiento += size_elemento;
+	}
+
+	list_destroy(lista);
+
+	return stream;
+}
+
+void* serializar_lista_seg(t_list *lista, int size) {
+	int desplazamiento = 0;
+
+	int cant_elementos = list_size(lista);
+	int size_elemento = sizeof(int);
+	void* stream = malloc(size);
+
+	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		segmento_t *segmento = list_get(lista, i);
+
+		memcpy(stream + desplazamiento, &(segmento->tamanio_segmento), size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, &(segmento->num_pagina), size_elemento);
 		desplazamiento += size_elemento;
 	}
 
@@ -198,6 +222,31 @@ t_list* deserializar_lista_segm(void *stream) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
+		segmento_t *segmento = malloc(sizeof(segmento_t));
+
+		memcpy(&segmento->tamanio_segmento, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(&segmento->num_pagina, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		list_add(lista, segmento);
+	}
+
+	return lista;
+}
+
+
+t_list* deserializar_lista_tamanios_segm(void *stream) {
+	int cant_elementos;
+	int desplazamiento = 0;
+	int size_elemento = sizeof(int);
+	t_list* lista = list_create();
+
+	memcpy(&cant_elementos, stream + desplazamiento, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
 		int *valor = malloc(sizeof(int));
 		memcpy(valor, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
@@ -207,7 +256,10 @@ t_list* deserializar_lista_segm(void *stream) {
 	return lista;
 }
 
-PCB* deserializar_pcb(void* data, void* inst, void* segm) {
+PCB* deserializar_pcb(void* data, void* inst, void* segm, void* tamanios_segmentos) {
+
+
+
 	PCB* pcb = (PCB*) malloc(sizeof(PCB));
 	int desplazamiento = 0;
 
@@ -228,10 +280,12 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 
 	pcb->instrucciones = deserializar_lista_inst(inst);
 	pcb->tablaSegmentos = deserializar_lista_segm(segm);
+	pcb->tamanios_segmentos = deserializar_lista_tamanios_segm(tamanios_segmentos);
 
 	free(data);
 	free(inst);
 	free(segm);
+	free(tamanios_segmentos);
 
 	return pcb;
 }
@@ -242,14 +296,17 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 	// 3 ints de PC, ID, SOCKET + 4 uint32_t de los registros + 1 t_estado_proceso
 	int size_data = sizeof(int) * 3 + sizeof(uint32_t) * 4 + sizeof(t_estado_proceso);
 	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
-	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
+	int size_tamanios_seg = sizeof(int) * list_size(pcb->tamanios_segmentos) + sizeof(int);
+	int size_seg = sizeof(segmento_t) * list_size(pcb->tablaSegmentos) + sizeof(int);
 
 	void* data = serializar_datos_pcb(pcb, size_data);
 	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
+	void* tam_segm = serializar_lista_tamanios_seg(pcb->tamanios_segmentos, size_tamanios_seg);
 	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
 
 	agregar_a_paquete(paquete, data, size_data);
 	agregar_a_paquete(paquete, inst, size_ins);
+	agregar_a_paquete(paquete, tam_segm, size_tamanios_seg);
 	agregar_a_paquete(paquete, segm, size_seg);
 
 	enviar_paquete(paquete, socket_fd);
@@ -261,10 +318,11 @@ PCB* recibir_pcb(int cliente_socket) {
 
 	void* datos = list_get(listas, 0);
 	void* inst  = list_get(listas, 1);
-	void* segm  = list_get(listas, 2);
+	void* tam_segm  = list_get(listas, 2);
+	void* segm  = list_get(listas, 3);
 	list_destroy(listas);
 
-	PCB* pcb = deserializar_pcb(datos, inst, segm);
+	PCB* pcb = deserializar_pcb(datos, inst, segm, tam_segm);
 
 	return pcb;
 }
