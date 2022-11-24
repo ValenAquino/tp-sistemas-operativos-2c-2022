@@ -100,9 +100,9 @@ void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista)
 		desplazamiento += size_elemento;
 	}
 
-//	if(destruir_lista == 1){
-//		list_destroy(lista);
-//	}
+	if(destruir_lista == 1){
+		list_destroy(lista);
+	}
 
 	return stream;
 }

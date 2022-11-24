@@ -84,11 +84,6 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 	return file_descriptor;
 }
 
-void pedir_marco_memoria(PCB* pcb, int direccion) {
-	enviar_pcb(pcb, memoria_fd, ACCESO_A_MEMORIA);
-	enviar_valor(memoria_fd, direccion);
-}
-
 void leer_de_memoria(int marco) {
 	enviar_codop(memoria_fd, LECTURA_MEMORIA);
 	enviar_valor(memoria_fd, marco);

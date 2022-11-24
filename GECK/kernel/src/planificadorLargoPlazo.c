@@ -27,7 +27,6 @@ void planificador_largo_plazo() {
 		sem_wait(&sem_proceso_nuevo);
 		sem_wait(&sem_procesos_ready);
 		PCB* pcb = list_get(procesosNew, 0);
-		log_pcb(pcb);
 		enviar_solicitud_crear_estructuras_memoria(pcb->tamanios_segmentos, memoria_fd, pcb->id);
 		sem_wait(&sem_estructuras_memoria);
 		log_pcb(pcb);

@@ -119,10 +119,7 @@ void manejar_comunicacion(void* void_args) {
 			}
 
 			list_iterate(indices, (void*) iterar);
-			log_debug(logger_debug, "PID: %d", pid);
 			PCB* pcb = obtener_proceso_por_pid(pid, procesosNew, mutex_new);
-			log_pcb(pcb);
-			//log_debug(logger_debug, "tamanio lista tam seg: %d", list_size(pcb->tamanios_segmentos));
 
 			for(int i = 0; i < list_size(indices); i++) {
 				segmento_t *seg = (segmento_t *) malloc(sizeof(segmento_t));

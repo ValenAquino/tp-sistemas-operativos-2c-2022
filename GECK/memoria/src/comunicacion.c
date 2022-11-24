@@ -38,10 +38,9 @@ void manejar_comunicacion(void* void_args) {
 				enviar_pcb(pcb, cliente_socket, PAGINA_ENCONTRADA);
 				break;
 			case ACCESO_A_MEMORIA: {
-				// TODO: REVISAR LOGICA
-				PCB* pcb = recibir_pcb(cliente_socket);
-				int direccion = recibir_valor(cliente_socket);
-				int numero_de_marco = obtener_num_marco(direccion);
+				dir_t dir = recibir_direccion(cliente_socket);
+
+				int numero_de_marco = obtener_num_marco(dir);
 
 				if (numero_de_marco != -1) {
 					log_debug(logger_debug, "Se obtuvo el marco de memoria: %d. Enviandolo a CPU.", numero_de_marco);

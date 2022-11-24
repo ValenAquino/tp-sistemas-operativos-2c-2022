@@ -24,6 +24,8 @@ extern uint32_t REG_DX;
 int kernel_fd;
 extern int memoria_fd;
 
+extern int valor_leido;
+
 bool inicializados = false;
 bool se_devolvio_pcb = false;
 
@@ -129,26 +131,7 @@ void execute(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_set(ts_ins* instruccion, PCB *pcb) {
-	switch (instruccion->param1) { // Estamos supiendo que en SET el primer parametro es el registro
-	case AX:
-		REG_AX = instruccion->param2;
-		break;
-	case BX:
-		REG_BX = instruccion->param2;
-		break;
-	case CX:
-		REG_CX = instruccion->param2;
-		break;
-	case DX:
-		REG_DX = instruccion->param2;
-		break;
-	default:
-		//TODO: Manejar error de instruccion;
-		// Para mi habría que loggearlo y finalizar todos los módulos
-		// En la consigna no especifica nada
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
+	return guardar_en_reg(instruccion->param1, instruccion->param2);
 }
 
 int execute_add(ts_ins* instruccion, PCB *pcb) {
@@ -217,30 +200,36 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 }
 
 int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
-	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
-	sem_wait(&sem_acceso_memoria);
 
-	if (FLAG_PAGE_FAULT) {
-		FLAG_PAGE_FAULT = 0;
+	dir_t dir_parcial = traducir_direccion(instruccion->param2, pcb->tablaSegmentos);
+
+	if(dir_parcial.nro_pag == -1) {
+		enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
+		se_devolvio_pcb = true;
+		return EXIT_FAILURE;
+	}
+
+	int res = pedir_marco_memoria(dir_parcial, memoria_fd);
+
+	if (res == EXIT_FAILURE) {
+		// TODO: Abstraer a funcion
 		MARCO_MEMORIA = -1;
 		actualizar_pcb(pcb);
 
-		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
+		log_trace(
+				logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d", dir_parcial.nro_pag, dir_parcial.nro_seg
+		);
 
 		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
-		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
+		enviar_valor(kernel_fd, dir_parcial.nro_seg); // TODO: Implementar bien el segmento solicitado.
+		enviar_valor(kernel_fd, dir_parcial.nro_pag); // TODO: Implementar bien la pagina solicitada.
 
 		free(pcb);
-
 		se_devolvio_pcb = true;
 		return EXIT_FAILURE;
 	} else {
-		log_trace(logger_debug, "Voy a leer la memoria en el marco: %d", MARCO_MEMORIA);
-		leer_de_memoria(MARCO_MEMORIA);
-		FLAG_PAGE_FAULT = 0;
-		MARCO_MEMORIA = -1;
 		sem_wait(&sem_respuesta_memoria);
+		guardar_en_reg(instruccion->param1, valor_leido);
 		return EXIT_SUCCESS;
 	}
 }
@@ -305,6 +294,26 @@ uint32_t get_valor_registro(reg_cpu registro) {
 		return REG_DX;
 	}
 	exit(EXIT_FAILURE);
+}
+
+int guardar_en_reg(reg_cpu reg, int valor) {
+	switch (reg) { // Estamos supiendo que en SET el primer parametro es el registro
+		case AX:
+			REG_AX = valor;
+			break;
+		case BX:
+			REG_BX = valor;
+			break;
+		case CX:
+			REG_CX = valor;
+			break;
+		case DX:
+			REG_DX = valor;
+			break;
+		default:
+			return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
 }
 
 void actualizar_pcb(PCB* pcb) {

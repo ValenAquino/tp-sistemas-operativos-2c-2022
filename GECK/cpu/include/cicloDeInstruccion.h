@@ -13,6 +13,7 @@
 #include "comunicacion.h"
 #include "configuracion.h"
 #include "cpu.h"
+#include "mmu.h"
 
 void ciclo_de_instruccion(PCB* pcb, int kernel_socket);
 
@@ -30,6 +31,7 @@ int execute_mov_out(ts_ins* instruccion, PCB *pcb);
 void check_interrupt();
 
 uint32_t get_valor_registro(reg_cpu registro);
+int guardar_en_reg(reg_cpu reg, int valor);
 void actualizar_pcb(PCB* pcb);
 void restaurar_contexto_ejecucion(uint32_t registros[]);
 

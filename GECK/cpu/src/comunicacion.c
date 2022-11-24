@@ -9,6 +9,8 @@ extern int MARCO_MEMORIA;
 extern sem_t sem_acceso_memoria;
 extern sem_t sem_respuesta_memoria;
 
+int valor_leido;
+
 void manejar_comunicacion_dispatch(void* void_args) {
 	t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
 	int cliente_socket = args->fd;
@@ -117,7 +119,7 @@ void manejar_comunicacion_memoria(void* void_args) {
 			sem_post(&sem_respuesta_memoria);
 			break;
 		case VALOR_LECTURA_MEMORIA:
-			int valor_leido = recibir_valor(cliente_socket);
+			valor_leido = recibir_valor(cliente_socket);
 			log_debug(logger_debug, "Valor leido de memoria: %d", valor_leido);
 			sem_post(&sem_respuesta_memoria);
 			break;
