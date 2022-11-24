@@ -22,8 +22,6 @@ int conectar_con(char *servername, char *ip, char *puerto);
 
 void hilo_memoria();
 
-void pedir_marco_memoria(PCB* pcb, int direccion);
-void leer_de_memoria(int marco);
 void escribir_en_memoria(int marco, int valor);
 
 #endif /* CPU_H_ */

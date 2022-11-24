@@ -1,6 +1,7 @@
 #include "../include/comunicacion.h"
 
 extern t_log* logger_debug;
+extern t_configuracion_memoria* config;
 
 void manejar_comunicacion(void* void_args) {
 		t_manejar_conexion_args* args = (t_manejar_conexion_args*) void_args;
@@ -13,6 +14,11 @@ void manejar_comunicacion(void* void_args) {
 			int cod_op = recibir_operacion(cliente_socket);
 
 			switch (cod_op) {
+			case HANDSHAKE_MEMORIA_CPU:
+				enviar_valor(cliente_socket, config->entradas_por_tabla);
+				enviar_valor(cliente_socket, config->tam_pagina);
+				break;
+
 			case CREAR_ESTRUCTURAS_MEMORIA: {
 				log_debug(logger_debug, "CREAR_ESTRUCTURAS_MEMORIA");
 				t_list* tamanios_segmentos = recibir_solicitud_crear_estructuras_memoria(cliente_socket);
@@ -33,12 +39,14 @@ void manejar_comunicacion(void* void_args) {
 							pagina_solicitada,
 							pcb->id);
 
-				//TODO: MODIFICAR es solo para testing el sleep(2).
-				sleep(2);
+				//TODO: IMPLEMENTAR SOLICITUD A SWAP.
+
+				// REVISAR: Este envio esta ok? Es necesario? Si es necesario quizas habria
+				// que llamarlo cuando cuando swap responda ok.
 				enviar_pcb(pcb, cliente_socket, PAGINA_ENCONTRADA);
 				break;
 			case ACCESO_A_MEMORIA: {
-				dir_t dir = recibir_direccion(cliente_socket);
+				dir_t dir = recibir_direccion_parcial(cliente_socket);
 
 				int numero_de_marco = obtener_num_marco(dir);
 

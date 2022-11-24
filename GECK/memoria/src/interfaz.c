@@ -3,7 +3,7 @@
 extern t_configuracion_memoria* config;
 extern t_list *tablas_de_paginas;
 
-int obtener_num_marco(int direccion) {
+int obtener_num_marco(dir_t direccion_parcial) {
 	return 41;
 }
 

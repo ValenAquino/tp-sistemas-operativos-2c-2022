@@ -19,7 +19,7 @@
 #include "comunicacion.h"
 #include "configuracion.h"
 
-int obtener_num_marco(int direccion);
+int obtener_num_marco(dir_t direccion_parcial);
 int leer(int marco);
 void escribir(int marco, int valor);
 

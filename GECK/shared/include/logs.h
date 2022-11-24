@@ -3,6 +3,7 @@
 
 #include "shared.h"
 #include "paquetes.h"
+#include "memoria_shared.h"
 
 extern t_log* logger;
 extern t_log* logger_debug;

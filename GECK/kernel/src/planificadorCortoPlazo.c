@@ -40,7 +40,10 @@ void pasarABlockPageFault(PCB* pcb) {
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
 
+	pthread_mutex_lock(&mutex_block);
 	list_add(procesosBlock, pcb);
+	pthread_mutex_unlock(&mutex_block);
+
 	log_info(logger, "PID: <%d> - Bloqueado por: <PAGE_FAULT>", pcb->id);
 }
 

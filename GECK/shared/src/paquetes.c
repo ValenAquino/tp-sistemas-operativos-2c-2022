@@ -446,6 +446,36 @@ t_list* recibir_indices_tablas_de_paginas(int cliente_socket) {
 	return tamanios_segmentos;
 }
 
+void* serializar_direccion_parcial(dir_t direccion, int size) {
+	// TODO: IMPLEMENTAR SERIALIZACION.
+	return NULL;
+}
+
+dir_t deserializar_direccion_parcial(void* stream) {
+	dir_t* direccion = (dir_t*) malloc(sizeof(dir_t));
+
+	// TODO: IMPLEMENTAR DESERIALIZACION.
+
+	return *direccion;
+}
+
+void enviar_direccion_parcial(dir_t direccion, int cliente_socket) {
+	// TODO: IMPLEMENTAR
+}
+
+dir_t recibir_direccion_parcial(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	log_debug(logger_debug, "recibir_indices_tablas_de_paginas list paquete size: %d", list_size(listas));
+
+	void* direccion = list_get(listas, 0);
+
+	list_destroy(listas);
+
+	dir_t direccion_deserializada = deserializar_direccion_parcial(direccion);
+
+	return direccion_deserializada;
+}
 
 
 

@@ -138,7 +138,6 @@ void manejar_comunicacion(void* void_args) {
 			int segmento_solicitado = recibir_valor(cliente_socket);
 			int pagina_solicitada = recibir_valor(cliente_socket);
 
-			// TODO: Aca tiene que venir el segmento tambien?
 			log_info(logger, "Page Fault PID: <%d> - Segmento: <%d> - Pagina: <%d>", pcb->id, segmento_solicitado, pagina_solicitada);
 
 			ejecutar_bloqueo_page_fault(pcb, segmento_solicitado, pagina_solicitada);
@@ -147,8 +146,7 @@ void manejar_comunicacion(void* void_args) {
 		case PAGINA_ENCONTRADA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			log_debug(logger_debug, "Memoria encontro la pagina solicitada!");
-//			pasarAReady(pcb);
-
+			pasarAReady(pcb, 0);
 			break;
 		}
 		case DEBUG:

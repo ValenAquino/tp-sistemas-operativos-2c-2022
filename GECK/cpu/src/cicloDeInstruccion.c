@@ -1,7 +1,7 @@
 #include "../include/cicloDeInstruccion.h"
 
-extern t_log* logger;
-extern t_log* logger_debug;
+extern t_log *logger;
+extern t_log *logger_debug;
 extern t_configuracion_cpu *config;
 extern int FLAG_FIN_QUANTUM;
 extern int FLAG_PAGE_FAULT;
@@ -38,91 +38,87 @@ void inicializar_registro() {
 }
 
 void log_registros() {
-	log_debug (
-		logger,
-		"[AX: %u, BX: %u, CX: %u, DX: %u]",
-		REG_AX, REG_BX, REG_CX, REG_DX
-	);
+	log_debug(logger, "[AX: %u, BX: %u, CX: %u, DX: %u]", REG_AX, REG_BX,
+			REG_CX, REG_DX);
 }
 
-void ciclo_de_instruccion(PCB* pcb, int kernel_socket) {
+void ciclo_de_instruccion(PCB *pcb, int kernel_socket) {
 	kernel_fd = kernel_socket;
 	se_devolvio_pcb = false;
-	
+
 	//log_pcb(pcb);
 
 	log_registros();
 
-	ts_ins* ins_a_ejecutar = fetch(pcb);
-	
+	ts_ins *ins_a_ejecutar = fetch(pcb);
+
 	ins_a_ejecutar = decode(ins_a_ejecutar);
-	
+
 	execute(ins_a_ejecutar, pcb);
 
 	check_interrupt(pcb);
 
-	if(!se_devolvio_pcb) {
+	if (!se_devolvio_pcb) {
 		ciclo_de_instruccion(pcb, kernel_fd);
 	}
 }
 
-ts_ins *fetch(PCB* pcb) {
+ts_ins* fetch(PCB *pcb) {
 	log_trace(logger_debug, "FETCH: ");
 
 	return list_get(pcb->instrucciones, pcb->programCounter);
 }
 
-ts_ins* decode(ts_ins* instruccion) { 
+ts_ins* decode(ts_ins *instruccion) {
 	// No debería ser una funcion void?
 	log_trace(logger_debug, "DECODE");
 	switch (instruccion->name) {
-		case SET:
-		case ADD:
-			log_trace(logger_debug, "Ejecutando un retardo de instruccion de: %d ms", config->retardo_instruccion);
-			sleep(config->retardo_instruccion / 1000); // Sleep recibe tiempo en segundos
-			log_trace(logger_debug, "FIN retardo de instruccion");
-			return instruccion;
-		case MOV_IN:
-		case MOV_OUT:
-		case IO:
-		case EXIT:
-			return instruccion;
-		default:
-			//TODO: manejar error de instruccion
-			exit(EXIT_FAILURE);
-			break;
+	case SET:
+	case ADD:
+		log_trace(logger_debug,
+				"Ejecutando un retardo de instruccion de: %d ms",
+				config->retardo_instruccion);
+		sleep(config->retardo_instruccion / 1000); // Sleep recibe tiempo en segundos
+		log_trace(logger_debug, "FIN retardo de instruccion");
+		return instruccion;
+	case MOV_IN:
+	case MOV_OUT:
+	case IO:
+	case EXIT:
+		return instruccion;
+	default:
+		//TODO: manejar error de instruccion
+		exit(EXIT_FAILURE);
+		break;
 	}
 }
 
-void execute(ts_ins* instruccion, PCB *pcb) {
+void execute(ts_ins *instruccion, PCB *pcb) {
 	log_trace(logger_debug, "EXECUTE: ");
-	log_info(
-		logger, 
-		"PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", 
-		pcb->id, str_ins(instruccion->name), instruccion->param1, instruccion->param2
-	);
-
+	log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", pcb->id,
+			str_ins(instruccion->name), instruccion->param1,
+			instruccion->param2);
 
 	int success;
 	switch (instruccion->name) {
-		case SET:
-			success = execute_set(instruccion, pcb);
-			break;
-		case ADD:
-			success = execute_add(instruccion, pcb);
-			break;
-		case IO:
-			success = execute_io(instruccion, pcb);
-			break;
-		case EXIT:
-			success = execute_exit(instruccion, pcb);
-			break;
-		case MOV_IN:
-			success = execute_mov_in(instruccion, pcb);
-			break;
-		case MOV_OUT:
-			success = execute_mov_out(instruccion, pcb);
-			break;
+	case SET:
+		success = execute_set(instruccion, pcb);
+		break;
+	case ADD:
+		success = execute_add(instruccion, pcb);
+		break;
+	case IO:
+		success = execute_io(instruccion, pcb);
+		break;
+	case EXIT:
+		success = execute_exit(instruccion, pcb);
+		break;
+	case MOV_IN:
+		success = execute_mov_in(instruccion, pcb);
+		break;
+	case MOV_OUT:
+		success = execute_mov_out(instruccion, pcb);
+		break;
 	}
 
 	if (success == EXIT_SUCCESS) { // exit succes = 0 = false 
@@ -130,11 +126,11 @@ void execute(ts_ins* instruccion, PCB *pcb) {
 	}
 }
 
-int execute_set(ts_ins* instruccion, PCB *pcb) {
+int execute_set(ts_ins *instruccion, PCB *pcb) {
 	return guardar_en_reg(instruccion->param1, instruccion->param2);
 }
 
-int execute_add(ts_ins* instruccion, PCB *pcb) {
+int execute_add(ts_ins *instruccion, PCB *pcb) {
 	switch (instruccion->param1) { // Estamos supiendo que en SET el primer parametro es el registro
 	case AX:
 		REG_AX = REG_AX + get_valor_registro(instruccion->param2);
@@ -155,27 +151,27 @@ int execute_add(ts_ins* instruccion, PCB *pcb) {
 	return EXIT_SUCCESS;
 }
 
-int execute_io(ts_ins* instruccion, PCB *pcb) {
+int execute_io(ts_ins *instruccion, PCB *pcb) {
 	op_code codigo;
 
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
 
-	switch(instruccion->param1){
-		case DISCO:
-			codigo = OP_DISCO;
-			break;
-		case IMPRESORA:
-			codigo = OP_IMPRESORA;
-			break;
-		case PANTALLA:
-			codigo = OP_PANTALLA;
-			break;
-		case TECLADO:
-			codigo = OP_TECLADO;
-			break;
+	switch (instruccion->param1) {
+	case DISCO:
+		codigo = OP_DISCO;
+		break;
+	case IMPRESORA:
+		codigo = OP_IMPRESORA;
+		break;
+	case PANTALLA:
+		codigo = OP_PANTALLA;
+		break;
+	case TECLADO:
+		codigo = OP_TECLADO;
+		break;
 	}
-	
+
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O: ");
 
 	enviar_pcb(pcb, kernel_fd, codigo);
@@ -186,10 +182,10 @@ int execute_io(ts_ins* instruccion, PCB *pcb) {
 	return EXIT_FAILURE;
 }
 
-int execute_exit(ts_ins* instruccion, PCB *pcb) {
+int execute_exit(ts_ins *instruccion, PCB *pcb) {
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
-	
+
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
 
@@ -199,11 +195,12 @@ int execute_exit(ts_ins* instruccion, PCB *pcb) {
 	return EXIT_FAILURE;
 }
 
-int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
+int execute_mov_in(ts_ins *instruccion, PCB *pcb) {
 
-	dir_t dir_parcial = traducir_direccion(instruccion->param2, pcb->tablaSegmentos);
+	dir_t dir_parcial = traducir_direccion(instruccion->param2,
+			pcb->tablaSegmentos);
 
-	if(dir_parcial.nro_pag == -1) {
+	if (dir_parcial.nro_pag == -1) {
 		enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
 		se_devolvio_pcb = true;
 		return EXIT_FAILURE;
@@ -211,59 +208,65 @@ int execute_mov_in(ts_ins* instruccion, PCB *pcb) {
 
 	int res = pedir_marco_memoria(dir_parcial, memoria_fd);
 
-	if (res == EXIT_FAILURE) {
+	if (res == PAGE_FAULT_ERROR) {
 		// TODO: Abstraer a funcion
 		MARCO_MEMORIA = -1;
 		actualizar_pcb(pcb);
 
-		log_trace(
-				logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d", dir_parcial.nro_pag, dir_parcial.nro_seg
-		);
+		log_trace(logger_debug,
+				"ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d",
+				dir_parcial.nro_pag, dir_parcial.nro_seg);
 
 		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-		enviar_valor(kernel_fd, dir_parcial.nro_seg); // TODO: Implementar bien el segmento solicitado.
-		enviar_valor(kernel_fd, dir_parcial.nro_pag); // TODO: Implementar bien la pagina solicitada.
+		enviar_valor(kernel_fd, dir_parcial.nro_seg);
+		enviar_valor(kernel_fd, dir_parcial.nro_pag);
 
 		free(pcb);
 		se_devolvio_pcb = true;
 		return EXIT_FAILURE;
 	} else {
+		log_trace(logger_debug, "Voy a leer la memoria en el marco: %d",
+						MARCO_MEMORIA);
+		leer_de_memoria(MARCO_MEMORIA, dir_parcial.desplazamiento_pag, memoria_fd);
 		sem_wait(&sem_respuesta_memoria);
 		guardar_en_reg(instruccion->param1, valor_leido);
 		return EXIT_SUCCESS;
 	}
 }
 
-int execute_mov_out(ts_ins* instruccion, PCB *pcb) {
-	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
-	sem_wait(&sem_acceso_memoria);
+int execute_mov_out(ts_ins *instruccion, PCB *pcb) {
+//	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
+//	sem_wait(&sem_acceso_memoria);
+//
+//	if (FLAG_PAGE_FAULT) {
+//		FLAG_PAGE_FAULT = 0;
+//		MARCO_MEMORIA = -1;
+//		actualizar_pcb(pcb);
+//
+//		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
+//
+//		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
+//		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
+//		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
+//
+//		free(pcb);
+//
+//		se_devolvio_pcb = true;
+//		return EXIT_FAILURE;
+//	} else {
+//		log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d",
+//				MARCO_MEMORIA);
+//		escribir_en_memoria(MARCO_MEMORIA, instruccion->param1);
+//		FLAG_PAGE_FAULT = 0;
+//		MARCO_MEMORIA = -1;
+//		sem_wait(&sem_respuesta_memoria);
+//		return EXIT_SUCCESS;
+//	}
 
-	if (FLAG_PAGE_FAULT) {
-		FLAG_PAGE_FAULT = 0;
-		MARCO_MEMORIA = -1;
-		actualizar_pcb(pcb);
-
-		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
-
-		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
-		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
-
-		free(pcb);
-
-		se_devolvio_pcb = true;
-		return EXIT_FAILURE;
-	} else {
-		log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d", MARCO_MEMORIA);
-		escribir_en_memoria(MARCO_MEMORIA, instruccion->param1);
-		FLAG_PAGE_FAULT = 0;
-		MARCO_MEMORIA = -1;
-		sem_wait(&sem_respuesta_memoria);
-		return EXIT_SUCCESS;
-	}
+	return EXIT_SUCCESS;
 }
 
-void check_interrupt(PCB* pcb) {
+void check_interrupt(PCB *pcb) {
 	log_trace(logger_debug, "CHECK INTERRUPT\n\n");
 
 	if (se_devolvio_pcb) {
@@ -298,34 +301,34 @@ uint32_t get_valor_registro(reg_cpu registro) {
 
 int guardar_en_reg(reg_cpu reg, int valor) {
 	switch (reg) { // Estamos supiendo que en SET el primer parametro es el registro
-		case AX:
-			REG_AX = valor;
-			break;
-		case BX:
-			REG_BX = valor;
-			break;
-		case CX:
-			REG_CX = valor;
-			break;
-		case DX:
-			REG_DX = valor;
-			break;
-		default:
-			return EXIT_FAILURE;
+	case AX:
+		REG_AX = valor;
+		break;
+	case BX:
+		REG_BX = valor;
+		break;
+	case CX:
+		REG_CX = valor;
+		break;
+	case DX:
+		REG_DX = valor;
+		break;
+	default:
+		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
 }
 
-void actualizar_pcb(PCB* pcb) {
+void actualizar_pcb(PCB *pcb) {
 	pcb->registros[AX] = REG_AX;
 	pcb->registros[BX] = REG_BX;
 	pcb->registros[CX] = REG_CX;
-	pcb->registros[DX] = REG_DX;	
+	pcb->registros[DX] = REG_DX;
 }
 
 void restaurar_contexto_ejecucion(uint32_t registros[]) {
-	REG_AX =  registros[AX];
-	REG_BX =  registros[BX];
-	REG_CX =  registros[CX];
-	REG_DX =  registros[DX];
+	REG_AX = registros[AX];
+	REG_BX = registros[BX];
+	REG_CX = registros[CX];
+	REG_DX = registros[DX];
 }

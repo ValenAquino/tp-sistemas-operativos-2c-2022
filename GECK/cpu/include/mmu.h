@@ -6,16 +6,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <paquetes.h>
 #include <shared.h>
 #include <logs.h>
+#include <memoria_shared.h>
 
 #include <commons/log.h>
+#include <math.h>
 
-typedef struct {
-	int id_tabla_pagina;
-	int nro_pag;
-	int desplazamiento_pag;
-	int nro_seg;
-} dir_t; // mover a shared
+dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos);
+int pedir_marco_memoria(dir_t dir_parcial, int memoria_fd);
+void leer_de_memoria(int marco, int offset, int memoria_fd);
+
+// CALCULOS
+int get_numero_segmento(int dir_logica);
+int get_desplazamiento_segmento(int dir_logica);
+int get_numero_pagina(int desplazamiento_segmento);
+int get_desplazamiento_pagina(int desplazamiento_segmento);
+int hay_seg_fault(int desplazamiento_segmento, int tamanio_segmento);
 
 #endif /* MMU_H_ */

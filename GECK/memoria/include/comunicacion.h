@@ -9,6 +9,7 @@
 #include <shared.h>
 #include <pcb.h>
 #include <paquetes.h>
+#include <memoria_shared.h>
 
 #include "interfaz.h"
 

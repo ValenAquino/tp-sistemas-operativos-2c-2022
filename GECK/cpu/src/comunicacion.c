@@ -6,6 +6,10 @@ extern int FLAG_FIN_QUANTUM;
 extern int FLAG_PAGE_FAULT;
 extern int MARCO_MEMORIA;
 
+extern int entradas_por_tabla_memoria;
+extern int tam_pagina_memoria;
+extern int tam_max_segmento_memoria;
+
 extern sem_t sem_acceso_memoria;
 extern sem_t sem_respuesta_memoria;
 
@@ -99,6 +103,11 @@ void manejar_comunicacion_memoria(void* void_args) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
+		case HANDSHAKE_MEMORIA_CPU:
+			entradas_por_tabla_memoria = recibir_valor(cliente_socket);
+			tam_pagina_memoria = recibir_valor(cliente_socket);
+			tam_max_segmento_memoria = entradas_por_tabla_memoria * tam_pagina_memoria;
+			break;
 
 		case NUMERO_DE_MARCO_MEMORIA: {
 			PCB* pcb = recibir_pcb(cliente_socket);
