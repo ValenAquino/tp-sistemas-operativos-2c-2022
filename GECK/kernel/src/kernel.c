@@ -23,10 +23,12 @@ sem_t sem_proceso_nuevo;
 
 pthread_mutex_t mutex_ready;
 pthread_mutex_t mutex_block;
+pthread_mutex_t mutex_new;
 pthread_mutex_t mutex_baja_prioridad;
 
 sem_t planificar;
 sem_t cpu_idle;
+sem_t sem_estructuras_memoria;
 sem_t sem_disco;
 sem_t sem_impresora;
 
@@ -177,7 +179,9 @@ void inicializar_kernel() {
 	sem_init(&cpu_idle, 1, 1);
 	sem_init(&sem_impresora, 1, 1);
 	sem_init(&sem_disco, 1, 1);
+	sem_init(&sem_estructuras_memoria, 1, 0);
 	pthread_mutex_init(&mutex_block, NULL);
+	pthread_mutex_init(&mutex_new, NULL);
 
 	if(config->algoritmo_planificacion == FEEDBACK) {
 		log_debug(logger_debug, "Inicializando para algoritmo FEEDBACK");

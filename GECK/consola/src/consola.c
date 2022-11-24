@@ -86,7 +86,7 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	// log_lista_seg(lista_segmentos);
 	
 	void *ins = serializar_lista_ins(lista_inst, size_ins);
-	void *seg = serializar_lista_tamanios_seg(lista_segmentos, size_seg);
+	void *seg = serializar_lista_tamanios_seg(lista_segmentos, size_seg, 1);
 
 	agregar_a_paquete(paquete, ins, size_ins);
 	agregar_a_paquete(paquete, seg, size_seg);

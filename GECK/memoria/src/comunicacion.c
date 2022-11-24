@@ -16,8 +16,11 @@ void manejar_comunicacion(void* void_args) {
 			case CREAR_ESTRUCTURAS_MEMORIA: {
 				log_debug(logger_debug, "CREAR_ESTRUCTURAS_MEMORIA");
 				t_list* tamanios_segmentos = recibir_solicitud_crear_estructuras_memoria(cliente_socket);
+				int pid = recibir_pid(cliente_socket);
+
 				t_list* indices = crear_indices_tabla_de_paginas(tamanios_segmentos);
-				enviar_indices_tablas_de_paginas(indices, cliente_socket);
+
+				enviar_indices_tablas_de_paginas(indices, cliente_socket, pid);
 				break;
 			}
 			case PAGINA_SOLICITADA:

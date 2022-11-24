@@ -70,14 +70,14 @@ void* serializar_paquete(ts_paquete* paquete, int bytes);
 void enviar_paquete(ts_paquete* paquete, int socket_cliente);
 void eliminar_paquete(ts_paquete* paquete);
 void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code);
-void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd);
-void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd);
+void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd, int pid);
+void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd, int pid);
 
 // Serializacion
 void* serializar_lista_indices(t_list*, int);
 void* serializar_lista_ins(t_list*, int);
 void* serializar_lista_seg(t_list*, int);
-void* serializar_lista_tamanios_seg(t_list *lista, int size);
+void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista);
 void* serializar_datos_pcb(PCB*, int);
 
 // Deserializacion

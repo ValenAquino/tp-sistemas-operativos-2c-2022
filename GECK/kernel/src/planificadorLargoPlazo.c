@@ -15,6 +15,8 @@ extern int memoria_fd;
 
 extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
+extern sem_t sem_estructuras_memoria;
+
 extern pthread_mutex_t mutex_ready;
 extern sem_t planificar;
 extern pthread_mutex_t mutex_baja_prioridad;
@@ -24,7 +26,11 @@ void planificador_largo_plazo() {
 	while(1) {
 		sem_wait(&sem_proceso_nuevo);
 		sem_wait(&sem_procesos_ready);
-		PCB* pcb = list_remove(procesosNew, 0);
+		PCB* pcb = list_get(procesosNew, 0);
+		log_pcb(pcb);
+		enviar_solicitud_crear_estructuras_memoria(pcb->tamanios_segmentos, memoria_fd, pcb->id);
+		sem_wait(&sem_estructuras_memoria);
+		log_pcb(pcb);
 		pasarAReady(pcb, false);
 	}
 	return;
@@ -110,8 +116,6 @@ void pasarAReady(PCB* pcb, bool desalojado_por_quantum) {
 
 	// TODO: Aca se estaria enviando cada vez que entra a ready.
 	// Hay que revisar si hay que implementar alguna logica para ver si es necesario volver a crear las estructuras en memoria
-
-	enviar_solicitud_crear_estructuras_memoria(pcb->tamanios_segmentos, memoria_fd);
 
 	sem_post(&planificar);
 }

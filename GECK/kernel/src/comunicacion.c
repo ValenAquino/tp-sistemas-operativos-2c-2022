@@ -2,11 +2,12 @@
 
 extern t_log* logger;
 extern t_log* logger_debug;
-extern t_configuracion_kernel* config;
 
-extern pthread_mutex_t mutex_block;
-extern pthread_mutex_t planificar;
+extern t_list* procesosNew;
+
+extern pthread_mutex_t mutex_new;
 extern sem_t cpu_idle;
+extern sem_t sem_estructuras_memoria;
 
 int proccess_counter = 1;
 uint32_t respuesta_teclado;
@@ -106,7 +107,7 @@ void manejar_comunicacion(void* void_args) {
 
 		case RESPUESTA_INDICES_T_PS: {
 			t_list* indices = recibir_indices_tablas_de_paginas(cliente_socket);
-
+			int pid = recibir_pid(cliente_socket);
 
 			// Aca habria que mapear estos indices a los segmentos pero no tenemos el pcb
 			// en la comunicacion el kernel envia los tamanios de los segmentos
@@ -118,6 +119,21 @@ void manejar_comunicacion(void* void_args) {
 			}
 
 			list_iterate(indices, (void*) iterar);
+			log_debug(logger_debug, "PID: %d", pid);
+			PCB* pcb = obtener_proceso_por_pid(pid, procesosNew, mutex_new);
+			log_pcb(pcb);
+			//log_debug(logger_debug, "tamanio lista tam seg: %d", list_size(pcb->tamanios_segmentos));
+
+			for(int i = 0; i < list_size(indices); i++) {
+				segmento_t *seg = (segmento_t *) malloc(sizeof(segmento_t));
+
+				seg->tamanio_segmento = *((int *) list_get(pcb->tamanios_segmentos, i));
+				seg->num_pagina = *((int *) list_get(indices, i));
+
+				list_add(pcb->tablaSegmentos, seg);
+			}
+
+			sem_post(&sem_estructuras_memoria);
 			break;
 		}
 		case PAGE_FAULT_CPU: {

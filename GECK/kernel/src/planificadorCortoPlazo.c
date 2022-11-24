@@ -15,7 +15,6 @@ extern sem_t cpu_idle; // GRADO DE MULTIPROCESAMIENTO
 
 int current_pcb_id;
 extern bool esta_usando_rr;
-extern bool volvio_pcb;
 
 void pasarAExec(PCB* pcb) {
 	pcb->estado_actual = EXEC_STATE;

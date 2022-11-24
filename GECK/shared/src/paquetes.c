@@ -83,7 +83,7 @@ void* serializar_lista_ins(t_list *lista, int size) {
 	return stream;
 }
 
-void* serializar_lista_tamanios_seg(t_list *lista, int size) {
+void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista) {
 	int desplazamiento = 0;
 
 	int cant_elementos = list_size(lista);
@@ -100,7 +100,9 @@ void* serializar_lista_tamanios_seg(t_list *lista, int size) {
 		desplazamiento += size_elemento;
 	}
 
-	list_destroy(lista);
+//	if(destruir_lista == 1){
+//		list_destroy(lista);
+//	}
 
 	return stream;
 }
@@ -342,7 +344,7 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 
 	void* data = serializar_datos_pcb(pcb, size_data);
 	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
-	void* tam_segm = serializar_lista_tamanios_seg(pcb->tamanios_segmentos, size_tamanios_seg);
+	void* tam_segm = serializar_lista_tamanios_seg(pcb->tamanios_segmentos, size_tamanios_seg, 1);
 	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
 
 	agregar_a_paquete(paquete, data, size_data);
@@ -387,16 +389,18 @@ t_list* deserializar_lista_tiempos(void* stream) {
 	return lista;
 }
 
-void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd) {
+void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd, int pid) {
 	ts_paquete* paquete = crear_paquete(CREAR_ESTRUCTURAS_MEMORIA);
+	t_list *tamanios_segmentos_copy = list_duplicate(tamanios_segmentos);
+	int size_tamanios_seg = sizeof(int) * list_size(tamanios_segmentos_copy) + sizeof(int);
 
-	int size_tamanios_seg = sizeof(int) * list_size(tamanios_segmentos) + sizeof(int);
-
-	void* tam_segm = serializar_lista_tamanios_seg(tamanios_segmentos, size_tamanios_seg);
+	void* tam_segm = serializar_lista_tamanios_seg(tamanios_segmentos_copy, size_tamanios_seg, 0);
 	agregar_a_paquete(paquete, tam_segm, size_tamanios_seg);
 
 	enviar_paquete(paquete, socket_fd);
 	eliminar_paquete(paquete);
+
+	enviar_pid(socket_fd, pid);
 }
 
 t_list* recibir_solicitud_crear_estructuras_memoria(int cliente_socket) {
@@ -413,7 +417,7 @@ t_list* recibir_solicitud_crear_estructuras_memoria(int cliente_socket) {
 	return tamanios_segmentos;
 }
 
-void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd) {
+void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd, int pid) {
 	ts_paquete* paquete = crear_paquete(RESPUESTA_INDICES_T_PS);
 
 	int size_tamanios_indices = sizeof(int) * list_size(indices) + sizeof(int);
@@ -424,6 +428,8 @@ void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd) {
 
 	enviar_paquete(paquete, socket_fd);
 	eliminar_paquete(paquete);
+
+	enviar_pid(socket_fd,pid);
 }
 
 t_list* recibir_indices_tablas_de_paginas(int cliente_socket) {
