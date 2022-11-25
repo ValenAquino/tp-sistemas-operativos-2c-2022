@@ -133,9 +133,8 @@ void manejar_comunicacion_memoria(void *void_args) {
 			break;
 		}
 		case PAGE_FAULT_MEMORIA: {
-			PCB *pcb = recibir_pcb(cliente_socket);
 			log_debug(logger_debug, "La memoria me devolvio un PAGE FAULT");
-			FLAG_PAGE_FAULT = 1;
+			MARCO_MEMORIA = PAGE_FAULT_ERROR;
 			sem_post(&sem_acceso_memoria);
 			break;
 		}

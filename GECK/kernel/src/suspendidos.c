@@ -21,7 +21,12 @@ void suspender_proceso(void* void_args) {
 	sleep(tiempo);
 	manejar_post_dispositivo(dispositivo);
 
-	PCB* pcb_obtenido = obtener_proceso_por_pid(pcb->id, procesosBlock, mutex_block);
+	mover_proceso_block_ready_by_pid(pcb->id);
+}
+
+void mover_proceso_block_ready_by_pid(int pid) {
+	// OJO QUE obtener_proceso_por_pid HACE UN REMOVE DE LA LISTA QUE LE PASAMOS.
+	PCB* pcb_obtenido = obtener_proceso_por_pid(pid, procesosBlock, mutex_block);
 	pasarAReady(pcb_obtenido, false);
 }
 

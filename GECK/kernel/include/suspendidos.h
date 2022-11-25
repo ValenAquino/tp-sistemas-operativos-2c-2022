@@ -39,5 +39,6 @@ void op_pantallla(int pid, reg_cpu reg);
 void manejar_wait_dispositivo(dispositivos dispositivo);
 void manejar_post_dispositivo(dispositivos dispositivo);
 
+void mover_proceso_block_ready_by_pid(int pid);
 
 #endif /* SUSPENDIDOS_H_ */

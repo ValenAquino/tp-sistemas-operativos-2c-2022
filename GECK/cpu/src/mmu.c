@@ -27,13 +27,8 @@ int pedir_marco_memoria(dir_t dir_parcial, int memoria_fd) {
 
 	sem_wait(&sem_acceso_memoria);
 
-	if (MARCO_MEMORIA == -1) {
-		return PAGE_FAULT_ERROR; // Page Fault
-	} else {
-		return EXIT_SUCCESS;
-	}
+	return MARCO_MEMORIA;
 
-//	enviar_valor(memoria_fd, direccion);
 }
 
 dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos) {
