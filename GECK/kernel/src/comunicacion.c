@@ -23,10 +23,29 @@ void manejar_comunicacion(void *void_args) {
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
-		case ELEMENTOS_CONSOLA: // unico case en el que entra consola
+		case ELEMENTOS_CONSOLA: // consola
 			PCB *pcb = crear_pcb(cliente_socket);
 			pasarANew(pcb);
 			break;
+
+		case RESPUESTA_PANTALLA: {  // consola
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			log_debug(logger_debug, "Recibo RESPUESTA_PANTALLA. PID: %d", pid);
+
+			op_pantallla(pid, reg);
+			break;
+		}
+
+		case RESPUESTA_TECLADO: {  // consola
+			uint32_t valor = recibir_valor(cliente_socket);
+			reg_cpu reg = recibir_registro(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+
+			op_teclado(pid, reg, valor);
+			break;
+		}
 
 		case FIN_POR_EXIT: {
 			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
@@ -37,10 +56,9 @@ void manejar_comunicacion(void *void_args) {
 
 		case DESALOJO_QUANTUM: {
 			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
-			log_info(logger, "PID: <%d> - Desalojado por fin de Quantum",
-					pcb->id);
+			log_info(logger, "PID: <%d> - Desalojado por fin de Quantum", pcb->id);
 			sem_post(&cpu_idle);
-			pasarAReady(pcb, true); // Revisar si tiene que pasar directo a ready o si tiene que bloquearse (ver grado multiprogramacion)
+			pasarAReady(pcb, true);
 			break;
 		}
 
@@ -86,26 +104,28 @@ void manejar_comunicacion(void *void_args) {
 			break;
 		}
 
-		case RESPUESTA_PANTALLA: {
-			reg_cpu reg = recibir_registro(cliente_socket);
-			int pid = recibir_pid(cliente_socket);
+		case PAGE_FAULT_CPU: {
+			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
+			int segmento_solicitado = recibir_valor(cliente_socket);
+			int pagina_solicitada = recibir_valor(cliente_socket);
 
-			log_debug(logger_debug, "Recibo RESPUESTA_PANTALLA. PID: %d", pid);
+			log_info(logger,
+					"Page Fault PID: <%d> - Segmento: <%d> - Pagina: <%d>",
+					pcb->id, segmento_solicitado, pagina_solicitada
+			);
 
-			op_pantallla(pid, reg);
+			ejecutar_bloqueo_page_fault(pcb, segmento_solicitado, pagina_solicitada);
 			break;
 		}
 
-		case RESPUESTA_TECLADO: {
-			uint32_t valor = recibir_valor(cliente_socket);
-			reg_cpu reg = recibir_registro(cliente_socket);
-			int pid = recibir_pid(cliente_socket);
-
-			op_teclado(pid, reg, valor);
+		case SEGMENTATION_FAULT: {
+			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
+			enviar_codop(pcb->socket_consola, SEGMENTATION_FAULT);
+			free(pcb);
 			break;
 		}
 
-		case RESPUESTA_INDICES_T_PS: {
+		case RESPUESTA_INDICES_T_PS: { // memoria
 			t_list *indices = recibir_indices_tablas_de_paginas(cliente_socket);
 			int pid = recibir_pid(cliente_socket);
 
@@ -114,9 +134,9 @@ void manejar_comunicacion(void *void_args) {
 			// y aca se reciben los indices de las tablas de paginas del proceso.
 			// tal vez tenemos que pasar y devolver el pcb?
 			log_debug(logger_debug, "RESPUESTA_INDICES_T_PS - RECIBI INDICES");
+
 			void iterar(int *index) {
-				log_debug(logger_debug, "RESPUESTA_INDICES_T_PS, indice: %d",
-						*index);
+				log_debug(logger_debug, "RESPUESTA_INDICES_T_PS, indice: %d", *index);
 			}
 
 			list_iterate(indices, (void*) iterar);
@@ -125,8 +145,7 @@ void manejar_comunicacion(void *void_args) {
 			for (int i = 0; i < list_size(indices); i++) {
 				segmento_t *seg = (segmento_t*) malloc(sizeof(segmento_t));
 
-				seg->tamanio_segmento = *((int*) list_get(
-						pcb->tamanios_segmentos, i));
+				seg->tamanio_segmento = *((int*) list_get(pcb->tamanios_segmentos, i));
 				seg->num_pagina = *((int*) list_get(indices, i));
 
 				list_add(pcb->tablaSegmentos, seg);
@@ -135,68 +154,46 @@ void manejar_comunicacion(void *void_args) {
 			sem_post(&sem_estructuras_memoria);
 			break;
 		}
-		case PAGE_FAULT_CPU: {
-			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
-			int segmento_solicitado = recibir_valor(cliente_socket);
-			int pagina_solicitada = recibir_valor(cliente_socket);
 
-			log_info(logger,
-					"Page Fault PID: <%d> - Segmento: <%d> - Pagina: <%d>",
-					pcb->id, segmento_solicitado, pagina_solicitada);
-
-			ejecutar_bloqueo_page_fault(pcb, segmento_solicitado,
-					pagina_solicitada);
-			break;
-		}
-		case SEGMENTATION_FAULT: {
-			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
-			enviar_codop(pcb->socket_consola, SEGMENTATION_FAULT);
-			free(pcb);
-			break;
-		}
 		case PAGINA_ENCONTRADA: {
 			int pid = recibir_valor(cliente_socket);
 			int pagina_encontrada = recibir_valor(cliente_socket);
-			log_debug(logger_debug, "Memoria encontro la pagina solicitada: %d",
-					pagina_encontrada);
+			log_debug(logger_debug, "Memoria encontro la pagina solicitada: %d", pagina_encontrada);
 			mover_proceso_block_ready_by_pid(pid);
 			break;
 		}
+
 		case DEBUG:
 			log_debug(logger_debug, "Estoy debuggeando!");
 			break;
 
 		case DESCONEXION_CONTROLADA:
-			log_info(logger_debug,
-					"El cliente se desconecto de manera esperada");
+			log_info(logger_debug, "El cliente se desconecto de manera esperada");
 			close(cliente_socket);
 			return;
 
 		case -1:
-			log_error(logger_debug,
-					"El cliente se desconecto. Terminando servidor");
+			log_error(logger_debug, "El cliente se desconecto. Terminando servidor");
+			close(cliente_socket);
+			exit(EXIT_FAILURE);
 			return;
 
 		default:
-			log_warning(logger_debug,
-					"Operacion desconocida. No quieras meter la pata");
+			log_warning(logger_debug, "Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
 
-	log_warning(logger_debug, "El cliente se desconecto de %s server",
-			server_name);
+	log_warning(logger_debug, "El cliente se desconecto de %s server", server_name);
 	return;
 }
 
 int server_kernel(char *server_name, int server_socket) {
-	return server_escuchar(logger_debug, server_name, server_socket,
-			manejar_comunicacion);
+	return server_escuchar(logger_debug, server_name, server_socket, manejar_comunicacion);
 }
 
 int conectar_con(char *servername, char *ip, char *puerto) {
-	log_info(logger_debug, "Iniciando conexion con %s - Puerto: %s - IP: %s",
-			ip, puerto, servername);
+	log_info(logger_debug, "Iniciando conexion con %s - Puerto: %s - IP: %s", ip, puerto, servername);
 
 	int file_descriptor = crear_conexion(ip, puerto);
 
@@ -217,8 +214,7 @@ PCB* crear_pcb(int cliente_socket) {
 	t_list *lista_ins = deserializar_lista_inst(ins);
 	t_list *lista_segm = deserializar_lista_tamanios_segm(seg);
 
-	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins,
-			lista_segm);
+	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
 
 	proccess_counter++;
 

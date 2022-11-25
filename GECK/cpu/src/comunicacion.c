@@ -45,8 +45,8 @@ void manejar_comunicacion_dispatch(void *void_args) {
 			log_error(logger_debug,
 					"El cliente se desconecto. Terminando servidor [%s]",
 					server_name);
-			// close(cliente_socket);
-			// exit(EXIT_FAILURE);
+			close(cliente_socket);
+			exit(EXIT_FAILURE);
 			return;
 
 		default:

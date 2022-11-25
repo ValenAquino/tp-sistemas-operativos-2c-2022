@@ -58,7 +58,8 @@ int manejar_comunicacion(void* void_args) {
 
 		case -1:
 			log_error(logger_debug, "El cliente se desconecto. Terminando servidor");
-			return 0;
+			close(cliente_socket);
+			return 1;
 
 		default:
 			log_warning(logger_debug,"Operacion desconocida. No quieras meter la pata");

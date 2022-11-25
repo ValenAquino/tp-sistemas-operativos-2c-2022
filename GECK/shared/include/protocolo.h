@@ -7,8 +7,8 @@ typedef enum {
 	// Agregar los tipos de operaciones para todo el sistema aca:
 	DESCONEXION = -1,
 	ELEMENTOS_CONSOLA,
-    DEBUG,
-    DISPATCH_PCB,
+	DEBUG,
+	DISPATCH_PCB,
 	FIN_POR_EXIT,
 	SIGUIENTE_PROCESO,
 	INTERRUPT,
@@ -34,7 +34,7 @@ typedef enum {
 	ESCRITURA_MEMORIA,
 	OK_ESCRITURA_MEMORIA,
 	SEGMENTATION_FAULT,
-	HANDSHAKE_MEMORIA_CPU,
+	HANDSHAKE_MEMORIA_CPU
 } op_code;
 
 typedef struct {

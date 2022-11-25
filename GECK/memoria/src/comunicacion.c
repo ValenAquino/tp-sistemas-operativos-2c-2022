@@ -78,7 +78,7 @@ void manejar_comunicacion(void *void_args) {
 			log_debug(logger_debug,
 					"Voy a leer el marco: %d y devolver su contenido", marco);
 
-			int valor_leido = leer(marco);
+			int valor_leido = leer(marco /*, offset*/);
 			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);
 			enviar_valor(cliente_socket, valor_leido);
 
@@ -103,6 +103,8 @@ void manejar_comunicacion(void *void_args) {
 		case -1:
 			log_error(logger_debug,
 					"El cliente se desconecto. Terminando servidor");
+			close(cliente_socket);
+			exit(EXIT_FAILURE);
 			return;
 		default:
 			log_warning(logger_debug,
