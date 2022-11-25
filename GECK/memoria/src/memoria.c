@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
 
 	while (server_memoria(SERVERNAME, memoria_fd));
 
+	/// TODO: LIBERAR MEMORIA.
+
 	return EXIT_SUCCESS;
 }
 

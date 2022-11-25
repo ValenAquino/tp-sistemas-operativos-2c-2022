@@ -62,6 +62,9 @@ int main(int argc, char** argv) {
 	hilo_planificador_corto_plazo();
 
 	while (server_kernel(SERVERNAME, server_fd));
+
+	//TODO: LIBERAR MEMORIA
+
 	return EXIT_SUCCESS;
 }
 

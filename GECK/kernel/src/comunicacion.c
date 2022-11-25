@@ -116,6 +116,7 @@ void manejar_comunicacion(void *void_args) {
 			);
 
 			ejecutar_bloqueo_page_fault(pcb, segmento_solicitado, pagina_solicitada);
+			sem_post(&cpu_idle);
 			break;
 		}
 

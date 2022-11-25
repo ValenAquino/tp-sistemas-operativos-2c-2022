@@ -44,8 +44,9 @@ int main(int argc, char **argv) {
 
 	while (server_escuchar_interrupt(INTERRUPT_SERVER_NAME, server_interrupt_fd)
 			&& server_escuchar_dispatch(DISPATCH_SERVER_NAME,
-					server_dispatch_fd))
-		;
+					server_dispatch_fd));
+
+	// TODO: LIBERAR MEMORIA
 
 	return EXIT_SUCCESS;
 }
