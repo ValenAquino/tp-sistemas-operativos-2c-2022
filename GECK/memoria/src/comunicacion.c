@@ -57,11 +57,11 @@ void manejar_comunicacion(void* void_args) {
 
 				if (numero_de_marco != -1) {
 					log_debug(logger_debug, "Se obtuvo el marco de memoria: %d. Enviandolo a CPU.", numero_de_marco);
-					enviar_pcb(pcb, cliente_socket, NUMERO_DE_MARCO_MEMORIA);
+					enviar_codop(cliente_socket, NUMERO_DE_MARCO_MEMORIA);
 					enviar_valor(cliente_socket, numero_de_marco);
 				} else {
 					log_debug(logger_debug, "No se encontro el numero de marco. Enviando PAGE FAULT a CPU");
-					enviar_pcb(pcb, cliente_socket, PAGE_FAULT_MEMORIA);
+					enviar_codop(cliente_socket, PAGE_FAULT_MEMORIA);
 				}
 				break;
 			}

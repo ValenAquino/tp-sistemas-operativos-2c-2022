@@ -125,7 +125,6 @@ void manejar_comunicacion_memoria(void *void_args) {
 			break;
 
 		case NUMERO_DE_MARCO_MEMORIA: {
-			PCB *pcb = recibir_pcb(cliente_socket);
 			MARCO_MEMORIA = recibir_valor(cliente_socket);
 			log_debug(logger_debug,
 					"La memoria me devolvio numero de marco: %d",
