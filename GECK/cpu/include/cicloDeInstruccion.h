@@ -25,10 +25,14 @@ int execute_set(ts_ins* instruccion, PCB *pcb);
 int execute_add(ts_ins* instruccion, PCB *pcb);
 int execute_io(ts_ins* instruccion, PCB *pcb);
 int execute_exit(ts_ins* instruccion, PCB *pcb);
-int execute_mov_in(ts_ins* instruccion, PCB *pcb);
-int execute_mov_out(ts_ins* instruccion, PCB *pcb);
+int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst);
+void mov_in(int desplazamiento_pag, uint32_t reg);
+void mov_out(uint32_t reg);
 
 void check_interrupt();
+
+int hay_segmentation_fault(int nro_seg, PCB* pcb);
+int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial);
 
 uint32_t get_valor_registro(reg_cpu registro);
 int guardar_en_reg(reg_cpu reg, int valor);

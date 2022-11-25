@@ -4,6 +4,7 @@ extern int tam_pagina_memoria;
 extern int tam_max_segmento_memoria;
 
 extern int MARCO_MEMORIA;
+extern int memoria_fd;
 
 extern sem_t sem_acceso_memoria;
 
@@ -60,6 +61,11 @@ void leer_de_memoria(int marco, int offset, int memoria_fd) {
 	enviar_valor(memoria_fd, offset);
 }
 
+void escribir_en_memoria(int marco, int valor) {
+	enviar_codop(memoria_fd, ESCRITURA_MEMORIA);
+	enviar_valor(memoria_fd, marco);
+	enviar_valor(memoria_fd, valor);
+}
 
 // CALCULOS
 

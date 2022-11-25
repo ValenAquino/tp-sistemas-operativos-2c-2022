@@ -22,6 +22,4 @@ int conectar_con(char *servername, char *ip, char *puerto);
 
 void hilo_memoria();
 
-void escribir_en_memoria(int marco, int valor);
-
 #endif /* CPU_H_ */

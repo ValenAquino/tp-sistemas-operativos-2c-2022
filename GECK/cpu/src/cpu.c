@@ -96,9 +96,3 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 
 	return file_descriptor;
 }
-
-void escribir_en_memoria(int marco, int valor) {
-	enviar_codop(memoria_fd, ESCRITURA_MEMORIA);
-	enviar_valor(memoria_fd, marco);
-	enviar_valor(memoria_fd, valor);
-}

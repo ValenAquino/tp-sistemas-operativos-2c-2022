@@ -46,8 +46,6 @@ void ciclo_de_instruccion(PCB *pcb, int kernel_socket) {
 	kernel_fd = kernel_socket;
 	se_devolvio_pcb = false;
 
-	//log_pcb(pcb);
-
 	log_registros();
 
 	ts_ins *ins_a_ejecutar = fetch(pcb);
@@ -114,14 +112,14 @@ void execute(ts_ins *instruccion, PCB *pcb) {
 		success = execute_exit(instruccion, pcb);
 		break;
 	case MOV_IN:
-		success = execute_mov_in(instruccion, pcb);
+		success = execute_mov(instruccion, pcb, MOV_IN);
 		break;
 	case MOV_OUT:
-		success = execute_mov_out(instruccion, pcb);
+		success = execute_mov(instruccion, pcb, MOV_OUT);
 		break;
 	}
 
-	if (success == EXIT_SUCCESS) { // exit succes = 0 = false 
+	if (success == EXIT_SUCCESS) {
 		pcb->programCounter = pcb->programCounter + 1;
 	}
 }
@@ -195,73 +193,37 @@ int execute_exit(ts_ins *instruccion, PCB *pcb) {
 	return EXIT_FAILURE;
 }
 
-int execute_mov_in(ts_ins *instruccion, PCB *pcb) {
-
-	dir_t dir_parcial = traducir_direccion(instruccion->param2,
-			pcb->tablaSegmentos);
-
-	if (dir_parcial.nro_seg == SEG_FAULT_ERROR) {
-		enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
-		se_devolvio_pcb = true;
-		return EXIT_FAILURE;
-	}
-
-	int res = pedir_marco_memoria(dir_parcial, memoria_fd);
-
-	if (res == PAGE_FAULT_ERROR) {
-		// TODO: Abstraer a funcion
-		MARCO_MEMORIA = -1;
-		actualizar_pcb(pcb);
-
-		log_trace(logger_debug,
-				"ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d",
-				dir_parcial.nro_pag, dir_parcial.nro_seg);
-
-		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-		enviar_valor(kernel_fd, dir_parcial.nro_seg);
-		enviar_valor(kernel_fd, dir_parcial.nro_pag);
-
-		free(pcb);
-		se_devolvio_pcb = true;
-		return EXIT_FAILURE;
-	} else {
-		log_trace(logger_debug, "Voy a leer la memoria en el marco: %d",
-						MARCO_MEMORIA);
-		leer_de_memoria(MARCO_MEMORIA, dir_parcial.desplazamiento_pag, memoria_fd);
-		sem_wait(&sem_respuesta_memoria);
-		guardar_en_reg(instruccion->param1, valor_leido);
-		return EXIT_SUCCESS;
-	}
+void mov_in(int desplazamiento_pag, uint32_t reg) {
+	log_trace(logger_debug, "Voy a leer la memoria en el marco: %d", MARCO_MEMORIA);
+	leer_de_memoria(MARCO_MEMORIA, desplazamiento_pag, memoria_fd);
+	sem_wait(&sem_respuesta_memoria);
+	guardar_en_reg(reg, valor_leido);
 }
 
-int execute_mov_out(ts_ins *instruccion, PCB *pcb) {
-//	pedir_marco_memoria(pcb, 1); // TODO: Implementar bien la direccion
-//	sem_wait(&sem_acceso_memoria);
-//
-//	if (FLAG_PAGE_FAULT) {
-//		FLAG_PAGE_FAULT = 0;
-//		MARCO_MEMORIA = -1;
-//		actualizar_pcb(pcb);
-//
-//		log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR PAGE_FAULT: ");
-//
-//		enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
-//		enviar_valor(kernel_fd, 1); // TODO: Implementar bien el segmento solicitado.
-//		enviar_valor(kernel_fd, 4); // TODO: Implementar bien la pagina solicitada.
-//
-//		free(pcb);
-//
-//		se_devolvio_pcb = true;
-//		return EXIT_FAILURE;
-//	} else {
-//		log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d",
-//				MARCO_MEMORIA);
-//		escribir_en_memoria(MARCO_MEMORIA, instruccion->param1);
-//		FLAG_PAGE_FAULT = 0;
-//		MARCO_MEMORIA = -1;
-//		sem_wait(&sem_respuesta_memoria);
-//		return EXIT_SUCCESS;
-//	}
+void mov_out(uint32_t reg) {
+	log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d", MARCO_MEMORIA);
+	escribir_en_memoria(MARCO_MEMORIA, reg);
+	// Acá hay que revisar esto:
+	//	FLAG_PAGE_FAULT = 0;
+	//	MARCO_MEMORIA = -1;
+	sem_wait(&sem_respuesta_memoria);
+}
+
+int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst) {
+	dir_t dir_parcial = traducir_direccion(instruccion->param2, pcb->tablaSegmentos);
+
+	if(hay_segmentation_fault(dir_parcial.nro_seg, pcb))
+		return EXIT_FAILURE;
+
+	int marco = pedir_marco_memoria(dir_parcial, memoria_fd);
+
+	if(hay_page_fault(marco, pcb, dir_parcial))
+		return EXIT_FAILURE;
+
+	(inst == MOV_IN) ? // camino por verdadero : camino por falso
+		mov_in(dir_parcial.desplazamiento_pag, instruccion->param1)
+		:
+		mov_out(instruccion->param1);
 
 	return EXIT_SUCCESS;
 }
@@ -331,4 +293,43 @@ void restaurar_contexto_ejecucion(uint32_t registros[]) {
 	REG_BX = registros[BX];
 	REG_CX = registros[CX];
 	REG_DX = registros[DX];
+}
+
+int hay_segmentation_fault(int nro_seg, PCB* pcb) {
+	if (nro_seg != SEG_FAULT_ERROR) {
+		return 0;
+	}
+
+	log_trace(
+		logger_debug,
+		"ENVIANDO PCB A KERNEL POR: Segmentation Fault PID: <%d>",
+		pcb->id
+	);
+
+	enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
+	se_devolvio_pcb = true;
+	return 1;
+}
+
+int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial) {
+	if (marco != PAGE_FAULT_ERROR) {
+		return 0;
+	}
+
+	MARCO_MEMORIA = -1;
+	actualizar_pcb(pcb);
+
+	log_trace(
+		logger_debug,
+		"ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d",
+		dir_parcial.nro_pag, dir_parcial.nro_seg
+	);
+
+	enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
+	enviar_valor(kernel_fd, dir_parcial.nro_seg);
+	enviar_valor(kernel_fd, dir_parcial.nro_pag);
+
+	free(pcb);
+	se_devolvio_pcb = true;
+	return 1;
 }
