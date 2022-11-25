@@ -49,7 +49,9 @@ int manejar_comunicacion(void* void_args) {
 			enviar_pid(cliente_socket, pid);
 			break;
 		}
-
+		case SEGMENTATION_FAULT:
+			log_debug(logger_debug, "Recibi un SEG_FAULT. Voy a terminar.");
+			return 0;
 		case DEBUG:
 			log_debug(logger_debug, "Estoy debuggeando!");
 			return 1;

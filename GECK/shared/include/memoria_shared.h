@@ -24,7 +24,7 @@ typedef struct {
 
 typedef enum {
 	SEG_FAULT_ERROR = -1,
-	PAGE_FAULT_ERROR = 2
+	PAGE_FAULT_ERROR = -2
 } error_memoria;
 
 #endif /* MEMORIA_SHARED_H_ */

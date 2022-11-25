@@ -143,12 +143,20 @@ void manejar_comunicacion(void* void_args) {
 			ejecutar_bloqueo_page_fault(pcb, segmento_solicitado, pagina_solicitada);
 			break;
 		}
+		case SEGMENTATION_FAULT:{
+			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
+			enviar_codop(pcb->socket_consola, SEGMENTATION_FAULT);
+			free(pcb);
+			break;
+		}
 		case PAGINA_ENCONTRADA: {
 			PCB* pcb = recibir_pcb_de_cpu(cliente_socket);
 			log_debug(logger_debug, "Memoria encontro la pagina solicitada!");
 			pasarAReady(pcb, 0);
 			break;
 		}
+
+
 		case DEBUG:
 			log_debug(logger_debug, "Estoy debuggeando!");
 			break;

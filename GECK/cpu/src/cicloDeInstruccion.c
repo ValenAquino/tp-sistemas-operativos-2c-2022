@@ -200,7 +200,7 @@ int execute_mov_in(ts_ins *instruccion, PCB *pcb) {
 	dir_t dir_parcial = traducir_direccion(instruccion->param2,
 			pcb->tablaSegmentos);
 
-	if (dir_parcial.nro_pag == -1) {
+	if (dir_parcial.nro_seg == SEG_FAULT_ERROR) {
 		enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
 		se_devolvio_pcb = true;
 		return EXIT_FAILURE;

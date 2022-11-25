@@ -15,8 +15,13 @@ void manejar_comunicacion(void* void_args) {
 
 			switch (cod_op) {
 			case HANDSHAKE_MEMORIA_CPU:
+				enviar_codop(cliente_socket, HANDSHAKE_MEMORIA_CPU);
 				enviar_valor(cliente_socket, config->entradas_por_tabla);
 				enviar_valor(cliente_socket, config->tam_pagina);
+
+				log_debug(logger_debug,
+								"ENVIO - HANDSHAKE_MEMORIA_CPU -> entradas_por_tabla_memoria: %d, tam_pagina_memoria: %d",
+								config->entradas_por_tabla, config->tam_pagina);
 				break;
 
 			case CREAR_ESTRUCTURAS_MEMORIA: {

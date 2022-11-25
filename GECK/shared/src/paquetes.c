@@ -447,20 +447,62 @@ t_list* recibir_indices_tablas_de_paginas(int cliente_socket) {
 }
 
 void* serializar_direccion_parcial(dir_t direccion, int size) {
-	// TODO: IMPLEMENTAR SERIALIZACION.
-	return NULL;
+	void *stream = malloc(size);
+	int desplazamiento = 0;
+
+	memcpy(stream + desplazamiento, &(direccion.nro_seg), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento,&(direccion.nro_pag),  sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(direccion.desplazamiento_pag), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(direccion.id_tabla_pagina),  sizeof(int));
+	desplazamiento += sizeof(int);
+
+	return stream;
 }
 
 dir_t deserializar_direccion_parcial(void* stream) {
 	dir_t* direccion = (dir_t*) malloc(sizeof(dir_t));
 
-	// TODO: IMPLEMENTAR DESERIALIZACION.
+	int desplazamiento = 0;
 
-	return *direccion;
+	memcpy(&(direccion->nro_seg), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->nro_pag), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->desplazamiento_pag), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->id_tabla_pagina), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	free(stream);
+
+	// TODO: Revisar si falla.
+	dir_t resultado = *direccion;
+
+	free(direccion);
+
+	return resultado;
 }
 
 void enviar_direccion_parcial(dir_t direccion, int cliente_socket) {
-	// TODO: IMPLEMENTAR
+	ts_paquete* paquete = crear_paquete(ACCESO_A_MEMORIA);
+
+	int size_dir = sizeof(dir_t);
+
+	void* dir_stream = serializar_direccion_parcial(direccion, size_dir);
+
+	agregar_a_paquete(paquete, dir_stream, size_dir);
+
+	enviar_paquete(paquete, cliente_socket);
+	eliminar_paquete(paquete);
 }
 
 dir_t recibir_direccion_parcial(int cliente_socket) {
