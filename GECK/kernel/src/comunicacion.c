@@ -8,6 +8,7 @@ extern t_list *procesosNew;
 extern pthread_mutex_t mutex_new;
 extern sem_t cpu_idle;
 extern sem_t sem_estructuras_memoria;
+extern sem_t sem_procesos_ready;
 
 int proccess_counter = 1;
 uint32_t respuesta_teclado;
@@ -120,8 +121,13 @@ void manejar_comunicacion(void *void_args) {
 
 		case SEGMENTATION_FAULT: {
 			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
+			
+			log_info(logger, "PID: <%d> - Finalizado por SEGMENTATION FAULT", pcb->id);
 			enviar_codop(pcb->socket_consola, SEGMENTATION_FAULT);
 			free(pcb);
+
+			sem_post(&sem_procesos_ready);
+			sem_post(&cpu_idle);
 			break;
 		}
 
