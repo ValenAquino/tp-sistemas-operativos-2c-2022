@@ -11,6 +11,7 @@ void ingresar_a_tlb(entrada_tlb *entrada) {
 
 	if (cant_entradas_en_tlb < config->entradas_tlb) {
 		agregar_a_tlb(entrada);
+		loggear_tlb();
 		return;
 	}
 
@@ -126,8 +127,8 @@ int son_entradas_iguales(entrada_tlb *entrada_uno, entrada_tlb *entrada_dos) {
 	return entrada_uno->frame == entrada_dos->frame
 			&& entrada_uno->nro_seg == entrada_dos->nro_seg
 			&& entrada_uno->nro_pag == entrada_dos->nro_pag
-			&& entrada_uno->ult_ref_timestamp == entrada_dos->ult_ref_timestamp
-			&& entrada_uno->pid == entrada_dos->pid;
+			&& entrada_uno->pid == entrada_dos->pid
+			&& difftime(entrada_uno->ult_ref_timestamp, entrada_dos->ult_ref_timestamp) == 0;
 }
 
 entrada_tlb* crear_entrada_tlb(int pid, int nro_seg, int nro_pag, int frame) {
