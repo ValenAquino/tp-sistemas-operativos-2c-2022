@@ -39,6 +39,8 @@ void sighandler(int x) {
 }
 
 int main(int argc, char **argv) {
+    signal(SIGINT, sighandler);
+
 	if (argc < 2) {
 		config_path = "cpu.config";
 	} else {

@@ -34,3 +34,12 @@ PCB *obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex) {
 
 	return pcb;
 }
+
+void destruir_pcb(PCB* pcb) {
+	list_destroy_and_destroy_elements(pcb->tamanios_segmentos, free);
+	list_destroy_and_destroy_elements(pcb->tablaSegmentos, free);
+	list_destroy_and_destroy_elements(pcb->instrucciones, free);
+	free(pcb);
+}
+
+

@@ -16,6 +16,7 @@
 #include <shared.h>
 #include <semaphore.h>
 #include <paquetes.h>
+#include <pcb.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"
@@ -35,6 +36,12 @@ void hilo_planificador_largo_plazo();
 void crear_hilo_quantum();
 void matar_hilo_quantum();
 void fin_de_quantum();
+
+void destruir_loggers();
+void destruir_listas_y_elementos();
+void destruir_semaforos();
+void liberar_conexiones();
+void terminar_kernel();
 
 PCB* recibir_pcb_de_cpu(int cliente_socket);
 

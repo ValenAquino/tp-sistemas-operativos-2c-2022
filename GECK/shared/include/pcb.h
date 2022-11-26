@@ -27,5 +27,6 @@ typedef struct PCB {
 
 PCB* nuevoPcb(int id, int fd_consola, t_list *instr, t_list *tamanio_segmentos);
 PCB* obtener_proceso_por_pid(int pid, t_list *lista, pthread_mutex_t mutex);
+void destruir_pcb(PCB* pcb);
 
 #endif /* PCB_H_ */

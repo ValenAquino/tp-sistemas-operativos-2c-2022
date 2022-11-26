@@ -146,3 +146,16 @@ int obtener_tiempo_io(dispositivos disp_que_busco, t_list* lista_dispositivos) {
 
 	return array_dispositivo_tiempo[1];
 }
+
+void liberar_configuracion_kernel(t_configuracion_kernel* config_kernel) {
+    free(config_kernel->ip_memoria);
+    free(config_kernel->ip_kernel);
+    free(config_kernel->puerto_memoria);
+    free(config_kernel->ip_cpu);
+    free(config_kernel->puerto_cpu_dispatch);
+    free(config_kernel->puerto_cpu_interrupt);
+    free(config_kernel->puerto_kernel);
+    free(config_kernel->puerto_escucha);
+    list_destroy_and_destroy_elements(config_kernel->tiempos_io, free);
+    free(config_kernel);
+}
