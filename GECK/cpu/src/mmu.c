@@ -24,6 +24,12 @@ extern sem_t sem_acceso_memoria;
  */
 
 int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
+
+	int marco_encontrado_tlb = buscar_marco_en_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag);
+	if (marco_encontrado_tlb != -1) {
+		return marco_encontrado_tlb;
+	}
+
 	enviar_direccion_parcial(dir_parcial, memoria_fd);
 
 	sem_wait(&sem_acceso_memoria);

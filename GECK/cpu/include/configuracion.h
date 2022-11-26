@@ -21,5 +21,6 @@ typedef struct t_configuracion_cpu
 
 t_configuracion_cpu* procesar_config(t_config* config);
 void test_read_config(t_configuracion_cpu*);
+void liberar_configuracion_cpu(t_configuracion_cpu *config_cpu);
 
 #endif /* CONFIGURACION_H_ */

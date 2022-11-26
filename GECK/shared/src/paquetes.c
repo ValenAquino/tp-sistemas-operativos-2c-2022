@@ -502,7 +502,9 @@ void enviar_direccion_parcial(dir_t direccion, int cliente_socket) {
 	agregar_a_paquete(paquete, dir_stream, size_dir);
 
 	enviar_paquete(paquete, cliente_socket);
+
 	eliminar_paquete(paquete);
+	free(dir_stream);
 }
 
 dir_t recibir_direccion_parcial(int cliente_socket) {

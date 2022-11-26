@@ -22,4 +22,11 @@ int conectar_con(char *servername, char *ip, char *puerto);
 
 void hilo_memoria();
 
+void destruir_loggers();
+void destruir_listas_y_elementos();
+void destruir_semaforos();
+void liberar_conexiones();
+
+void terminar_cpu();
+
 #endif /* CPU_H_ */

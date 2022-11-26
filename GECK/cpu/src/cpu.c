@@ -29,6 +29,15 @@ pthread_mutex_t mutex_tlb;
 int memoria_fd;
 char *config_path;
 
+void sighandler(int x) {
+	switch (x) {
+	case SIGINT:
+		terminar_cpu();
+		exit(EXIT_SUCCESS);
+		break;
+	}
+}
+
 int main(int argc, char **argv) {
 	if (argc < 2) {
 		config_path = "cpu.config";
@@ -49,9 +58,10 @@ int main(int argc, char **argv) {
 
 	while (server_escuchar_interrupt(INTERRUPT_SERVER_NAME, server_interrupt_fd)
 			&& server_escuchar_dispatch(DISPATCH_SERVER_NAME,
-					server_dispatch_fd));
+					server_dispatch_fd))
+		;
 
-	// TODO: LIBERAR MEMORIA
+	terminar_cpu();
 
 	return EXIT_SUCCESS;
 }
@@ -104,4 +114,31 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 	}
 
 	return file_descriptor;
+}
+
+void destruir_loggers() {
+	log_destroy(logger);
+	log_destroy(logger_debug);
+}
+
+void destruir_listas_y_elementos() {
+	list_destroy_and_destroy_elements(tlb, free);
+}
+
+void destruir_semaforos() {
+	sem_destroy(&sem_acceso_memoria);
+	sem_destroy(&sem_respuesta_memoria);
+	pthread_mutex_destroy(&mutex_tlb);
+}
+
+void liberar_conexiones() {
+	liberar_conexion(memoria_fd);
+}
+
+void terminar_cpu() {
+	liberar_configuracion_cpu(config);
+	destruir_listas_y_elementos();
+	destruir_semaforos();
+	liberar_conexiones();
+	destruir_loggers();
 }

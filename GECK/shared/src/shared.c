@@ -1,10 +1,12 @@
 #include "../include/shared.h"
 
 void enviar_codop(int socket_conexion, int cod_op) {
-	void * a_enviar = malloc(sizeof(int));
+	void *a_enviar = malloc(sizeof(int));
 
 	memcpy(a_enviar, &(cod_op), sizeof(int));
 	send(socket_conexion, a_enviar, sizeof(int), 0);
+
+	free(a_enviar);
 }
 
 void enviar_pid(int socket_conexion, int pid) {
@@ -16,6 +18,8 @@ void enviar_registro(int socket_conexion, uint32_t reg) {
 
 	memcpy(a_enviar, &(reg), sizeof(uint32_t));
 	send(socket_conexion, a_enviar, sizeof(uint32_t), 0);
+
+	free(a_enviar);
 }
 
 void enviar_valor(int socket_conexion, uint32_t reg) {
