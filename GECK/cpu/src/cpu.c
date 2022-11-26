@@ -14,6 +14,8 @@ int tam_pagina_memoria;
 int tam_max_segmento_memoria;
 
 t_list *tiempos_io;
+t_list *tlb;
+
 uint32_t REG_AX;
 uint32_t REG_BX;
 uint32_t REG_CX;
@@ -21,6 +23,9 @@ uint32_t REG_DX;
 
 sem_t sem_acceso_memoria;
 sem_t sem_respuesta_memoria;
+
+pthread_mutex_t mutex_tlb;
+
 int memoria_fd;
 char *config_path;
 
@@ -72,8 +77,11 @@ void iniciar_cpu() {
 	config = procesar_config(config_file);
 	test_read_config(config);
 
+	tlb = list_create();
+
 	sem_init(&sem_acceso_memoria, 0, 0);
 	sem_init(&sem_respuesta_memoria, 0, 0);
+	pthread_mutex_init(&mutex_tlb, NULL);
 }
 
 int crear_servidor(char *ip, char *puerto, char *server_name) {

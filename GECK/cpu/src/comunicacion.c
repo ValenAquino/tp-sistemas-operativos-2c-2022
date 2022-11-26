@@ -129,6 +129,9 @@ void manejar_comunicacion_memoria(void *void_args) {
 			log_debug(logger_debug,
 					"La memoria me devolvio numero de marco: %d",
 					MARCO_MEMORIA);
+
+//			ingresar_a_tlb(crear_entrada_tlb(pid, nro_seg, nro_pag, MARCO_MEMORIA));
+
 			sem_post(&sem_acceso_memoria);
 			break;
 		}
