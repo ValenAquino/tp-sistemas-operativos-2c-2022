@@ -221,7 +221,7 @@ void destruir_listas_y_elementos() {
 	list_destroy_and_destroy_elements(procesosReady, (void*) destruir_pcb);
 	list_destroy_and_destroy_elements(procesosBlock, (void*) destruir_pcb);
 	list_destroy_and_destroy_elements(procesosExit, (void*) destruir_pcb);
-	list_destroy_and_destroy_elements(procesosBajaPrioridad,(void*) destruir_pcb);
+	list_destroy_and_destroy_elements(procesosBajaPrioridad, (void*) destruir_pcb);
 }
 
 void destruir_semaforos() {
@@ -232,7 +232,6 @@ void destruir_semaforos() {
 	sem_destroy(&sem_impresora);
 	sem_destroy(&sem_procesos_ready);
 	sem_destroy(&sem_proceso_nuevo);
-
 	pthread_mutex_destroy(&mutex_ready);
 	pthread_mutex_destroy(&mutex_new);
 	pthread_mutex_destroy(&mutex_block);

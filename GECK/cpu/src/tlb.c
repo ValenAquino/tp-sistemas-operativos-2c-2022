@@ -28,6 +28,7 @@ int buscar_marco_en_tlb(int pid, int nro_seg, int nro_pag) {
 	} else {
 		log_info(logger, "PID: <%d> - TLB HIT - Segmento: <%d> - Pagina: <%d>",
 				pid, nro_seg, nro_pag);
+		entrada_encontrada->ult_ref_timestamp = time(NULL);
 		return entrada_encontrada->frame;
 	}
 }

@@ -143,4 +143,5 @@ void terminar_cpu() {
 	destruir_semaforos();
 	liberar_conexiones();
 	destruir_loggers();
+	limpiar_tlb();
 }

@@ -9,8 +9,6 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
@@ -39,10 +37,10 @@ all: main-build
 main-build: consola
 
 # Tool invocations
-consola: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+consola: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/media/sf_tp/tp-2022-2c-Compilant/GECK/shared/Debug" -o "consola" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/tp-2022-2c-Compilant/GECK/shared/Debug" -o "consola" $(OBJS) $(USER_OBJS) $(LIBS) -lcommons -lshared
 	@echo 'Finished building target: $@'
 	@echo ' '
 

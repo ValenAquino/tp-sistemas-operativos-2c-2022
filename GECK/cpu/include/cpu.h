@@ -12,6 +12,7 @@
 
 #include "comunicacion.h"
 #include "configuracion.h"
+#include "tlb.h"
 
 #define DISPATCH_SERVER_NAME "CPU_SERVER_DISPATCH"
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
