@@ -37,6 +37,14 @@ typedef enum {
  */
 void ingresar_a_tlb(entrada_tlb *entrada);
 
+/**
+ * @NAME: buscar_marco_en_tlb
+ * @DESC: Recibe el PID, numero de segmento y numero de pagina
+ * y retorna el marco de memoria si se encontro la table en tlb (HIT)
+ * o -1 si no se encontro (MISS)
+ */
+int buscar_marco_en_tlb(int pid, int nro_seg, int nro_pag);
+
 // Handlers
 void manejar_reemplazo_para(entrada_tlb *entrada);
 void manejar_reemplazo_LRU(entrada_tlb *entrada_nueva);
@@ -46,7 +54,10 @@ void manejar_reemplazo_FIFO(entrada_tlb *entrada_nueva);
 void remover_de_tlb_by_index(int indice);
 void agregar_a_tlb(entrada_tlb *entrada);
 void reemplazar_tlb(entrada_tlb *entrada_nueva, int indice_victima);
+void limpiar_tlb();
+
 uint32_t buscar_indice_en_tlb(entrada_tlb *entrada_buscada);
+entrada_tlb* buscar_entrada_por_seg_y_pag(int nro_seg, int nro_pag);
 
 // LRU
 entrada_tlb* buscar_victima_lru();
@@ -59,4 +70,6 @@ entrada_tlb* crear_entrada_tlb(int pid, int nro_seg, int nro_pag, int frame);
 
 // Utils
 algoritmo_reemplazo_tlb get_algoritmo_reemplazo(char *algoritmo);
+void loggear_tlb();
+
 #endif /* TLB_H_ */

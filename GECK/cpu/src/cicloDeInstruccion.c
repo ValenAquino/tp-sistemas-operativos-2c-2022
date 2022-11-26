@@ -215,7 +215,7 @@ int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst) {
 	if(hay_segmentation_fault(dir_parcial.nro_seg, pcb))
 		return EXIT_FAILURE;
 
-	int marco = pedir_marco_memoria(dir_parcial, memoria_fd);
+	int marco = pedir_marco_memoria(pcb->id, dir_parcial, memoria_fd);
 
 	if(hay_page_fault(marco, pcb, dir_parcial))
 		return EXIT_FAILURE;

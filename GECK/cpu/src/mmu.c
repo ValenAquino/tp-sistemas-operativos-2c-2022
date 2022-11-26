@@ -23,10 +23,12 @@ extern sem_t sem_acceso_memoria;
  *
  */
 
-int pedir_marco_memoria(dir_t dir_parcial, int memoria_fd) {
+int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
 	enviar_direccion_parcial(dir_parcial, memoria_fd);
 
 	sem_wait(&sem_acceso_memoria);
+
+	ingresar_a_tlb(crear_entrada_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag, MARCO_MEMORIA));
 
 	return MARCO_MEMORIA;
 

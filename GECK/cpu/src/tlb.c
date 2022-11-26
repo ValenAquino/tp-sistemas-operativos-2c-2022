@@ -17,6 +17,21 @@ void ingresar_a_tlb(entrada_tlb *entrada) {
 	manejar_reemplazo_para(entrada);
 }
 
+int buscar_marco_en_tlb(int pid, int nro_seg, int nro_pag) {
+	entrada_tlb *entrada_encontrada = buscar_entrada_por_seg_y_pag(nro_seg,
+			nro_pag);
+
+	if (entrada_encontrada == NULL) {
+		log_info(logger, "PID: <%d> - TLB MISS - Segmento: <%d> - Pagina: <%d>",
+				pid, nro_seg, nro_pag);
+		return -1;
+	} else {
+		log_info(logger, "PID: <%d> - TLB HIT - Segmento: <%d> - Pagina: <%d>",
+				pid, nro_seg, nro_pag);
+		return entrada_encontrada->frame;
+	}
+}
+
 void manejar_reemplazo_para(entrada_tlb *entrada) {
 	switch (get_algoritmo_reemplazo(config->reemplazo_tlb)) {
 	case TLB_LRU:
@@ -29,10 +44,11 @@ void manejar_reemplazo_para(entrada_tlb *entrada) {
 		log_error(logger_debug, "TLB - Algoritmo de reemplazo desconocido");
 		break;
 	}
+	loggear_tlb();
 }
 
 void manejar_reemplazo_LRU(entrada_tlb *entrada_nueva) {
-	entrada_tlb* entrada_victima = buscar_victima_lru();
+	entrada_tlb *entrada_victima = buscar_victima_lru();
 	int index_victima = buscar_indice_en_tlb(entrada_victima);
 	reemplazar_tlb(entrada_nueva, index_victima);
 }
@@ -78,6 +94,20 @@ void* comparar_ultimas_referencias(entrada_tlb *entrada_uno,
 	return diff > 0 ? entrada_dos : entrada_uno;
 }
 
+entrada_tlb* buscar_entrada_por_seg_y_pag(int nro_seg, int nro_pag) {
+	entrada_tlb *entrada_encontrada = NULL;
+	bool busqueda_tlb(void* arg) {
+		entrada_tlb *entrada = arg;
+		return entrada->nro_pag == nro_pag && entrada->nro_seg == nro_seg;
+	}
+
+	pthread_mutex_lock(&mutex_tlb);
+	entrada_encontrada = list_find(tlb, busqueda_tlb);
+	pthread_mutex_unlock(&mutex_tlb);
+
+	return entrada_encontrada;
+}
+
 uint32_t buscar_indice_en_tlb(entrada_tlb *entrada_buscada) {
 	pthread_mutex_lock(&mutex_tlb);
 	for (int i = 0; i < list_size(tlb); i++) {
@@ -108,6 +138,26 @@ entrada_tlb* crear_entrada_tlb(int pid, int nro_seg, int nro_pag, int frame) {
 	entrada->ult_ref_timestamp = time(NULL);
 
 	return entrada;
+}
+
+void limpiar_tlb() {
+	pthread_mutex_lock(&mutex_tlb);
+	list_clean_and_destroy_elements(tlb, (void*) free);
+	pthread_mutex_unlock(&mutex_tlb);
+}
+
+void loggear_tlb() {
+	log_info(logger, "\n-------- TLB --------");
+	pthread_mutex_lock(&mutex_tlb);
+	for (int i = 0; i < list_size(tlb); i++) {
+		entrada_tlb *entrada = list_get(tlb, i);
+
+		log_info(logger, "<%d>|PID:<%d>|SEGMENTO:<%d>|PAGINA:<%d>|MARCO:<%d>",
+				i, entrada->pid, entrada->nro_seg, entrada->nro_pag,
+				entrada->frame);
+	}
+	pthread_mutex_unlock(&mutex_tlb);
+	log_info(logger, "------  FIN TLB ------\n");
 }
 
 algoritmo_reemplazo_tlb get_algoritmo_reemplazo(char *algoritmo) {
