@@ -34,6 +34,9 @@ void check_interrupt();
 int hay_segmentation_fault(int nro_seg, PCB* pcb);
 int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial);
 
+void log_registros();
+void log_mov(int pid, ts_ins *instruccion);
+
 uint32_t get_valor_registro(reg_cpu registro);
 int guardar_en_reg(reg_cpu reg, int valor);
 void actualizar_pcb(PCB* pcb);

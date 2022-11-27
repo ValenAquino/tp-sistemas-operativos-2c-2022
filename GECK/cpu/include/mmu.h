@@ -8,6 +8,7 @@
 
 #include <paquetes.h>
 #include <shared.h>
+#include <servidor.h>
 #include <logs.h>
 #include <memoria_shared.h>
 #include <commons/log.h>

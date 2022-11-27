@@ -29,15 +29,6 @@ pthread_mutex_t mutex_tlb;
 int memoria_fd;
 char *config_path;
 
-void sighandler(int x) {
-	switch (x) {
-	case SIGINT:
-		terminar_cpu();
-		exit(EXIT_SUCCESS);
-		break;
-	}
-}
-
 int main(int argc, char **argv) {
     signal(SIGINT, sighandler);
 
@@ -48,45 +39,19 @@ int main(int argc, char **argv) {
 	}
 
 	iniciar_cpu();
-	log_debug(logger_debug, "config: %s", config_path);
-
-	hilo_memoria();
-	enviar_codop(memoria_fd, HANDSHAKE_MEMORIA_CPU);
-
-	int server_interrupt_fd = crear_servidor(config->ip_cpu,
-			config->puerto_escucha_interrupt, INTERRUPT_SERVER_NAME);
-	int server_dispatch_fd = crear_servidor(config->ip_cpu,
-			config->puerto_escucha_dispatch, DISPATCH_SERVER_NAME);
-
-	while (server_escuchar_interrupt(INTERRUPT_SERVER_NAME, server_interrupt_fd)
-			&& server_escuchar_dispatch(DISPATCH_SERVER_NAME,
-					server_dispatch_fd))
-		;
+	inciar_comunicacion_con_memoria();
+	iniciar_servidores_de_escucha();
 
 	terminar_cpu();
-
 	return EXIT_SUCCESS;
-}
-
-void hilo_memoria() {
-	pthread_t hilo;
-
-	memoria_fd = conectar_con("Memoria", config->ip_memoria,
-			config->puerto_memoria);
-
-	t_manejar_conexion_args *args = malloc(sizeof(t_manejar_conexion_args));
-	args->fd = memoria_fd;
-	args->server_name = "Memoria";
-
-	pthread_create(&hilo, NULL, (void*) manejar_comunicacion_memoria,
-			(void*) args);
-	pthread_detach(hilo);
 }
 
 void iniciar_cpu() {
 	t_config *config_file = abrir_configuracion(config_path);
 	crear_loggers("cpu", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
+
+	log_debug(logger_debug, "config: %s", config_path);
 	test_read_config(config);
 
 	tlb = list_create();
@@ -94,6 +59,18 @@ void iniciar_cpu() {
 	sem_init(&sem_acceso_memoria, 0, 0);
 	sem_init(&sem_respuesta_memoria, 0, 0);
 	pthread_mutex_init(&mutex_tlb, NULL);
+}
+
+void iniciar_servidores_de_escucha() {
+	int server_interrupt_fd =
+		crear_servidor(config->ip_cpu,config->puerto_escucha_interrupt, INTERRUPT_SERVER_NAME);
+	int server_dispatch_fd =
+		crear_servidor(config->ip_cpu, config->puerto_escucha_dispatch, DISPATCH_SERVER_NAME);
+
+	while(
+		server_escuchar_interrupt(INTERRUPT_SERVER_NAME, server_interrupt_fd) &&
+		server_escuchar_dispatch(DISPATCH_SERVER_NAME,server_dispatch_fd)
+	);
 }
 
 int crear_servidor(char *ip, char *puerto, char *server_name) {
@@ -105,8 +82,10 @@ int crear_servidor(char *ip, char *puerto, char *server_name) {
 }
 
 int conectar_con(char *servername, char *ip, char *puerto) {
-	log_info(logger_debug, "Iniciando conexion con %s - Puerto: %s - IP: %s",
-			ip, puerto, servername);
+	log_info(
+		logger_debug,
+		"Iniciando conexion con %s - Puerto: %s - IP: %s",
+		ip, puerto, servername);
 
 	int file_descriptor = crear_conexion(ip, puerto);
 
@@ -116,6 +95,15 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 	}
 
 	return file_descriptor;
+}
+
+void sighandler(int x) {
+	switch (x) {
+	case SIGINT:
+		terminar_cpu();
+		exit(EXIT_SUCCESS);
+		break;
+	}
 }
 
 void destruir_loggers() {

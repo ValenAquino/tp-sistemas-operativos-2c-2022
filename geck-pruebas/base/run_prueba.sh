@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+PRUEBAS_BASE_PATH=$(pwd)
+cd ..
 
-PROJECT_PATH=~/Documents/tp-2022-2c-Compilant/GECK
-PRUEBAS_PATH=~/Documents/tp-2022-2c-Compilant/geck-pruebas
-PRUEBAS_BASE_PATH=~/Documents/tp-2022-2c-Compilant/geck-pruebas/base
+PRUEBAS_PATH=$(pwd)
+cd ../GECK
+
+PROJECT_PATH=$(pwd)
 CONFIG_PATH=$PRUEBAS_BASE_PATH/consola.config
 
 echo Yendo a la carpeta del proyecto. NOTA: Tiene que estar dentro de la carpeta de Documents.

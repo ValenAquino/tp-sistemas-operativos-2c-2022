@@ -78,8 +78,11 @@ void manejar_comunicacion(void *void_args) {
 			int marco = recibir_valor(cliente_socket);
 			int offset = recibir_valor(cliente_socket);
 
-			log_debug(logger_debug,
-					"Voy a leer el marco: %d y devolver su contenido", marco);
+			log_debug(
+				logger_debug,
+				"Voy a leer el marco: %d , offset: %d y devolver su contenido",
+				marco, offset
+			);
 
 			int valor_leido = leer(marco /*, offset*/);
 			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);

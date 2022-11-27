@@ -17,17 +17,18 @@
 #define DISPATCH_SERVER_NAME "CPU_SERVER_DISPATCH"
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
 
-void iniciar_cpu();
 int crear_servidor(char* ip, char* puerto, char* server_name);
 int conectar_con(char *servername, char *ip, char *puerto);
 
-void hilo_memoria();
+void iniciar_cpu();
+void iniciar_servidores_de_escucha();
 
 void destruir_loggers();
 void destruir_listas_y_elementos();
 void destruir_semaforos();
 void liberar_conexiones();
 
+void sighandler(int x);
 void terminar_cpu();
 
 #endif /* CPU_H_ */

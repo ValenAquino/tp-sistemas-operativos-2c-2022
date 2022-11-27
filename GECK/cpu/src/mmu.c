@@ -6,8 +6,6 @@ extern int tam_max_segmento_memoria;
 extern int MARCO_MEMORIA;
 extern int memoria_fd;
 
-extern sem_t sem_acceso_memoria;
-
 /*
  * Agarrar dir log
 
@@ -23,21 +21,41 @@ extern sem_t sem_acceso_memoria;
  *
  */
 
-int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
+int recibir_marco_memoria() {
+	int cod_op = recibir_operacion(memoria_fd);
+	int marco;
 
-	int marco_encontrado_tlb = buscar_marco_en_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag);
-	if (marco_encontrado_tlb != -1) {
-		return marco_encontrado_tlb;
+	switch(cod_op) {
+	case NUMERO_DE_MARCO_MEMORIA:
+		marco = recibir_valor(memoria_fd);
+		log_debug(logger_debug, "La memoria me devolvio numero de marco: %d", marco);
+		break;
+
+	case PAGE_FAULT_MEMORIA:
+		marco = PAGE_FAULT_ERROR;
+		log_debug(logger_debug, "La memoria me devolvio un PAGE FAULT");
+		break;
+	}
+
+	return marco;
+}
+
+int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
+	int marco;
+
+	marco = buscar_marco_en_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag);
+
+	if (marco != -1) {
+		return marco;
 	}
 
 	enviar_direccion_parcial(dir_parcial, memoria_fd);
 
-	sem_wait(&sem_acceso_memoria);
+	marco = recibir_marco_memoria();
 
 	ingresar_a_tlb(crear_entrada_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag, MARCO_MEMORIA));
 
-	return MARCO_MEMORIA;
-
+	return marco;
 }
 
 dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos) {
@@ -67,12 +85,32 @@ void leer_de_memoria(int marco, int offset, int memoria_fd) {
 	enviar_codop(memoria_fd, LECTURA_MEMORIA);
 	enviar_valor(memoria_fd, marco);
 	enviar_valor(memoria_fd, offset);
+
+	int cod_op = recibir_operacion(memoria_fd);
+
+	if(cod_op == VALOR_LECTURA_MEMORIA) {
+		log_debug(logger_debug, "Escritura de memoria ok");
+
+		uint32_t valor_leido = recibir_valor(memoria_fd);
+		log_debug(logger_debug, "Valor leido de memoria: %d", valor_leido);
+	}
+	else {
+		log_error(logger, "NO SE RECIBIO VALOR LECTURA. SE RECIBIO <%d>", cod_op);
+	}
 }
 
 void escribir_en_memoria(int marco, int valor) {
 	enviar_codop(memoria_fd, ESCRITURA_MEMORIA);
 	enviar_valor(memoria_fd, marco);
 	enviar_valor(memoria_fd, valor);
+
+	int cod_op = recibir_operacion(memoria_fd);
+
+	if(cod_op == OK_ESCRITURA_MEMORIA) {
+		log_debug(logger_debug, "Escritura de memoria ok");
+	} else {
+		log_error(logger, "NO SE RECIBIO OK ESCRITURA. SE RECIBIO <%d>", cod_op);
+	}
 }
 
 // CALCULOS
