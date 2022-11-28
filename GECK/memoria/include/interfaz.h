@@ -32,4 +32,6 @@ t_list* crear_paginas();
 pagina_t* obtener_pagina(int id_en_tablas_de_ps, int nro_pag);
 pagina_t *crear_pagina_vacia();
 
+void ejecutar_retardo_memoria(char* motivo);
+
 #endif /* INTERFAZ_H_ */

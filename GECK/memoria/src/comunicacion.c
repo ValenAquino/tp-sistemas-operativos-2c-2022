@@ -15,7 +15,6 @@ void manejar_comunicacion(void *void_args) {
 
 		switch (cod_op) {
 		case HANDSHAKE_MEMORIA_CPU:
-			enviar_codop(cliente_socket, HANDSHAKE_MEMORIA_CPU);
 			enviar_valor(cliente_socket, config->entradas_por_tabla);
 			enviar_valor(cliente_socket, config->tam_pagina);
 
@@ -64,8 +63,7 @@ void manejar_comunicacion(void *void_args) {
 			int pid = recibir_pid(cliente_socket);
 			int numero_de_marco = obtener_num_marco(dir, pid);
 
-			// Chequear respuesta a pregunta de soporte.
-			usleep(config->retardo_memoria * 1000);
+			ejecutar_retardo_memoria("ACCESO A MEMORIA");
 
 			if (numero_de_marco == PAGE_FAULT_ERROR) {
 				log_debug(logger_debug,
@@ -90,7 +88,7 @@ void manejar_comunicacion(void *void_args) {
 
 			int valor_leido = leer(marco /*, offset*/);
 			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);
-			usleep(config->retardo_memoria * 1000);
+			ejecutar_retardo_memoria("LECTURA DE MEMORIA");
 			enviar_valor(cliente_socket, valor_leido);
 
 			break;
@@ -104,7 +102,7 @@ void manejar_comunicacion(void *void_args) {
 					marco, valor_a_escribir);
 
 			escribir(marco, valor_a_escribir);
-			usleep(config->retardo_memoria * 1000);
+			ejecutar_retardo_memoria("ESCRITURA DE MEMORIA");
 			enviar_codop(cliente_socket, OK_ESCRITURA_MEMORIA);
 
 			break;

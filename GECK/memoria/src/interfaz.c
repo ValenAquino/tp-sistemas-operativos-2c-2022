@@ -6,6 +6,7 @@ extern t_list *tablas_de_paginas;
 extern pthread_mutex_t tablas_de_paginas_mutex;
 
 pagina_t* obtener_pagina(int id_en_tablas_de_ps, int nro_pag) {
+	log_debug(logger_debug, "Buscando pagina: %d, en el indice: %d", nro_pag, id_en_tablas_de_ps);
 	pthread_mutex_lock(&tablas_de_paginas_mutex);
 	t_list *tabla_paginas = list_get(tablas_de_paginas, id_en_tablas_de_ps);
 	pthread_mutex_unlock(&tablas_de_paginas_mutex);
@@ -21,7 +22,7 @@ int obtener_num_marco(dir_t direccion_parcial, int pid) {
 	log_info(logger, "Acceso a Tabla de Páginas: “PID: <%d> - Página: <%d> - Marco: <%d>",
 				pid,direccion_parcial.nro_pag, pagina->frame);
 
-	if (pagina->bit_p) {
+	if (pagina->bit_p == 1) {
 		pagina->bit_u = 1;
 		return pagina->frame;
 	}
@@ -100,4 +101,11 @@ pagina_t* crear_pagina_vacia() {
 	pagina->pos_swap = 0;
 
 	return pagina;
+}
+
+
+void ejecutar_retardo_memoria(char* motivo_retardo) {
+	log_debug(logger_debug,	"Ejecutando retardo memoria de %d milisegundos por %s",
+			config->retardo_memoria, motivo_retardo);
+	usleep(config->retardo_memoria * 1000);
 }

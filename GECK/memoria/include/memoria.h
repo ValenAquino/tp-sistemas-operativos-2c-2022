@@ -29,5 +29,6 @@
 
 int crear_conexion(char* ip, char* puerto);
 void iniciar_memoria();
+int cargar_memoria(t_configuracion_memoria* config);
 
 #endif /* MEMORIA_H_ */

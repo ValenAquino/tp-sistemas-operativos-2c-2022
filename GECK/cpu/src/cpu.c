@@ -39,7 +39,9 @@ int main(int argc, char **argv) {
 	}
 
 	iniciar_cpu();
+	log_debug(logger_debug, "MAIN CPU");
 	inciar_comunicacion_con_memoria();
+
 	iniciar_servidores_de_escucha();
 
 	terminar_cpu();
@@ -81,22 +83,6 @@ int crear_servidor(char *ip, char *puerto, char *server_name) {
 	log_info(logger_debug, "%s listo para recibir al cliente", server_name);
 
 	return server_fd;
-}
-
-int conectar_con(char *servername, char *ip, char *puerto) {
-	log_info(
-		logger_debug,
-		"Iniciando conexion con %s - Puerto: %s - IP: %s",
-		ip, puerto, servername);
-
-	int file_descriptor = crear_conexion(ip, puerto);
-
-	if (file_descriptor == -1) {
-		log_info(logger, "No se ha podido conectar %s", servername);
-		exit(EXIT_FAILURE);
-	}
-
-	return file_descriptor;
 }
 
 void sighandler(int x) {

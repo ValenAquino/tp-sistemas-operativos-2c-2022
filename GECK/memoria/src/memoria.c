@@ -42,6 +42,7 @@ void iniciar_memoria() {
 	t_config *config_file = abrir_configuracion(config_path);
 	crear_loggers("memoria", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
+
 	test_read_config(config);
 
 	tablas_de_paginas = list_create();
@@ -52,6 +53,7 @@ void iniciar_memoria() {
 	pthread_mutex_init(&tablas_de_paginas_mutex, NULL);
 
 	crear_archivo_swap();
+	llenar_espacios_libres_swap();
 }
 
 int crear_conexion(char* ip, char* puerto) {

@@ -6,7 +6,6 @@ extern t_log *logger_debug;
 extern t_configuracion_cpu *config;
 
 extern int FLAG_FIN_QUANTUM;
-extern int MARCO_MEMORIA;
 extern int memoria_fd;
 extern int valor_leido;
 

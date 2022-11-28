@@ -18,7 +18,6 @@
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
 
 int crear_servidor(char* ip, char* puerto, char* server_name);
-int conectar_con(char *servername, char *ip, char *puerto);
 
 void iniciar_cpu();
 void iniciar_servidores_de_escucha();

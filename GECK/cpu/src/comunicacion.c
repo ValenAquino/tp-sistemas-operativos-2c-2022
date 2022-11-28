@@ -12,13 +12,13 @@ extern int tam_max_segmento_memoria;
 extern int memoria_fd;
 int valor_leido;
 
+extern pthread_mutex_t mutex_comunicacion_memoria;
+
 void manejar_comunicacion_dispatch(void *void_args) {
 	t_manejar_conexion_args *args = (t_manejar_conexion_args*) void_args;
 	int cliente_socket = args->fd;
 	char *server_name = args->server_name;
 	free(args);
-
-	inciar_comunicacion_con_memoria();
 
 	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
@@ -96,17 +96,40 @@ void manejar_comunicacion_interrupt(void *void_args) {
 }
 
 void inciar_comunicacion_con_memoria() {
+	print_trace();
 	memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
-	enviar_codop(memoria_fd, HANDSHAKE_MEMORIA_CPU); // Se recibe en dispatch (comunicacin.c)
 
+	pthread_mutex_lock(&mutex_comunicacion_memoria);
+	enviar_codop(memoria_fd, HANDSHAKE_MEMORIA_CPU); // Se recibe en dispatch (comunicacin.c)
 	entradas_por_tabla_memoria = recibir_valor(memoria_fd);
 	tam_pagina_memoria = recibir_valor(memoria_fd);
 	tam_max_segmento_memoria = entradas_por_tabla_memoria * tam_pagina_memoria;
+	pthread_mutex_unlock(&mutex_comunicacion_memoria);
 
 	log_debug(
 		logger_debug,
 		"HANDSHAKE_MEMORIA_CPU -> entradas_por_tabla_memoria: %d, tam_pagina_memoria: %d",
 		entradas_por_tabla_memoria, tam_pagina_memoria);
+}
+
+
+/* Obtain a backtrace and print it to stdout. */
+void print_trace() {
+  void *array[10];
+  char **strings;
+  int size, i;
+
+  size = backtrace (array, 10);
+  strings = backtrace_symbols (array, size);
+  if (strings != NULL)
+  {
+
+    printf ("Obtained %d stack frames.\n", size);
+    for (i = 0; i < size; i++)
+      printf ("%s\n", strings[i]);
+  }
+
+  free (strings);
 }
 
 //void manejar_comunicacion_memoria(void *void_args) {
@@ -189,5 +212,21 @@ int server_escuchar_interrupt(char *server_name, int server_interrupt_fd) {
 int server_escuchar_dispatch(char *server_name, int server_dispatch_fd) {
 	return server_escuchar(logger_debug, server_name, server_dispatch_fd,
 			manejar_comunicacion_dispatch);
+}
+
+int conectar_con(char *servername, char *ip, char *puerto) {
+	log_info(
+		logger_debug,
+		"Iniciando conexion con %s - Puerto: %s - IP: %s",
+		servername, puerto, ip);
+
+	int file_descriptor = crear_conexion(ip, puerto);
+
+	if (file_descriptor == -1) {
+		log_info(logger, "No se ha podido conectar %s", servername);
+		exit(EXIT_FAILURE);
+	}
+
+	return file_descriptor;
 }
 

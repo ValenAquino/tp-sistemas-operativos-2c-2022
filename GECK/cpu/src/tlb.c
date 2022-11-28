@@ -159,7 +159,8 @@ void limpiar_tlb() {
 }
 
 void loggear_tlb() {
-	log_info(logger, "\n-------- TLB --------");
+	log_info(logger, "\n");
+	log_info(logger, "-------- TLB --------");
 	pthread_mutex_lock(&mutex_tlb);
 	for (int i = 0; i < list_size(tlb); i++) {
 		entrada_tlb *entrada = list_get(tlb, i);

@@ -70,9 +70,9 @@ void cargar_en_swap(pagina_t* pagina, uint32_t valor_a_guardar_en_swap, int ejec
 	fseek(area_swap, offset, SEEK_SET);
 	cant_bytes_escritos = fwrite(&valor_a_guardar_en_swap, sizeof(uint32_t), 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
-	log_debug(logger_debug, "Se escribieron %d bytes en SWAP", cant_bytes_escritos);
+	log_debug(logger_debug, "Se escribieron %d byte/s en SWAP", cant_bytes_escritos);
 
-	log_debug(logger_debug, "Estoy guardando el offset %ld", offset);
+	log_debug(logger_debug, "Estoy guardando en el offset %ld", offset);
 	pagina->pos_swap = offset;
 
 	if (ejecutar_retardo)
@@ -91,7 +91,7 @@ long get_espacio_libre_en_swap() {
 	espacio_encontrado = list_find(espacios_libres_en_swap, (void*) esta_libre);
 	posicion_libre_swap = espacio_encontrado->pos_swap;
 
-	free(espacio_encontrado);
+	espacio_encontrado->libre = 0;
 
 	return posicion_libre_swap;
 }
@@ -107,6 +107,8 @@ void llenar_espacios_libres_swap() {
 
 		list_add(espacios_libres_en_swap, espacio_en_swap);
 	}
+
+	log_debug(logger_debug, "La lista para manejar espacio libre en swap tiene %d elementos", list_size(espacios_libres_en_swap));
 }
 
 void ejecutar_retardo_swap() {

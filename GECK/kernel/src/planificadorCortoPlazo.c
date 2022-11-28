@@ -6,7 +6,6 @@ extern t_list *procesosBlock;
 
 extern t_configuracion_kernel *config;
 
-extern sem_t sem_procesos_ready; // GRADO DE MULTIPROGRAMACION
 extern pthread_mutex_t mutex_ready; // PROTEGE LA LISTA DE READY
 extern pthread_mutex_t mutex_baja_prioridad;  // PROTEGE LA LISTA DE READY-FIFO EN FEEDBACK.
 extern pthread_mutex_t mutex_block;
