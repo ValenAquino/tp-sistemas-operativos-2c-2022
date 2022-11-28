@@ -48,7 +48,7 @@ void manejar_comunicacion(void *void_args) {
 
 			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
 					pagina_solicitada);
-			uint32_t valor_leido_de_swap = leer_de_swap(pagina_obtenida);
+			uint32_t valor_leido_de_swap = leer_de_swap(pagina_obtenida, pid, segmento_solicitado, pagina_solicitada);
 			int frame_asginado = cargar_en_memoria_principal(pagina_obtenida,
 					valor_leido_de_swap);
 
@@ -61,7 +61,7 @@ void manejar_comunicacion(void *void_args) {
 			break;
 		case ACCESO_A_MEMORIA: {
 			dir_t dir = recibir_direccion_parcial(cliente_socket);
-			int pid = recibir_pid();
+			int pid = recibir_pid(cliente_socket);
 			int numero_de_marco = obtener_num_marco(dir, pid);
 
 			// Chequear respuesta a pregunta de soporte.

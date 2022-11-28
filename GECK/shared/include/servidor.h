@@ -16,7 +16,7 @@ uint32_t recibir_registro(int socket_cliente);
 uint32_t recibir_respuesta_consola(int socket_cliente);
 uint32_t recibir_valor(int socket_cliente);
 
-void solicitar_pagina(PCB* pcb, int socket_conexion, int num_segmento, int num_pagina);
+void solicitar_pagina(int socket_conexion, t_manejar_page_fault* args);
 
 int server_escuchar(t_log* logger, char* server_name, int server_socket, void* function_handler);
 

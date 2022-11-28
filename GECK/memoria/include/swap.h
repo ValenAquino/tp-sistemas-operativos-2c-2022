@@ -20,9 +20,10 @@
 
 int crear_archivo_swap();
 void borrar_de_swap(pagina_t* pagina);
-uint32_t leer_de_swap(pagina_t* pagina);
-void cargar_en_swap(pagina_t* pagina, uint32_t valor_a_guardar_en_swap);
+uint32_t leer_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro_pag);
+void cargar_en_swap(pagina_t* pagina, uint32_t valor_a_guardar_en_swap, int ejecutar_retardo);
 long get_espacio_libre_en_swap();
 void llenar_espacios_libres_swap();
+void ejecutar_retardo_swap();
 
 #endif /* SWAP_H_ */

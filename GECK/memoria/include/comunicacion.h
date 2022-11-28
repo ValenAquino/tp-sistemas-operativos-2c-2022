@@ -12,6 +12,7 @@
 #include <memoria_shared.h>
 
 #include "interfaz.h"
+#include "swap.h"
 
 void manejar_comunicacion(void* void_args);
 int server_memoria(char* server_name, int server_socket);

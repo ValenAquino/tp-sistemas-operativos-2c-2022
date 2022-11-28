@@ -218,19 +218,16 @@ int execute_exit(ts_ins *instruccion, PCB *pcb) {
 	return EXIT_FAILURE;
 }
 
-void mov_in(int desplazamiento_pag, uint32_t reg) {
-	log_trace(logger_debug, "Voy a leer la memoria en el marco: %d", MARCO_MEMORIA);
-	leer_de_memoria(MARCO_MEMORIA, desplazamiento_pag, memoria_fd);
+void mov_in(int desplazamiento_pag, uint32_t reg, int marco_memoria) {
+	log_trace(logger_debug, "Voy a leer la memoria en el marco: %d", marco_memoria);
+	leer_de_memoria(marco_memoria, desplazamiento_pag, memoria_fd);
 	sem_wait(&sem_respuesta_memoria);
 	guardar_en_reg(reg, valor_leido);
 }
 
-void mov_out(uint32_t reg) {
-	log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d", MARCO_MEMORIA);
-	escribir_en_memoria(MARCO_MEMORIA, reg);
-	// Acá hay que revisar esto:
-	//	FLAG_PAGE_FAULT = 0;
-	//	MARCO_MEMORIA = -1;
+void mov_out(uint32_t reg, int marco_memoria) {
+	log_trace(logger_debug, "Voy a escribir la memoria en el marco: %d", marco_memoria);
+	escribir_en_memoria(marco_memoria, reg);
 	sem_wait(&sem_respuesta_memoria);
 }
 
@@ -248,9 +245,9 @@ int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst) {
 		return EXIT_FAILURE;
 
 	(inst == MOV_IN) ? // camino por verdadero : camino por falso
-		mov_in(dir_parcial.desplazamiento_pag, instruccion->param1)
+		mov_in(dir_parcial.desplazamiento_pag, instruccion->param1, marco)
 		:
-		mov_out(instruccion->param1);
+		mov_out(instruccion->param1, marco);
 
 	return EXIT_SUCCESS;
 }

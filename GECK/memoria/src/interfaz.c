@@ -69,7 +69,7 @@ t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) {
 		list_add(indices, indice);
 		log_info(logger,
 					"PID: <%d> - Segmento: <%d> - TAMAÑO: <%d> paginas",
-					pid, iterator_index, round(*tamanio / config->tam_pagina));
+					pid, iterator_index, (int) ceil(*tamanio / config->tam_pagina));
 		iterator_index++;
 	}
 

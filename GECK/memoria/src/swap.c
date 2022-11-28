@@ -110,7 +110,7 @@ void llenar_espacios_libres_swap() {
 }
 
 void ejecutar_retardo_swap() {
-	log_debug("Ejecutando retardo de SWAP de %d milisegundos", config->retardo_swap);
+	log_debug(logger_debug, "Ejecutando retardo de SWAP de %d milisegundos", config->retardo_swap);
 	usleep(config->retardo_swap * 1000);
 }
 

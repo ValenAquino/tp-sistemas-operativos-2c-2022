@@ -3,7 +3,6 @@
 extern int tam_pagina_memoria;
 extern int tam_max_segmento_memoria;
 
-extern int MARCO_MEMORIA;
 extern int memoria_fd;
 
 extern pthread_mutex_t mutex_comunicacion_memoria;
@@ -53,7 +52,7 @@ int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
 
 	pthread_mutex_lock(&mutex_comunicacion_memoria);
 	enviar_direccion_parcial(dir_parcial, memoria_fd);
-	enviar_pid(pid);
+	enviar_pid(memoria_fd, pid);
 	marco = recibir_marco_memoria();
 	pthread_mutex_unlock(&mutex_comunicacion_memoria);
 

@@ -26,8 +26,8 @@ int execute_add(ts_ins* instruccion, PCB *pcb);
 int execute_io(ts_ins* instruccion, PCB *pcb);
 int execute_exit(ts_ins* instruccion, PCB *pcb);
 int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst);
-void mov_in(int desplazamiento_pag, uint32_t reg);
-void mov_out(uint32_t reg);
+void mov_in(int desplazamiento_pag, uint32_t reg, int marco);
+void mov_out(uint32_t reg, int marco);
 
 void check_interrupt();
 

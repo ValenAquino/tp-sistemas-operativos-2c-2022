@@ -15,16 +15,21 @@
 #include <servidor.h>
 #include <shared.h>
 #include <logs.h>
+#include <math.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"
 
-int obtener_num_marco(dir_t direccion_parcial);
+int obtener_num_marco(dir_t direccion_parcial, int pid);
 int leer(int marco);
 void escribir(int marco, int valor);
 
-t_list *crear_indices_tabla_de_paginas(t_list* tamanio_segmentos);
+int cargar_en_memoria_principal(pagina_t *pagina, uint32_t valor_leido_de_swap);
+
+t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) ;
 t_list* crear_paginas();
+
+pagina_t* obtener_pagina(int id_en_tablas_de_ps, int nro_pag);
 pagina_t *crear_pagina_vacia();
 
 #endif /* INTERFAZ_H_ */
