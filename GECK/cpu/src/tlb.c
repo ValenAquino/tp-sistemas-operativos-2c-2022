@@ -142,6 +142,16 @@ entrada_tlb* crear_entrada_tlb(int pid, int nro_seg, int nro_pag, int frame) {
 	return entrada;
 }
 
+void eliminar_entradas_tlb_by_pid(int pid) {
+	bool busqueda_tlb(void* arg) {
+		entrada_tlb *entrada = arg;
+		return entrada->pid == pid;
+	}
+	pthread_mutex_lock(&mutex_tlb);
+	list_remove_and_destroy_by_condition(tlb, (void*) busqueda_tlb, free);
+	pthread_mutex_unlock(&mutex_tlb);
+}
+
 void limpiar_tlb() {
 	pthread_mutex_lock(&mutex_tlb);
 	list_clean_and_destroy_elements(tlb, (void*) free);

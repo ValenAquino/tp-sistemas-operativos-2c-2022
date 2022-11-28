@@ -25,6 +25,6 @@ void escribir(int marco, int valor);
 
 t_list *crear_indices_tabla_de_paginas(t_list* tamanio_segmentos);
 t_list* crear_paginas();
-pagina_t *get_pagina_nueva();
+pagina_t *crear_pagina_vacia();
 
 #endif /* INTERFAZ_H_ */

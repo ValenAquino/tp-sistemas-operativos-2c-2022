@@ -6,6 +6,8 @@ extern int tam_max_segmento_memoria;
 extern int MARCO_MEMORIA;
 extern int memoria_fd;
 
+extern pthread_mutex_t mutex_comunicacion_memoria;
+
 /*
  * Agarrar dir log
 
@@ -49,11 +51,15 @@ int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
 		return marco;
 	}
 
+	pthread_mutex_lock(&mutex_comunicacion_memoria);
 	enviar_direccion_parcial(dir_parcial, memoria_fd);
-
+	enviar_pid(pid);
 	marco = recibir_marco_memoria();
+	pthread_mutex_unlock(&mutex_comunicacion_memoria);
 
-	ingresar_a_tlb(crear_entrada_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag, MARCO_MEMORIA));
+	if (marco != PAGE_FAULT_ERROR) {
+		ingresar_a_tlb(crear_entrada_tlb(pid, dir_parcial.nro_seg, dir_parcial.nro_pag, marco));
+	}
 
 	return marco;
 }
@@ -73,7 +79,7 @@ dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos) {
 		return dir_parcial;
 	}
 
-	dir_parcial.id_tabla_pagina = seg.num_pagina;
+	dir_parcial.id_tabla_pagina = seg.indice_tablas_paginas;
 	dir_parcial.nro_pag = get_numero_pagina(dir_logica);
 	dir_parcial.desplazamiento_pag = get_desplazamiento_pagina(dir_logica);
 

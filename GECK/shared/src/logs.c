@@ -53,7 +53,7 @@ void log_lista_seg(t_list* tabla_segmentos) {
 
 	for(int i = 0; i < list_size(tabla_segmentos); i++) {
 		segmento_t *seg = list_get(tabla_segmentos, i);
-		log_debug(logger_debug, "segmento [%d] = { tam: %d, id_tabla_de_pags: %d }", i, seg->tamanio_segmento, seg->num_pagina);
+		log_debug(logger_debug, "segmento [%d] = { tam: %d, id_tabla_de_pags: %d }", i, seg->tamanio_segmento, seg->indice_tablas_paginas);
 	}
 }
 

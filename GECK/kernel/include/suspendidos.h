@@ -9,6 +9,8 @@
 #include "planificadorLargoPlazo.h"
 #include <servidor.h>
 
+#include <memoria_shared.h>
+
 typedef struct {
 	PCB* pcb;
 	int tiempo_de_suspension;
@@ -19,12 +21,6 @@ typedef struct {
 	PCB* pcb;
 	uint32_t reg;
 } t_manejar_block_consola;
-
-typedef struct {
-	PCB* pcb;
-	int segmento_solicitado;
-	int pagina_solicitada;
-} t_manejar_page_fault;
 
 void suspender_proceso(void* void_args);
 void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo);

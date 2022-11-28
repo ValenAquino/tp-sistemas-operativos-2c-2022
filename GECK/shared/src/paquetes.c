@@ -145,7 +145,7 @@ void* serializar_lista_seg(t_list *lista, int size) {
 		memcpy(stream + desplazamiento, &(segmento->tamanio_segmento), size_elemento);
 		desplazamiento += size_elemento;
 
-		memcpy(stream + desplazamiento, &(segmento->num_pagina), size_elemento);
+		memcpy(stream + desplazamiento, &(segmento->indice_tablas_paginas), size_elemento);
 		desplazamiento += size_elemento;
 	}
 
@@ -254,7 +254,7 @@ t_list* deserializar_lista_segm(void *stream) {
 		memcpy(&segmento->tamanio_segmento, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
 
-		memcpy(&segmento->num_pagina, stream + desplazamiento, size_elemento);
+		memcpy(&segmento->indice_tablas_paginas, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
 
 		list_add(lista, segmento);

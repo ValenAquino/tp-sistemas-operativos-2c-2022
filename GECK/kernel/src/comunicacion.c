@@ -153,7 +153,7 @@ void manejar_comunicacion(void *void_args) {
 				segmento_t *seg = (segmento_t*) malloc(sizeof(segmento_t));
 
 				seg->tamanio_segmento = *((int*) list_get(pcb->tamanios_segmentos, i));
-				seg->num_pagina = *((int*) list_get(indices, i));
+				seg->indice_tablas_paginas = *((int*) list_get(indices, i));
 
 				list_add(pcb->tablaSegmentos, seg);
 			}
@@ -163,9 +163,8 @@ void manejar_comunicacion(void *void_args) {
 		}
 
 		case PAGINA_ENCONTRADA: {
-			int pid = recibir_valor(cliente_socket);
-			int pagina_encontrada = recibir_valor(cliente_socket);
-			log_debug(logger_debug, "Memoria encontro la pagina solicitada: %d", pagina_encontrada);
+			int pid = recibir_pid(cliente_socket);
+			log_debug(logger_debug, "Se cargo en memoria principal la pagina solicitada para el pid: %d", pid);
 			mover_proceso_block_ready_by_pid(pid);
 			break;
 		}

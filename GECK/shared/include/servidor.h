@@ -5,6 +5,7 @@
 #include "protocolo.h"
 #include "pcb.h"
 #include "paquetes.h"
+#include "memoria_shared.h"
 
 int iniciar_servidor(t_log* logger, const char* name, char* ip, char* puerto);
 int esperar_cliente(t_log* logger, const char* name, int server_fd);

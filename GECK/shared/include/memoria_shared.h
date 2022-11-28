@@ -12,7 +12,7 @@ typedef struct {
 
 typedef struct {
 	int tamanio_segmento;
-	int num_pagina;
+	int indice_tablas_paginas;
 } segmento_t;
 
 typedef struct {
@@ -20,11 +20,24 @@ typedef struct {
 	int bit_u;
 	int bit_m;
 	int frame;
+	long pos_swap;
 } pagina_t;
+
+typedef struct {
+	int pos_swap;
+	int libre;
+} espacio_swap_t;
 
 typedef enum {
 	SEG_FAULT_ERROR = -1,
 	PAGE_FAULT_ERROR = -2
 } error_memoria;
+
+typedef struct {
+	PCB* pcb;
+	int nro_segmento_solicitado;
+	int indice_tablas_de_paginas;
+	int pagina_solicitada;
+} t_manejar_page_fault;
 
 #endif /* MEMORIA_SHARED_H_ */

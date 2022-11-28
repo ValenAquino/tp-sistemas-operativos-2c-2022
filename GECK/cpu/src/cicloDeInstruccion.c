@@ -203,11 +203,14 @@ int execute_exit(ts_ins *instruccion, PCB *pcb) {
 		logger, "PID: <%d> - Ejecutando: <%s>",
 		pcb->id, str_ins(instruccion->name));
 
+	eliminar_entradas_tlb_by_pid(pcb->id);
+
 	pcb->programCounter = pcb->programCounter + 1;
 	actualizar_pcb(pcb);
 
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
+
 
 	free(pcb);
 	se_devolvio_pcb = true;
@@ -344,7 +347,6 @@ int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial) {
 	if (marco != PAGE_FAULT_ERROR)
 		return 0;
 
-	MARCO_MEMORIA = -1;
 	actualizar_pcb(pcb);
 
 	log_trace(

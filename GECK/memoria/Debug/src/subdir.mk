@@ -7,26 +7,29 @@ C_SRCS += \
 ../src/comunicacion.c \
 ../src/configuracion.c \
 ../src/interfaz.c \
-../src/memoria.c 
+../src/memoria.c \
+../src/swap.c 
 
 C_DEPS += \
 ./src/comunicacion.d \
 ./src/configuracion.d \
 ./src/interfaz.d \
-./src/memoria.d 
+./src/memoria.d \
+./src/swap.d 
 
 OBJS += \
 ./src/comunicacion.o \
 ./src/configuracion.o \
 ./src/interfaz.o \
-./src/memoria.o 
+./src/memoria.o \
+./src/swap.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.c src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I"/home/tp-2022-2c-Compilant/GECK/shared/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	gcc -I"/home/ubuntu/Documents/tp-2022-2c-Compilant/GECK/shared/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -34,7 +37,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/comunicacion.d ./src/comunicacion.o ./src/configuracion.d ./src/configuracion.o ./src/interfaz.d ./src/interfaz.o ./src/memoria.d ./src/memoria.o
+	-$(RM) ./src/comunicacion.d ./src/comunicacion.o ./src/configuracion.d ./src/configuracion.o ./src/interfaz.d ./src/interfaz.o ./src/memoria.d ./src/memoria.o ./src/swap.d ./src/swap.o
 
 .PHONY: clean-src
 

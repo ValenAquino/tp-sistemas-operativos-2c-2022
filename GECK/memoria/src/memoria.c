@@ -6,13 +6,17 @@ t_configuracion_memoria* config;
 
 char* config_path;
 
-uint32_t espacio_disponible_swap;
-void* area_swap;
+FILE* area_swap;
 
 uint32_t memoria_disponible;
 void* memoria_principal;
 
 t_list *tablas_de_paginas;
+t_list *espacios_libres_en_swap;
+
+pthread_mutex_t tablas_de_paginas_mutex;
+pthread_mutex_t memoria_p_mutex;
+pthread_mutex_t swap_mutex;
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -27,7 +31,9 @@ int main(int argc, char** argv) {
 
 	while (server_memoria(SERVERNAME, memoria_fd));
 
+	fclose(area_swap);
 	/// TODO: LIBERAR MEMORIA.
+	// CERRAR ARCHIVO DE SWAP
 
 	return EXIT_SUCCESS;
 }
@@ -37,7 +43,15 @@ void iniciar_memoria() {
 	crear_loggers("memoria", &logger, &logger_debug, config_file);
 	config = procesar_config(config_file);
 	test_read_config(config);
+
 	tablas_de_paginas = list_create();
+	espacios_libres_en_swap = list_create();
+
+	pthread_mutex_init(&memoria_p_mutex, NULL);
+	pthread_mutex_init(&swap_mutex, NULL);
+	pthread_mutex_init(&tablas_de_paginas_mutex, NULL);
+
+	crear_archivo_swap();
 }
 
 int crear_conexion(char* ip, char* puerto) {
@@ -46,28 +60,6 @@ int crear_conexion(char* ip, char* puerto) {
 	log_info(logger_debug, "%s lista para recibir al cliente", SERVERNAME);
 
 	return server_fd;
-}
-
-
-int crear_archivo_swap(t_configuracion_memoria* config, char* path, uint32_t tamanio) {
-    log_info(logger_debug, "Creando SWAP en <<%s>>", path);
-    int fd_swap = open(path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-
-    if (fd_swap == -1) {
-        log_error(logger_debug, "No se pudo crear el area de SWAP. (errno %i)", errno);
-        return EXIT_FAILURE;
-    }
-
-    ftruncate(fd_swap, config->tamanio_swap);
-
-    area_swap = mmap(NULL, config->tamanio_swap, PROT_READ | PROT_WRITE, MAP_SHARED, fd_swap, 0);
-    if (errno!=0) log_error(logger_debug, "Error en mmap: errno %i", errno);
-
-    memset(area_swap, 0, config->tamanio_swap);
-
-    close(fd_swap);
-
-    return EXIT_SUCCESS;
 }
 
 int cargar_memoria(t_configuracion_memoria* config) {

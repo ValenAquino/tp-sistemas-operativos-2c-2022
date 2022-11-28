@@ -31,7 +31,7 @@ void manejar_comunicacion(void *void_args) {
 			int pid = recibir_pid(cliente_socket);
 
 			t_list *indices = crear_indices_tabla_de_paginas(
-					tamanios_segmentos);
+					tamanios_segmentos, pid);
 
 			enviar_indices_tablas_de_paginas(indices, cliente_socket, pid);
 			break;
@@ -40,23 +40,29 @@ void manejar_comunicacion(void *void_args) {
 			int pid = recibir_valor(cliente_socket);
 			int segmento_solicitado = recibir_valor(cliente_socket);
 			int pagina_solicitada = recibir_valor(cliente_socket);
+			int index_en_ts_de_ps = recibir_valor(cliente_socket);
 
 			log_debug(logger_debug,
 					"Se esta solicitando el sector: %d y la pagina: %d para pcb id: %d",
 					segmento_solicitado, pagina_solicitada, pid);
 
-			//TODO: IMPLEMENTAR SOLICITUD A SWAP.
+			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
+					pagina_solicitada);
+			uint32_t valor_leido_de_swap = leer_de_swap(pagina_obtenida);
+			int frame_asginado = cargar_en_memoria_principal(pagina_obtenida,
+					valor_leido_de_swap);
 
-			// REVISAR: Este envio esta ok? Es necesario? Si es necesario quizas habria
-			// que llamarlo cuando cuando swap responda ok.
+			log_info(logger,
+					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
+					pid, pagina_obtenida->frame, segmento_solicitado, pagina_solicitada);
+
 			enviar_codop(cliente_socket, PAGINA_ENCONTRADA);
-			enviar_valor(cliente_socket, pid);
-			enviar_valor(cliente_socket, 45); // valor pagina encontrada.
+			enviar_pid(cliente_socket, pid);
 			break;
 		case ACCESO_A_MEMORIA: {
 			dir_t dir = recibir_direccion_parcial(cliente_socket);
-
-			int numero_de_marco = obtener_num_marco(dir);
+			int pid = recibir_pid();
+			int numero_de_marco = obtener_num_marco(dir, pid);
 
 			// Chequear respuesta a pregunta de soporte.
 			usleep(config->retardo_memoria * 1000);
@@ -78,11 +84,9 @@ void manejar_comunicacion(void *void_args) {
 			int marco = recibir_valor(cliente_socket);
 			int offset = recibir_valor(cliente_socket);
 
-			log_debug(
-				logger_debug,
-				"Voy a leer el marco: %d , offset: %d y devolver su contenido",
-				marco, offset
-			);
+			log_debug(logger_debug,
+					"Voy a leer el marco: %d , offset: %d y devolver su contenido",
+					marco, offset);
 
 			int valor_leido = leer(marco /*, offset*/);
 			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);

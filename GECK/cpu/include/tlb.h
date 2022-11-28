@@ -67,6 +67,7 @@ void* comparar_ultimas_referencias(entrada_tlb *entrada_uno,
 // Entradas
 int son_entradas_iguales(entrada_tlb *entrada_uno, entrada_tlb *entrada_dos);
 entrada_tlb* crear_entrada_tlb(int pid, int nro_seg, int nro_pag, int frame);
+void eliminar_entradas_tlb_by_pid(int pid);
 
 // Utils
 algoritmo_reemplazo_tlb get_algoritmo_reemplazo(char *algoritmo);

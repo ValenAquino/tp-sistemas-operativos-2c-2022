@@ -40,7 +40,7 @@ main-build: consola
 consola: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/tp-2022-2c-Compilant/GECK/shared/Debug" -o "consola" $(OBJS) $(USER_OBJS) $(LIBS) -lcommons -lshared
+	gcc -L"/home/ubuntu/Documents/tp-2022-2c-Compilant/GECK/shared/Debug" -o "consola" $(OBJS) $(USER_OBJS) $(LIBS) -lcommons -lshared
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -7,7 +7,6 @@ t_configuracion_cpu *config;
 
 int FLAG_FIN_QUANTUM;
 int FLAG_PAGE_FAULT;
-int MARCO_MEMORIA = -1;
 
 int entradas_por_tabla_memoria;
 int tam_pagina_memoria;
@@ -25,6 +24,7 @@ sem_t sem_acceso_memoria;
 sem_t sem_respuesta_memoria;
 
 pthread_mutex_t mutex_tlb;
+pthread_mutex_t mutex_comunicacion_memoria;
 
 int memoria_fd;
 char *config_path;
@@ -58,7 +58,9 @@ void iniciar_cpu() {
 
 	sem_init(&sem_acceso_memoria, 0, 0);
 	sem_init(&sem_respuesta_memoria, 0, 0);
+
 	pthread_mutex_init(&mutex_tlb, NULL);
+	pthread_mutex_init(&mutex_comunicacion_memoria, NULL);
 }
 
 void iniciar_servidores_de_escucha() {
@@ -119,6 +121,7 @@ void destruir_semaforos() {
 	sem_destroy(&sem_acceso_memoria);
 	sem_destroy(&sem_respuesta_memoria);
 	pthread_mutex_destroy(&mutex_tlb);
+	pthread_mutex_destroy(&mutex_comunicacion_memoria);
 }
 
 void liberar_conexiones() {

@@ -101,10 +101,13 @@ int server_escuchar(t_log* logger, char* server_name, int server_socket, void* f
     return 0;
 }
 
-void solicitar_pagina(PCB* pcb, int socket_conexion, int num_segmento, int num_pagina) {
+void solicitar_pagina(int socket_conexion, t_manejar_page_fault* args) {
 	enviar_codop(socket_conexion, PAGINA_SOLICITADA);
-	enviar_valor(socket_conexion, pcb->id);
-	enviar_valor(socket_conexion, num_segmento);
-	enviar_valor(socket_conexion, num_pagina);
+	enviar_valor(socket_conexion, args->pcb->id);
+	enviar_valor(socket_conexion, args->nro_segmento_solicitado);
+	enviar_valor(socket_conexion, args->pagina_solicitada);
+	enviar_valor(socket_conexion, args->indice_tablas_de_paginas);
+
+	free(args);
 }
 
