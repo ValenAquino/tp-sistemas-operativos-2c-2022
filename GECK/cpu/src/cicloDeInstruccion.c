@@ -215,9 +215,9 @@ int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst) {
 	if (hay_page_fault(marco, pcb, dir_parcial))
 		return EXIT_FAILURE;
 
-	(inst == MOV_IN) ? // camino por verdadero : camino por falso
-	mov_in(pcb->id, dir_parcial, instruccion->param1) : mov_out(pcb->id,
-			dir_parcial, instruccion->param2);
+	(inst == MOV_IN)
+		? mov_in(pcb->id, dir_parcial, instruccion->param1)  // inst == MOV_IN
+		: mov_out(pcb->id,dir_parcial, instruccion->param2); // inst != MOV_IN
 
 	return EXIT_SUCCESS;
 }
@@ -347,7 +347,7 @@ void log_mov(int pid, ts_ins *instruccion) {
 				instruccion->param2);
 	} else {
 		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%s>", pid,
-				str_ins(instruccion->name), instruccion->param2,
-				str_registro(instruccion->param1));
+				str_ins(instruccion->name), instruccion->param1,
+				str_registro(instruccion->param2));
 	}
 }

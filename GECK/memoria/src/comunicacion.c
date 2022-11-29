@@ -11,10 +11,12 @@ void manejar_comunicacion(void *void_args) {
 
 	// Mientras la conexion este abierta
 	while (cliente_socket != -1) {
+		log_trace(logger_debug, "Esperando codigo de operacion [%s]", server_name);
 		int cod_op = recibir_operacion(cliente_socket);
 
 		switch (cod_op) {
 		case HANDSHAKE_MEMORIA_CPU:
+			log_trace(logger_debug, "ENTRE A HANDSHAKE_MEMORIA_CPU");
 			enviar_valor(cliente_socket, config->entradas_por_tabla);
 			enviar_valor(cliente_socket, config->tam_pagina);
 
@@ -24,41 +26,51 @@ void manejar_comunicacion(void *void_args) {
 			break;
 
 		case CREAR_ESTRUCTURAS_MEMORIA: {
+			log_trace(logger_debug, "ENTRE A CREAR_ESTRUCTURAS_MEMORIA");
 			log_debug(logger_debug, "CREAR_ESTRUCTURAS_MEMORIA");
 			t_list *tamanios_segmentos =
 					recibir_solicitud_crear_estructuras_memoria(cliente_socket);
 			int pid = recibir_pid(cliente_socket);
 
-			t_list *indices = crear_indices_tabla_de_paginas(
-					tamanios_segmentos, pid);
+			t_list *indices = crear_indices_tabla_de_paginas(tamanios_segmentos,
+					pid);
 
 			enviar_indices_tablas_de_paginas(indices, cliente_socket, pid);
 			break;
 		}
+
 		case PAGINA_SOLICITADA:
+			log_trace(logger_debug, "ENTRE A PAGINA_SOLICITADA");
 			int pid = recibir_valor(cliente_socket);
 			int segmento_solicitado = recibir_valor(cliente_socket);
 			int pagina_solicitada = recibir_valor(cliente_socket);
 			int index_en_ts_de_ps = recibir_valor(cliente_socket);
 
 			log_debug(logger_debug,
-					"Se esta solicitando el sector: %d y la pagina: %d para pcb id: %d",
+					"Se esta solicitando cargar en memoria el segmento: %d y la pagina: %d para pcb id: %d",
 					segmento_solicitado, pagina_solicitada, pid);
 
 			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
 					pagina_solicitada);
 
-			void* data_leida_de_swap = leer_pagina_entera_de_swap(pagina_obtenida, pid, segmento_solicitado, pagina_solicitada);
-			cargar_pagina_entera_en_memoria_principal(pagina_obtenida, data_leida_de_swap);
+			void *data_leida_de_swap = leer_pagina_entera_de_swap(
+					pagina_obtenida, pid, segmento_solicitado,
+					pagina_solicitada);
+
+			cargar_pagina_entera_en_memoria_principal(pagina_obtenida,
+					data_leida_de_swap);
 
 			log_info(logger,
 					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
-					pid, pagina_obtenida->frame, segmento_solicitado, pagina_solicitada);
+					pid, pagina_obtenida->frame, segmento_solicitado,
+					pagina_solicitada);
 
 			enviar_codop(cliente_socket, PAGINA_ENCONTRADA);
 			enviar_pid(cliente_socket, pid);
 			break;
+
 		case ACCESO_A_MEMORIA: {
+			log_trace(logger_debug, "ENTRE A ACCESO_A_MEMORIA");
 			dir_t dir = recibir_direccion_parcial(cliente_socket);
 			int pid = recibir_pid(cliente_socket);
 			int numero_de_marco = obtener_num_marco(dir, pid);
@@ -78,9 +90,11 @@ void manejar_comunicacion(void *void_args) {
 			}
 			break;
 		}
+
 		case LECTURA_MEMORIA: {
-			int pid = recibir_pid(cliente_socket);
+			log_trace(logger_debug, "ENTRE A LECTURA_MEMORIA");
 			dir_t dir_parcial = recibir_direccion_parcial(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
 
 			ejecutar_retardo_memoria("LECTURA DE MEMORIA");
 
@@ -89,9 +103,11 @@ void manejar_comunicacion(void *void_args) {
 			enviar_valor(cliente_socket, valor_leido);
 			break;
 		}
+
 		case ESCRITURA_MEMORIA: {
-			int pid = recibir_pid(cliente_socket);
+			log_trace(logger_debug, "ENTRE A ESCRITURA_MEMORIA");
 			dir_t dir_parcial = recibir_direccion_parcial(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
 			int valor_a_escribir = recibir_valor(cliente_socket);
 
 			escribir(pid, dir_parcial, valor_a_escribir);
@@ -111,7 +127,7 @@ void manejar_comunicacion(void *void_args) {
 			return;
 		default:
 			log_warning(logger_debug,
-					"Operacion desconocida. No quieras meter la pata");
+					"Operacion <%d> desconocida. No quieras meter la pata", cod_op);
 			break;
 		}
 	}

@@ -67,7 +67,7 @@ void enviar_pcb(PCB *pcb, int socket_fd, op_code op_code);
 void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos,
 		int socket_fd, int pid);
 void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd, int pid);
-void enviar_direccion_parcial(dir_t direccion, int cliente_socket);
+void enviar_direccion_parcial(dir_t direccion, int cliente_socket, int codop);
 
 // Serializacion
 void* serializar_lista_indices(t_list*, int);

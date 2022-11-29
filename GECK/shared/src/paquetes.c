@@ -494,8 +494,8 @@ dir_t deserializar_direccion_parcial(void* stream) {
 	return resultado;
 }
 
-void enviar_direccion_parcial(dir_t direccion, int cliente_socket) {
-	ts_paquete* paquete = crear_paquete(ACCESO_A_MEMORIA);
+void enviar_direccion_parcial(dir_t direccion, int cliente_socket, int codop) {
+	ts_paquete* paquete = crear_paquete(codop);
 
 	int size_dir = sizeof(dir_t);
 

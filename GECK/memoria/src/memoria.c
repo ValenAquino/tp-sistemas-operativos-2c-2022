@@ -30,7 +30,9 @@ int main(int argc, char** argv) {
 	}
 
 	iniciar_memoria();
+
 	log_debug(logger_debug, "config: %s", config_path);
+
 	int memoria_fd = crear_conexion(config->ip_memoria, config->puerto_escucha);
 
 	while (server_memoria(SERVERNAME, memoria_fd));

@@ -114,7 +114,8 @@ void hilo_cpu_interrupt() {
 	t_manejar_conexion_args *args = malloc(sizeof(t_manejar_conexion_args));
 	args->fd = cpu_interrupt_fd;
 	args->server_name = "CPU - Interrupt";
-
+	// en vez de mandarle manejar_comunicacion podemos mandarle una funcion
+	// que haga un while(1) y se quede bloqueado por un sem_wait(interrupcion_quantum);
 	pthread_create(&hilo, NULL, (void*) manejar_comunicacion, (void*) args);
 	pthread_detach(hilo);
 }
@@ -161,6 +162,7 @@ void fin_de_quantum() {
 	log_debug(logger_debug,
 			"Termino sleep de quantum -> Enviando interrupcion de quantum");
 	enviar_codop(cpu_interrupt_fd, INTERRUPCION_QUANTUM);
+	// podriamos hacer post de un semaforo binario "interrupcion_quantum"
 }
 
 PCB* recibir_pcb_de_cpu(int cliente_socket) {

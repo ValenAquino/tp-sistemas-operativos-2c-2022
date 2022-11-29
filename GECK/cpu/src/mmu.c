@@ -54,7 +54,7 @@ int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd) {
 		dir_parcial.id_tabla_pagina, dir_parcial.nro_seg, dir_parcial.nro_pag, dir_parcial.desplazamiento_pag);
 
 	pthread_mutex_lock(&mutex_comunicacion_memoria);
-	enviar_direccion_parcial(dir_parcial, memoria_fd);
+	enviar_direccion_parcial(dir_parcial, memoria_fd, ACCESO_A_MEMORIA);
 	enviar_pid(memoria_fd, pid);
 	marco = recibir_marco_memoria();
 	pthread_mutex_unlock(&mutex_comunicacion_memoria);
@@ -88,15 +88,16 @@ dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos) {
 	return dir_parcial;
 }
 
-
 uint32_t leer_de_memoria(int pid, dir_t dir_parcial) {
 	pthread_mutex_lock(&mutex_comunicacion_memoria);
 
-	enviar_codop(memoria_fd, LECTURA_MEMORIA);
+	log_trace(logger_debug, "enviando codop LECTURA_MEMORIA");
+
+	enviar_direccion_parcial(dir_parcial, memoria_fd, LECTURA_MEMORIA);
 	enviar_pid(memoria_fd, pid);
-	enviar_direccion_parcial(dir_parcial, memoria_fd);
 
 	int cod_op = recibir_operacion(memoria_fd);
+
 	if(cod_op == VALOR_LECTURA_MEMORIA) {
 		uint32_t valor_leido = recibir_valor(memoria_fd);
 		pthread_mutex_unlock(&mutex_comunicacion_memoria);
@@ -113,10 +114,11 @@ uint32_t leer_de_memoria(int pid, dir_t dir_parcial) {
 
 void escribir_en_memoria(int pid, dir_t dir_parcial, uint32_t valor) {
 	pthread_mutex_lock(&mutex_comunicacion_memoria);
-	enviar_codop(memoria_fd, ESCRITURA_MEMORIA);
+
+	enviar_direccion_parcial(dir_parcial, memoria_fd, ESCRITURA_MEMORIA);
 	enviar_pid(memoria_fd, pid);
-	enviar_direccion_parcial(dir_parcial, memoria_fd);
 	enviar_valor(memoria_fd, valor);
+
 	int cod_op = recibir_operacion(memoria_fd);
 
 	if(cod_op == OK_ESCRITURA_MEMORIA) {
@@ -124,8 +126,8 @@ void escribir_en_memoria(int pid, dir_t dir_parcial, uint32_t valor) {
 	} else {
 		log_error(logger_debug, "NO SE RECIBIO OK ESCRITURA. SE RECIBIO <%d>", cod_op);
 	}
-	pthread_mutex_unlock(&mutex_comunicacion_memoria);
 
+	pthread_mutex_unlock(&mutex_comunicacion_memoria);
 }
 
 // CALCULOS

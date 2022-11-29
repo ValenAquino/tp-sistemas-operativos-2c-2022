@@ -1,10 +1,3 @@
-/*
- * memoria.h
- *
- *  Created on: Oct 3, 2022
- *      Author: ubuntu
- */
-
 #ifndef MEMORIA_H_
 #define MEMORIA_H_
 
@@ -21,6 +14,7 @@
 #include <shared.h>
 #include <logs.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"
