@@ -8,6 +8,7 @@ C_SRCS += \
 ../src/configuracion.c \
 ../src/interfaz.c \
 ../src/memoria.c \
+../src/memoria_principal.c \
 ../src/swap.c 
 
 C_DEPS += \
@@ -15,6 +16,7 @@ C_DEPS += \
 ./src/configuracion.d \
 ./src/interfaz.d \
 ./src/memoria.d \
+./src/memoria_principal.d \
 ./src/swap.d 
 
 OBJS += \
@@ -22,6 +24,7 @@ OBJS += \
 ./src/configuracion.o \
 ./src/interfaz.o \
 ./src/memoria.o \
+./src/memoria_principal.o \
 ./src/swap.o 
 
 
@@ -37,7 +40,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/comunicacion.d ./src/comunicacion.o ./src/configuracion.d ./src/configuracion.o ./src/interfaz.d ./src/interfaz.o ./src/memoria.d ./src/memoria.o ./src/swap.d ./src/swap.o
+	-$(RM) ./src/comunicacion.d ./src/comunicacion.o ./src/configuracion.d ./src/configuracion.o ./src/interfaz.d ./src/interfaz.o ./src/memoria.d ./src/memoria.o ./src/memoria_principal.d ./src/memoria_principal.o ./src/swap.d ./src/swap.o
 
 .PHONY: clean-src
 

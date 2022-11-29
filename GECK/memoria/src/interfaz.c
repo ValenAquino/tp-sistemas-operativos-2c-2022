@@ -30,23 +30,16 @@ int obtener_num_marco(dir_t direccion_parcial, int pid) {
 	return PAGE_FAULT_ERROR;
 }
 
-int cargar_en_memoria_principal(pagina_t *pagina, uint32_t valor_leido_de_swap) {
-	int frame_asignado;
-
-	// TODO: Implementar y no olvidarse de cambiar los bits
-
-	pagina->bit_p = 1;
-	pagina->bit_u = 1;
-
-	return frame_asignado;
+uint32_t leer(int pid, dir_t dir_parcial) {
+	pagina_t *pagina = obtener_pagina(dir_parcial.id_tabla_pagina,
+			dir_parcial.nro_pag);
+	return leer_de_memoria_principal(pid, pagina, dir_parcial.desplazamiento_pag);
 }
 
-int leer(int marco) {
-	return 50;
-}
-
-void escribir(int marco, int valor) {
-
+void escribir(int pid, dir_t dir_parcial, int valor) {
+	pagina_t *pagina = obtener_pagina(dir_parcial.id_tabla_pagina,
+			dir_parcial.nro_pag);
+	escribir_en_memoria_principal(pid, pagina, dir_parcial.desplazamiento_pag, valor);
 }
 
 // DUDAS DE LA CREACION DE SEGMENTOS:
@@ -99,6 +92,7 @@ pagina_t* crear_pagina_vacia() {
 	pagina->bit_u = 0;
 	pagina->frame = 0;
 	pagina->pos_swap = 0;
+	pagina->puntero_clock = 0;
 
 	return pagina;
 }

@@ -2,21 +2,25 @@
 
 t_log* logger;
 t_log* logger_debug;
+
 t_configuracion_memoria* config;
 
 char* config_path;
 
 FILE* area_swap;
 
-uint32_t memoria_disponible;
 void* memoria_principal;
 
 t_list *tablas_de_paginas;
 t_list *espacios_libres_en_swap;
+t_list *espacios_en_memoria;
 
 pthread_mutex_t tablas_de_paginas_mutex;
 pthread_mutex_t memoria_p_mutex;
 pthread_mutex_t swap_mutex;
+pthread_mutex_t memoria_principal_mutex;
+
+int puntero_clock = 0;
 
 int main(int argc, char** argv) {
 	if (argc < 2) {
@@ -33,7 +37,6 @@ int main(int argc, char** argv) {
 
 	fclose(area_swap);
 	/// TODO: LIBERAR MEMORIA.
-	// CERRAR ARCHIVO DE SWAP
 
 	return EXIT_SUCCESS;
 }
@@ -47,10 +50,12 @@ void iniciar_memoria() {
 
 	tablas_de_paginas = list_create();
 	espacios_libres_en_swap = list_create();
+	espacios_en_memoria = list_create();
 
 	pthread_mutex_init(&memoria_p_mutex, NULL);
 	pthread_mutex_init(&swap_mutex, NULL);
 	pthread_mutex_init(&tablas_de_paginas_mutex, NULL);
+	pthread_mutex_init(&memoria_principal_mutex, NULL);
 
 	crear_archivo_swap();
 	llenar_espacios_libres_swap();
@@ -71,7 +76,6 @@ int cargar_memoria(t_configuracion_memoria* config) {
         return EXIT_FAILURE;
     }
     memset(memoria_principal, 0, config->tam_memoria);
-    memoria_disponible = config->tam_memoria;
 
     return EXIT_SUCCESS;
 }

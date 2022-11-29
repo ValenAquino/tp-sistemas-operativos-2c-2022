@@ -10,7 +10,6 @@ extern int tam_pagina_memoria;
 extern int tam_max_segmento_memoria;
 
 extern int memoria_fd;
-int valor_leido;
 
 extern pthread_mutex_t mutex_comunicacion_memoria;
 
@@ -96,7 +95,6 @@ void manejar_comunicacion_interrupt(void *void_args) {
 }
 
 void inciar_comunicacion_con_memoria() {
-	print_trace();
 	memoria_fd = conectar_con("Memoria", config->ip_memoria, config->puerto_memoria);
 
 	pthread_mutex_lock(&mutex_comunicacion_memoria);
@@ -112,25 +110,6 @@ void inciar_comunicacion_con_memoria() {
 		entradas_por_tabla_memoria, tam_pagina_memoria);
 }
 
-
-/* Obtain a backtrace and print it to stdout. */
-void print_trace() {
-  void *array[10];
-  char **strings;
-  int size, i;
-
-  size = backtrace (array, 10);
-  strings = backtrace_symbols (array, size);
-  if (strings != NULL)
-  {
-
-    printf ("Obtained %d stack frames.\n", size);
-    for (i = 0; i < size; i++)
-      printf ("%s\n", strings[i]);
-  }
-
-  free (strings);
-}
 
 //void manejar_comunicacion_memoria(void *void_args) {
 //	t_manejar_conexion_args *args = (t_manejar_conexion_args*) void_args;

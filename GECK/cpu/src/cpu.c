@@ -20,9 +20,6 @@ uint32_t REG_BX;
 uint32_t REG_CX;
 uint32_t REG_DX;
 
-sem_t sem_acceso_memoria;
-sem_t sem_respuesta_memoria;
-
 pthread_mutex_t mutex_tlb;
 pthread_mutex_t mutex_comunicacion_memoria;
 
@@ -57,9 +54,6 @@ void iniciar_cpu() {
 	test_read_config(config);
 
 	tlb = list_create();
-
-	sem_init(&sem_acceso_memoria, 0, 0);
-	sem_init(&sem_respuesta_memoria, 0, 0);
 
 	pthread_mutex_init(&mutex_tlb, NULL);
 	pthread_mutex_init(&mutex_comunicacion_memoria, NULL);

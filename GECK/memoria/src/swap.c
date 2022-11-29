@@ -89,9 +89,11 @@ long get_espacio_libre_en_swap() {
 	}
 
 	espacio_encontrado = list_find(espacios_libres_en_swap, (void*) esta_libre);
-	posicion_libre_swap = espacio_encontrado->pos_swap;
 
-	espacio_encontrado->libre = 0;
+	if (espacio_encontrado != NULL) {
+		posicion_libre_swap = espacio_encontrado->pos_swap;
+		espacio_encontrado->libre = 0;
+	}
 
 	return posicion_libre_swap;
 }

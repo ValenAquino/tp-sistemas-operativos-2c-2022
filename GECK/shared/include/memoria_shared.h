@@ -28,6 +28,16 @@ typedef struct {
 	int libre;
 } espacio_swap_t;
 
+typedef struct {
+	pagina_t* pagina;
+	int pos_memoria;
+} espacio_memoria_t;
+
+typedef enum {
+	REEMPLAZO_CLOCK,
+	REEMPLAZO_CLOCK_M
+} algoritmo_reemplazo_memoria;
+
 typedef enum {
 	SEG_FAULT_ERROR = -1,
 	PAGE_FAULT_ERROR = -2

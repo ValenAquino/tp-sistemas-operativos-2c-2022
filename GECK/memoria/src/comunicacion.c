@@ -79,32 +79,26 @@ void manejar_comunicacion(void *void_args) {
 			break;
 		}
 		case LECTURA_MEMORIA: {
-			int marco = recibir_valor(cliente_socket);
-			int offset = recibir_valor(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+			dir_t dir_parcial = recibir_direccion_parcial(cliente_socket);
 
-			log_debug(logger_debug,
-					"Voy a leer el marco: %d , offset: %d y devolver su contenido",
-					marco, offset);
-
-			int valor_leido = leer(marco /*, offset*/);
-			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);
 			ejecutar_retardo_memoria("LECTURA DE MEMORIA");
-			enviar_valor(cliente_socket, valor_leido);
 
+			int valor_leido = leer(pid, dir_parcial);
+			enviar_codop(cliente_socket, VALOR_LECTURA_MEMORIA);
+			enviar_valor(cliente_socket, valor_leido);
 			break;
 		}
 		case ESCRITURA_MEMORIA: {
-			int marco = recibir_valor(cliente_socket);
+			int pid = recibir_pid(cliente_socket);
+			dir_t dir_parcial = recibir_direccion_parcial(cliente_socket);
 			int valor_a_escribir = recibir_valor(cliente_socket);
 
-			log_debug(logger_debug,
-					"Voy a escribir el marco: %d con el siguiente valor: %d",
-					marco, valor_a_escribir);
 
-			escribir(marco, valor_a_escribir);
 			ejecutar_retardo_memoria("ESCRITURA DE MEMORIA");
-			enviar_codop(cliente_socket, OK_ESCRITURA_MEMORIA);
+			escribir(pid, dir_parcial, valor_a_escribir);
 
+			enviar_codop(cliente_socket, OK_ESCRITURA_MEMORIA);
 			break;
 		}
 		case DEBUG:

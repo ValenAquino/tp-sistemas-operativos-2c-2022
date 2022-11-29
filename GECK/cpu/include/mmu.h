@@ -19,8 +19,8 @@
 dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos);
 
 int pedir_marco_memoria(int pid, dir_t dir_parcial, int memoria_fd);
-void leer_de_memoria(int marco, int offset, int memoria_fd);
-void escribir_en_memoria(int marco, int valor);
+uint32_t leer_de_memoria(int pid, dir_t dir_parcial);
+void escribir_en_memoria(int pid, dir_t dir_parcial, uint32_t valor);
 
 // CALCULOS
 int get_numero_segmento(int dir_logica);

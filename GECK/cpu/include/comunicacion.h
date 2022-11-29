@@ -13,8 +13,6 @@
 #include <execinfo.h>
 
 
-/* Obtain a backtrace and print it to stdout. */
-void print_trace();
 void inciar_comunicacion_con_memoria();
 
 void manejar_comunicacion_dispatch(void* void_args);

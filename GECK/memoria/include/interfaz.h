@@ -19,12 +19,12 @@
 
 #include "comunicacion.h"
 #include "configuracion.h"
+#include "memoria_principal.h"
 
 int obtener_num_marco(dir_t direccion_parcial, int pid);
-int leer(int marco);
-void escribir(int marco, int valor);
 
-int cargar_en_memoria_principal(pagina_t *pagina, uint32_t valor_leido_de_swap);
+uint32_t leer(int pid, dir_t dir_parcial);
+void escribir(int pid, dir_t dir_parcial, int valor);
 
 t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) ;
 t_list* crear_paginas();
