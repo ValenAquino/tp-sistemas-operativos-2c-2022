@@ -92,7 +92,7 @@ pagina_t* crear_pagina_vacia() {
 	pagina->bit_u = 0;
 	pagina->frame = 0;
 	pagina->pos_swap = 0;
-	pagina->puntero_clock = 0;
+	// pagina->puntero_clock = 0; Usamos el global
 
 	return pagina;
 }

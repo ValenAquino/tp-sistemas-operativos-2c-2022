@@ -98,8 +98,6 @@ void destruir_listas_y_elementos() {
 }
 
 void destruir_semaforos() {
-	sem_destroy(&sem_acceso_memoria);
-	sem_destroy(&sem_respuesta_memoria);
 	pthread_mutex_destroy(&mutex_tlb);
 	pthread_mutex_destroy(&mutex_comunicacion_memoria);
 }

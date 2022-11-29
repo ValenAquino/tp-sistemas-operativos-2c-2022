@@ -10,6 +10,7 @@ extern pthread_mutex_t memoria_principal_mutex;
 
 extern void *memoria_principal;
 
+extern int puntero_clock;
 
 void manejar_reemplazo_en_memoria(pagina_t* pagina) {
 

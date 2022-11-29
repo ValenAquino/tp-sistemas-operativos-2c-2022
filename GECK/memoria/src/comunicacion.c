@@ -48,8 +48,7 @@ void manejar_comunicacion(void *void_args) {
 			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
 					pagina_solicitada);
 			uint32_t valor_leido_de_swap = leer_de_swap(pagina_obtenida, pid, segmento_solicitado, pagina_solicitada);
-			int frame_asginado = cargar_en_memoria_principal(pagina_obtenida,
-					valor_leido_de_swap);
+			cargar_pagina_en_memoria_principal(pid, pagina_obtenida, valor_leido_de_swap);
 
 			log_info(logger,
 					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",

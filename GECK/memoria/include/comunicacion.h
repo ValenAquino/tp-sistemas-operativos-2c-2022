@@ -11,6 +11,7 @@
 #include <paquetes.h>
 #include <memoria_shared.h>
 
+#include "memoria_principal.h"
 #include "interfaz.h"
 #include "swap.h"
 

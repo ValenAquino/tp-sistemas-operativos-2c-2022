@@ -20,4 +20,9 @@
 #include "configuracion.h"
 #include "memoria_shared.h"
 
+algoritmo_reemplazo_memoria get_algoritmo_reemplazo(char *algoritmo);
+void aumentar_puntero_clock();
+void ejecutar_reemplazo_clock(pagina_t* pagina);
+void ejecutar_reemplazo_clock_modificado(pagina_t* pagina);
+
 #endif /* REEMPLAZOS_H_ */

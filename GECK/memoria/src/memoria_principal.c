@@ -18,7 +18,7 @@ espacio_memoria_t* get_espacio_libre_en_memoria_principal() {
 		return espacio_en_mp->pagina == NULL;
 	}
 
-	return list_find(espacios_libres_en_swap, (void*) esta_libre);
+	return list_find(espacios_en_memoria, (void*) esta_libre);
 }
 
 void llenar_espacios_libres_en_memoria_principal() {

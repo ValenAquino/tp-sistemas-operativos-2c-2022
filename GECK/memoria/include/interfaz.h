@@ -14,6 +14,7 @@
 #include <commons/log.h>
 #include <servidor.h>
 #include <shared.h>
+#include <pthread.h>
 #include <logs.h>
 #include <math.h>
 
