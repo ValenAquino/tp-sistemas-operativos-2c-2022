@@ -27,7 +27,7 @@ int crear_archivo_swap() {
 }
 
 void borrar_de_swap(pagina_t* pagina) {
-	cargar_en_swap(pagina, 0, 0);
+	llenar_de_ceros_pagina_de_swap(pagina);
 
 	bool mismo_offset(void* arg) {
 		espacio_swap_t* espacio_swap = arg;
@@ -38,8 +38,25 @@ void borrar_de_swap(pagina_t* pagina) {
 	espacio_encontrado->libre = 1;
 }
 
-uint32_t leer_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro_pag) {
-	uint32_t valor_leido_de_swap;
+
+void llenar_de_ceros_pagina_de_swap(pagina_t* pagina) {
+	uint32_t zero = 0;
+	long offset = pagina->pos_swap;
+
+	log_debug(logger_debug, "Borrando pagina de SWAP. Offset %ld", offset);
+
+	int cant_bytes_escritos;
+	pthread_mutex_lock(&swap_mutex);
+	fseek(area_swap, offset, SEEK_SET);
+	cant_bytes_escritos = fwrite(&zero, sizeof(uint32_t), config->tam_pagina, area_swap);
+	pthread_mutex_unlock(&swap_mutex);
+
+	log_debug(logger_debug, "Se escribieron %d ceros byte/s en SWAP", cant_bytes_escritos);
+	log_debug(logger_debug, "Si todo salio bien deberia tener la misma cantidad de bytes escritos que tam de pagina. Salio bien? %d", cant_bytes_escritos == config->tam_pagina);
+}
+
+void* leer_pagina_entera_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro_pag) {
+	void* valor_leido_de_swap = malloc(config->tam_pagina);
 	long offset = pagina->pos_swap;
 	if (offset % config->tam_pagina != 0) {
 		log_error(logger_debug, "Offset invalido tratando de leer SWAP");
@@ -49,7 +66,7 @@ uint32_t leer_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro_pag) {
 	int cant_bytes_leidos;
 	pthread_mutex_lock(&swap_mutex);
 	fseek(area_swap, offset, SEEK_SET);
-	cant_bytes_leidos = fread(&valor_leido_de_swap, sizeof(uint32_t), 1, area_swap);
+	cant_bytes_leidos = fread(valor_leido_de_swap, config->tam_pagina, 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
 	log_debug(logger_debug, "Se leyeron %d bytes en SWAP", cant_bytes_leidos);
 
@@ -58,7 +75,7 @@ uint32_t leer_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro_pag) {
 	return valor_leido_de_swap;
 }
 
-void cargar_en_swap(pagina_t* pagina, uint32_t valor_a_guardar_en_swap, int ejecutar_retardo) {
+void cargar_en_swap_pagina_entera(pagina_t* pagina, void* data_a_guardar_en_swap, int ejecutar_retardo) {
 	long offset = get_espacio_libre_en_swap();
 	if (offset == -1) {
 		log_error(logger_debug, "Algo salio mal buscando el proximo espacio disponible en SWAP");
@@ -68,16 +85,20 @@ void cargar_en_swap(pagina_t* pagina, uint32_t valor_a_guardar_en_swap, int ejec
 	int cant_bytes_escritos;
 	pthread_mutex_lock(&swap_mutex);
 	fseek(area_swap, offset, SEEK_SET);
-	cant_bytes_escritos = fwrite(&valor_a_guardar_en_swap, sizeof(uint32_t), 1, area_swap);
+	cant_bytes_escritos = fwrite(data_a_guardar_en_swap, config->tam_pagina, 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
 	log_debug(logger_debug, "Se escribieron %d byte/s en SWAP", cant_bytes_escritos);
 
 	log_debug(logger_debug, "Estoy guardando en el offset %ld", offset);
 	pagina->pos_swap = offset;
 
+	free(data_a_guardar_en_swap);
+
 	if (ejecutar_retardo)
 		ejecutar_retardo_swap();
+
 }
+
 
 long get_espacio_libre_en_swap() {
 	espacio_swap_t *espacio_encontrado;

@@ -59,6 +59,9 @@ void iniciar_memoria() {
 
 	crear_archivo_swap();
 	llenar_espacios_libres_swap();
+
+	cargar_memoria();
+	llenar_espacios_libres_en_memoria_principal();
 }
 
 int crear_conexion(char* ip, char* puerto) {
@@ -69,7 +72,7 @@ int crear_conexion(char* ip, char* puerto) {
 	return server_fd;
 }
 
-int cargar_memoria(t_configuracion_memoria* config) {
+int cargar_memoria() {
     memoria_principal = malloc(config->tam_memoria);   // void*
     if (memoria_principal == NULL) {
         log_error(logger, "Fallo en el malloc a memoria_principal");

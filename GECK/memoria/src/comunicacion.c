@@ -47,8 +47,9 @@ void manejar_comunicacion(void *void_args) {
 
 			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
 					pagina_solicitada);
-			uint32_t valor_leido_de_swap = leer_de_swap(pagina_obtenida, pid, segmento_solicitado, pagina_solicitada);
-			cargar_pagina_en_memoria_principal(pid, pagina_obtenida, valor_leido_de_swap);
+
+			void* data_leida_de_swap = leer_pagina_entera_de_swap(pagina_obtenida, pid, segmento_solicitado, pagina_solicitada);
+			cargar_pagina_entera_en_memoria_principal(pagina_obtenida, data_leida_de_swap);
 
 			log_info(logger,
 					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
@@ -93,9 +94,8 @@ void manejar_comunicacion(void *void_args) {
 			dir_t dir_parcial = recibir_direccion_parcial(cliente_socket);
 			int valor_a_escribir = recibir_valor(cliente_socket);
 
-
-			ejecutar_retardo_memoria("ESCRITURA DE MEMORIA");
 			escribir(pid, dir_parcial, valor_a_escribir);
+			ejecutar_retardo_memoria("ESCRITURA DE MEMORIA");
 
 			enviar_codop(cliente_socket, OK_ESCRITURA_MEMORIA);
 			break;

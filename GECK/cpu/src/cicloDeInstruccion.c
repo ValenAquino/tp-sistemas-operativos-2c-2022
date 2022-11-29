@@ -48,10 +48,9 @@ ts_ins* decode(ts_ins *instruccion) {
 	switch (instruccion->name) {
 	case SET:
 	case ADD:
-		log_trace(
-			logger_debug,
-			"Ejecutando un retardo de instruccion de: %d ms",
-			config->retardo_instruccion);
+		log_trace(logger_debug,
+				"Ejecutando un retardo de instruccion de: %d ms",
+				config->retardo_instruccion);
 
 		sleep(config->retardo_instruccion / 1000); // Sleep recibe tiempo en segundos
 
@@ -96,27 +95,22 @@ void execute(ts_ins *instruccion, PCB *pcb) {
 		break;
 	}
 
-	if (success == EXIT_SUCCESS) pcb->programCounter = pcb->programCounter + 1;
+	if (success == EXIT_SUCCESS)
+		pcb->programCounter = pcb->programCounter + 1;
 }
 
 int execute_set(ts_ins *instruccion, PCB *pcb) {
-	log_info(
-		logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>",
-		pcb->id, str_ins(instruccion->name),
-		str_registro(instruccion->param1),
-		instruccion->param2
-	);
+	log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
+			str_ins(instruccion->name), str_registro(instruccion->param1),
+			instruccion->param2);
 
 	return guardar_en_reg(instruccion->param1, instruccion->param2);
 }
 
 int execute_add(ts_ins *instruccion, PCB *pcb) {
-	log_info(
-		logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>",
-		pcb->id, str_ins(instruccion->name),
-		str_registro(instruccion->param1),
-		str_registro(instruccion->param2)
-	);
+	log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
+			str_ins(instruccion->name), str_registro(instruccion->param1),
+			str_registro(instruccion->param2));
 
 	switch (instruccion->param1) { // Estamos supiendo que en SET el primer parametro es el registro
 	case AX:
@@ -148,41 +142,33 @@ int execute_io(ts_ins *instruccion, PCB *pcb) {
 	case DISCO:
 		codigo = OP_DISCO;
 
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>",
-			pcb->id, str_ins(instruccion->name),
-			str_registro(instruccion->param1),
-			instruccion->param2);
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
+				str_ins(instruccion->name), str_registro(instruccion->param1),
+				instruccion->param2);
 		break;
 
 	case IMPRESORA:
 
 		codigo = OP_IMPRESORA;
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>",
-			pcb->id, str_ins(instruccion->name),
-			str_registro(instruccion->param1),
-			instruccion->param2);
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
+				str_ins(instruccion->name), str_registro(instruccion->param1),
+				instruccion->param2);
 		break;
 
 	case PANTALLA:
 		codigo = OP_PANTALLA;
 
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>",
-			pcb->id, str_ins(instruccion->name),
-			str_registro(instruccion->param1),
-			str_registro(instruccion->param2));
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
+				str_ins(instruccion->name), str_registro(instruccion->param1),
+				str_registro(instruccion->param2));
 		break;
 
 	case TECLADO:
 		codigo = OP_TECLADO;
 
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>",
-			pcb->id, str_ins(instruccion->name),
-			str_registro(instruccion->param1),
-			str_registro(instruccion->param2));
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
+				str_ins(instruccion->name), str_registro(instruccion->param1),
+				str_registro(instruccion->param2));
 		break;
 	}
 
@@ -197,9 +183,8 @@ int execute_io(ts_ins *instruccion, PCB *pcb) {
 }
 
 int execute_exit(ts_ins *instruccion, PCB *pcb) {
-	log_info(
-		logger, "PID: <%d> - Ejecutando: <%s>",
-		pcb->id, str_ins(instruccion->name));
+	log_info(logger, "PID: <%d> - Ejecutando: <%s>", pcb->id,
+			str_ins(instruccion->name));
 
 	eliminar_entradas_tlb_by_pid(pcb->id);
 
@@ -208,7 +193,6 @@ int execute_exit(ts_ins *instruccion, PCB *pcb) {
 
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR EXIT");
 	enviar_pcb(pcb, kernel_fd, FIN_POR_EXIT);
-
 
 	free(pcb);
 	se_devolvio_pcb = true;
@@ -219,20 +203,21 @@ int execute_exit(ts_ins *instruccion, PCB *pcb) {
 int execute_mov(ts_ins *instruccion, PCB *pcb, t_ins inst) {
 	log_mov(pcb->id, instruccion);
 
-	dir_t dir_parcial = traducir_direccion(instruccion->param2, pcb->tablaSegmentos);
+	dir_t dir_parcial = traducir_direccion(
+			inst == MOV_IN ? instruccion->param2 : instruccion->param1,
+			pcb->tablaSegmentos);
 
-	if(hay_segmentation_fault(dir_parcial.nro_seg, pcb))
+	if (hay_segmentation_fault(dir_parcial.nro_seg, pcb))
 		return EXIT_FAILURE;
 
 	int marco = pedir_marco_memoria(pcb->id, dir_parcial, memoria_fd);
 
-	if(hay_page_fault(marco, pcb, dir_parcial))
+	if (hay_page_fault(marco, pcb, dir_parcial))
 		return EXIT_FAILURE;
 
 	(inst == MOV_IN) ? // camino por verdadero : camino por falso
-		mov_in(pcb->id, dir_parcial, instruccion->param1)
-		:
-		mov_out(pcb->id, dir_parcial, instruccion->param1);
+	mov_in(pcb->id, dir_parcial, instruccion->param1) : mov_out(pcb->id,
+			dir_parcial, instruccion->param2);
 
 	return EXIT_SUCCESS;
 }
@@ -259,10 +244,8 @@ void check_interrupt(PCB *pcb) {
 
 		log_debug(logger_debug, "<FLAG_FIN_QUANTUM>\n");
 
-		log_trace(
-			logger_debug,
-			"ENVIANDO PCB A KERNEL POR: FIN DE QUANTUM PID: <%d>",
-			pcb->id);
+		log_trace(logger_debug,
+				"ENVIANDO PCB A KERNEL POR: FIN DE QUANTUM PID: <%d>", pcb->id);
 
 		actualizar_pcb(pcb);
 		enviar_pcb(pcb, kernel_fd, DESALOJO_QUANTUM);
@@ -320,30 +303,27 @@ void restaurar_contexto_ejecucion(uint32_t registros[]) {
 	REG_DX = registros[DX];
 }
 
-int hay_segmentation_fault(int nro_seg, PCB* pcb) {
+int hay_segmentation_fault(int nro_seg, PCB *pcb) {
 	if (nro_seg != SEG_FAULT_ERROR)
 		return 0;
 
-	log_trace(
-		logger_debug,
-		"ENVIANDO PCB A KERNEL POR: Segmentation Fault PID: <%d>",
-		pcb->id);
+	log_trace(logger_debug,
+			"ENVIANDO PCB A KERNEL POR: Segmentation Fault PID: <%d>", pcb->id);
 
 	enviar_pcb(pcb, kernel_fd, SEGMENTATION_FAULT);
 	se_devolvio_pcb = true;
 	return 1;
 }
 
-int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial) {
+int hay_page_fault(int marco, PCB *pcb, dir_t dir_parcial) {
 	if (marco != PAGE_FAULT_ERROR)
 		return 0;
 
 	actualizar_pcb(pcb);
 
-	log_trace(
-		logger_debug,
-		"ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d",
-		dir_parcial.nro_pag, dir_parcial.nro_seg);
+	log_trace(logger_debug,
+			"ENVIANDO PCB A KERNEL POR PAGE_FAULT: nro_pag = %d, nro_seg = %d",
+			dir_parcial.nro_pag, dir_parcial.nro_seg);
 
 	enviar_pcb(pcb, kernel_fd, PAGE_FAULT_CPU);
 	enviar_valor(kernel_fd, dir_parcial.nro_seg);
@@ -355,27 +335,19 @@ int hay_page_fault(int marco, PCB* pcb, dir_t dir_parcial) {
 }
 
 void log_registros() {
-	log_debug(
-		logger, "[AX: %u, BX: %u, CX: %u, DX: %u]",  REG_AX, REG_BX, REG_CX, REG_DX
-	);
+	log_debug(logger, "[AX: %u, BX: %u, CX: %u, DX: %u]", REG_AX, REG_BX,
+			REG_CX, REG_DX);
 }
 
 void log_mov(int pid, ts_ins *instruccion) {
 
-	if(instruccion->name == MOV_IN) {
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>",
-			pid, str_ins(instruccion->name),
-			str_registro(instruccion->param1),
-			instruccion->param2
-		);
-	}
-	else {
-		log_info(
-			logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%s>",
-			pid, str_ins(instruccion->name),
-			instruccion->param2,
-			str_registro(instruccion->param1)
-		);
+	if (instruccion->name == MOV_IN) {
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pid,
+				str_ins(instruccion->name), str_registro(instruccion->param1),
+				instruccion->param2);
+	} else {
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%s>", pid,
+				str_ins(instruccion->name), instruccion->param2,
+				str_registro(instruccion->param1));
 	}
 }

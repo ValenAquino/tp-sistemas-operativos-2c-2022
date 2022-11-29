@@ -24,7 +24,6 @@ void iniciar_servidores_de_escucha();
 
 void destruir_loggers();
 void destruir_listas_y_elementos();
-void destruir_semaforos();
 void liberar_conexiones();
 
 void sighandler(int x);

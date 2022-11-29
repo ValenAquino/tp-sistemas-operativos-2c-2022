@@ -12,6 +12,8 @@ pagina_t* obtener_pagina(int id_en_tablas_de_ps, int nro_pag) {
 	pthread_mutex_unlock(&tablas_de_paginas_mutex);
 
 	pagina_t *pagina = list_get(tabla_paginas, nro_pag);
+	log_debug(logger_debug, "Se encontro una pagina del pid: %d", pagina->pid);
+
 	return pagina;
 }
 
@@ -33,13 +35,15 @@ int obtener_num_marco(dir_t direccion_parcial, int pid) {
 uint32_t leer(int pid, dir_t dir_parcial) {
 	pagina_t *pagina = obtener_pagina(dir_parcial.id_tabla_pagina,
 			dir_parcial.nro_pag);
-	return leer_de_memoria_principal(pid, pagina, dir_parcial.desplazamiento_pag);
+	log_debug(logger_debug, "leer() - PID: %d - PID leido de pagina: %d", pid, pagina->pid);
+	return leer_de_memoria_principal(pagina, dir_parcial.desplazamiento_pag);
 }
 
 void escribir(int pid, dir_t dir_parcial, int valor) {
 	pagina_t *pagina = obtener_pagina(dir_parcial.id_tabla_pagina,
 			dir_parcial.nro_pag);
-	escribir_en_memoria_principal(pid, pagina, dir_parcial.desplazamiento_pag, valor);
+	log_debug(logger_debug, "escribir() - PID: %d - PID leido de pagina: %d", pid, pagina->pid);
+	escribir_en_memoria_principal(pagina, dir_parcial.desplazamiento_pag, valor);
 }
 
 // DUDAS DE LA CREACION DE SEGMENTOS:
@@ -57,7 +61,7 @@ t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) {
 		// Se agregan paginas vacias a la tabla de pagina.
 		// el tamanio de la tabla de paginas menos 1
 		// va a ser el indice que estara en el segmento.
-		list_add(tablas_de_paginas, crear_paginas());
+		list_add(tablas_de_paginas, crear_paginas(pid));
 		int *indice = malloc(sizeof(int));
 		*indice = list_size(tablas_de_paginas) - 1;
 		list_add(indices, indice);
@@ -72,27 +76,28 @@ t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) {
 	return indices;
 }
 
-t_list* crear_paginas() {
+t_list* crear_paginas(int pid) {
 	t_list *paginas = list_create();
 
 	for (int i = 0; i < config->entradas_por_tabla; i++) {
-		pagina_t *pagina = crear_pagina_vacia();
-		cargar_en_swap(pagina, 0, 0);
+		pagina_t *pagina = crear_pagina_vacia(pid);
+		void* data_pagina = malloc(config->tam_pagina);
+		memset(data_pagina, 0, config->tam_pagina);
+		cargar_en_swap_pagina_entera(pagina, data_pagina, 0);
 		list_add(paginas, pagina);
 	}
 
 	return paginas;
 }
-;
 
-pagina_t* crear_pagina_vacia() {
+pagina_t* crear_pagina_vacia(int pid) {
 	pagina_t *pagina = (pagina_t*) malloc(sizeof(pagina_t));
 	pagina->bit_m = 0;
 	pagina->bit_p = 0;
 	pagina->bit_u = 0;
 	pagina->frame = 0;
 	pagina->pos_swap = 0;
-	// pagina->puntero_clock = 0; Usamos el global
+	pagina->pid = pid;
 
 	return pagina;
 }

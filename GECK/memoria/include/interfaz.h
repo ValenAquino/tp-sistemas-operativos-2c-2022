@@ -27,8 +27,8 @@ int obtener_num_marco(dir_t direccion_parcial, int pid);
 uint32_t leer(int pid, dir_t dir_parcial);
 void escribir(int pid, dir_t dir_parcial, int valor);
 
-t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid) ;
-t_list* crear_paginas();
+t_list* crear_indices_tabla_de_paginas(t_list *tamanio_segmentos, int pid);
+t_list* crear_paginas(int pid);
 
 pagina_t* obtener_pagina(int id_en_tablas_de_ps, int nro_pag);
 pagina_t *crear_pagina_vacia();

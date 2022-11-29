@@ -16,6 +16,7 @@ typedef struct {
 } segmento_t;
 
 typedef struct {
+	int pid;
 	int bit_p;
 	int bit_u;
 	int bit_m;

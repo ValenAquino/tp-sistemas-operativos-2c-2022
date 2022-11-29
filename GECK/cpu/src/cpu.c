@@ -97,10 +97,6 @@ void destruir_listas_y_elementos() {
 	list_destroy_and_destroy_elements(tlb, free);
 }
 
-void destruir_semaforos() {
-	pthread_mutex_destroy(&mutex_tlb);
-	pthread_mutex_destroy(&mutex_comunicacion_memoria);
-}
 
 void liberar_conexiones() {
 	liberar_conexion(memoria_fd);
@@ -109,7 +105,6 @@ void liberar_conexiones() {
 void terminar_cpu() {
 	liberar_configuracion_cpu(config);
 	destruir_listas_y_elementos();
-	destruir_semaforos();
 	liberar_conexiones();
 	destruir_loggers();
 	limpiar_tlb();

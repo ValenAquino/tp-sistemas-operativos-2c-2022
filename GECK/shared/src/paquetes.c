@@ -453,7 +453,7 @@ void* serializar_direccion_parcial(dir_t direccion, int size) {
 	memcpy(stream + desplazamiento, &(direccion.nro_seg), sizeof(int));
 	desplazamiento += sizeof(int);
 
-	memcpy(stream + desplazamiento,&(direccion.nro_pag),  sizeof(int));
+	memcpy(stream + desplazamiento,&(direccion.nro_pag), sizeof(int));
 	desplazamiento += sizeof(int);
 
 	memcpy(stream + desplazamiento, &(direccion.desplazamiento_pag), sizeof(int));
@@ -482,11 +482,13 @@ dir_t deserializar_direccion_parcial(void* stream) {
 	memcpy(&(direccion->id_tabla_pagina), stream + desplazamiento, sizeof(int));
 	desplazamiento += sizeof(int);
 
+	dir_t resultado;
+	resultado.nro_seg = direccion->nro_seg;
+	resultado.nro_pag = direccion->nro_pag;
+	resultado.desplazamiento_pag = direccion->desplazamiento_pag;
+	resultado.id_tabla_pagina = direccion->id_tabla_pagina;
+
 	free(stream);
-
-	// TODO: Revisar si falla.
-	dir_t resultado = *direccion;
-
 	free(direccion);
 
 	return resultado;
@@ -510,14 +512,13 @@ void enviar_direccion_parcial(dir_t direccion, int cliente_socket) {
 dir_t recibir_direccion_parcial(int cliente_socket) {
 	t_list *listas = recibir_paquete(cliente_socket);
 
-	log_debug(logger_debug, "recibir_indices_tablas_de_paginas list paquete size: %d", list_size(listas));
+	log_debug(logger_debug, "recibir_direccion_parcial list paquete size: %d", list_size(listas));
 
 	void* direccion = list_get(listas, 0);
 
-	list_destroy(listas);
-
 	dir_t direccion_deserializada = deserializar_direccion_parcial(direccion);
 
+	list_destroy(listas);
 	return direccion_deserializada;
 }
 
