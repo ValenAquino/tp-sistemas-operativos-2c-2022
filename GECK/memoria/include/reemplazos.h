@@ -30,5 +30,6 @@ void ejecutar_reemplazo_clock(pagina_t* pagina, void* data_leida);
 void ejecutar_reemplazo_clock_modificado(pagina_t* pagina, void* data_leida);
 
 espacio_memoria_t* encontrar_espacio_victima_clock(int pid);
+int tengo_que_buscar_otra_pagina_clock(espacio_memoria_t* espacio_encontrado, int pid);
 
 #endif /* REEMPLAZOS_H_ */

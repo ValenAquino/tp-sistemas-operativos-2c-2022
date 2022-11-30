@@ -7,8 +7,9 @@ extern t_log *logger_debug;
 extern t_log *logger;
 
 void ingresar_a_tlb(entrada_tlb *entrada) {
-	int cant_entradas_en_tlb = list_size(tlb);
+	if (config->entradas_tlb == 0)  return;
 
+	int cant_entradas_en_tlb = list_size(tlb);
 	if (cant_entradas_en_tlb < config->entradas_tlb) {
 		agregar_a_tlb(entrada);
 		loggear_tlb();
@@ -180,7 +181,7 @@ void loggear_tlb() {
 	for (int i = 0; i < list_size(tlb); i++) {
 		entrada_tlb *entrada = list_get(tlb, i);
 
-		log_debug(logger_debug, "<%d>|PID:<%d>|SEGMENTO:<%d>|PAGINA:<%d>|MARCO:<%d>|TIMESTAMP:<%d>",
+		log_debug(logger_debug, "<%d>|PID:<%d>|SEGMENTO:<%d>|PAGINA:<%d>|MARCO:<%d>|TIMESTAMP:<%ld>",
 				i, entrada->pid, entrada->nro_seg, entrada->nro_pag,
 				entrada->frame, entrada->ult_ref_timestamp);
 	}
