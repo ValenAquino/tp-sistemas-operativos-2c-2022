@@ -10,7 +10,6 @@ t_configuracion_kernel* procesar_config(t_config *nuevo_config) {
 	char *ip_memoria = config_get_string_value(nuevo_config, "IP_MEMORIA");                           // leo ip de memoria
 	char *puerto_memoria = config_get_string_value(nuevo_config, "PUERTO_MEMORIA");                   // leo puerto
 	char *ip_cpu = config_get_string_value(nuevo_config, "IP_CPU");                                   // leo ip de cpu
-	char *puerto_kernel = config_get_string_value(nuevo_config, "PUERTO_KERNEL");                     // leo ip de kernel
 	char *puerto_cpu_dispatch = config_get_string_value(nuevo_config, "PUERTO_CPU_DISPATCH");         // leo puerto de cpu dispatch
 	char *puerto_cpu_interrupt = config_get_string_value(nuevo_config, "PUERTO_CPU_INTERRUPT");       // leo puerto de cpu interrupt
 	char *puerto_escucha = config_get_string_value(nuevo_config, "PUERTO_ESCUCHA");                   // leo puerto de escucha
@@ -42,9 +41,6 @@ t_configuracion_kernel* procesar_config(t_config *nuevo_config) {
 	
 	datos->puerto_cpu_interrupt = malloc(strlen(puerto_cpu_interrupt) + 1);
 	strcpy(datos->puerto_cpu_interrupt, puerto_cpu_interrupt);
-	
-	datos->puerto_kernel = malloc(strlen(puerto_kernel) + 1);
-	strcpy(datos->puerto_kernel, puerto_kernel);
 	
 	datos->puerto_escucha = malloc(strlen(puerto_escucha) + 1);
 	strcpy(datos->puerto_escucha, puerto_escucha);
@@ -111,7 +107,6 @@ void test_read_config(t_configuracion_kernel* config) {
 		"PUERTO_ESCUCHA: %s \n"
 		"PUERTO_MEMORIA: %s \n"
 		"IP_CPU: %s \n"
-		"PUERTO_KERNEL: %s \n"
 		"PUERTO_CPU_DISPATCH: %s \n"
 		"PUERTO_CPU_INTERRUPT: %s \n"
 		"ALGORITMO_PLANIFICACION: %s \n"
@@ -123,7 +118,6 @@ void test_read_config(t_configuracion_kernel* config) {
 		config->puerto_escucha,
 		config->puerto_memoria,
 		config->ip_cpu,
-		config->puerto_kernel,
 		config->puerto_cpu_dispatch,
 		config->puerto_cpu_interrupt,
 		str_algoritmo(config->algoritmo_planificacion),
@@ -154,7 +148,6 @@ void liberar_configuracion_kernel(t_configuracion_kernel* config_kernel) {
     free(config_kernel->ip_cpu);
     free(config_kernel->puerto_cpu_dispatch);
     free(config_kernel->puerto_cpu_interrupt);
-    free(config_kernel->puerto_kernel);
     free(config_kernel->puerto_escucha);
     list_destroy_and_destroy_elements(config_kernel->tiempos_io, free);
     free(config_kernel);

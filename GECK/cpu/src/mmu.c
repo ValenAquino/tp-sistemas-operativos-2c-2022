@@ -82,17 +82,16 @@ dir_t traducir_direccion(int dir_logica, t_list *tabla_segmentos) {
 	}
 
 	dir_parcial.id_tabla_pagina = seg.indice_tablas_paginas;
-	dir_parcial.nro_pag = get_numero_pagina(dir_logica);
-	dir_parcial.desplazamiento_pag = get_desplazamiento_pagina(dir_logica);
+	dir_parcial.nro_pag = get_numero_pagina(desplazamiento_seg);
+	dir_parcial.desplazamiento_pag = get_desplazamiento_pagina(desplazamiento_seg);
 
 	return dir_parcial;
 }
 
 uint32_t leer_de_memoria(int pid, dir_t dir_parcial) {
-	pthread_mutex_lock(&mutex_comunicacion_memoria);
 
 	log_trace(logger_debug, "enviando codop LECTURA_MEMORIA");
-
+	pthread_mutex_lock(&mutex_comunicacion_memoria);
 	enviar_direccion_parcial(dir_parcial, memoria_fd, LECTURA_MEMORIA);
 	enviar_pid(memoria_fd, pid);
 
@@ -149,5 +148,5 @@ int get_desplazamiento_pagina(int desplazamiento_segmento) {
 }
 
 int hay_seg_fault(int desplazamiento_segmento, int tamanio_segmento) {
-	return desplazamiento_segmento > tamanio_segmento;
+	return (desplazamiento_segmento + 1)  > tamanio_segmento;
 }

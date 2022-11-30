@@ -86,7 +86,7 @@ void escribir_pagina_entera_en_memoria_principal(pagina_t *pagina, void *data) {
 		exit(EXIT_FAILURE);
 	}
 
-	log_debug(logger_debug, "PID: <%d> Se esta escribiendo en el offset: %d ",
+	log_debug(logger_debug, "PID: <%d> Se esta escribiendo pagina entera en el offset: %d ",
 			pagina->pid, offset_memoria);
 
 	pthread_mutex_lock(&memoria_principal_mutex);

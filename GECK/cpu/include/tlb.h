@@ -57,7 +57,7 @@ void reemplazar_tlb(entrada_tlb *entrada_nueva, int indice_victima);
 void limpiar_tlb();
 
 uint32_t buscar_indice_en_tlb(entrada_tlb *entrada_buscada);
-entrada_tlb* buscar_entrada_por_seg_y_pag(int nro_seg, int nro_pag);
+entrada_tlb* buscar_entrada_por_seg_y_pag(int pid, int nro_seg, int nro_pag);
 
 // LRU
 entrada_tlb* buscar_victima_lru();

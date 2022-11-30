@@ -21,7 +21,6 @@ typedef struct t_configuracion_kernel
     char *ip_cpu;
     char *puerto_cpu_dispatch;
     char *puerto_cpu_interrupt;
-    char *puerto_kernel;
     char *puerto_escucha;
     t_algoritmo_planificacion algoritmo_planificacion;
     int grado_max_multiprogramacion;

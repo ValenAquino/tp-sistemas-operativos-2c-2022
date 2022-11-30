@@ -68,7 +68,7 @@ void* leer_pagina_entera_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro
 	fseek(area_swap, offset, SEEK_SET);
 	cant_bytes_leidos = fread(valor_leido_de_swap, config->tam_pagina, 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
-	log_debug(logger_debug, "Se leyeron %d bytes en SWAP", cant_bytes_leidos);
+	log_debug(logger_debug, "Se leyeron pagina entera de SWAP");
 
 	ejecutar_retardo_swap();
 
