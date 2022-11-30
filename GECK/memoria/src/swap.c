@@ -67,35 +67,46 @@ void* leer_pagina_entera_de_swap(pagina_t* pagina, int pid, int nro_seg, int nro
 	fseek(area_swap, offset, SEEK_SET);
 	fread(valor_leido_de_swap, config->tam_pagina, 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
-	log_debug(logger_debug, "Se leyeron pagina entera de SWAP");
 
+	log_info(logger,
+					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
+					pid, pagina->frame, nro_seg,
+					nro_pag);
+
+	log_debug(logger_debug, "Se leyeron pagina entera de SWAP");
 	ejecutar_retardo_swap();
 
 	return valor_leido_de_swap;
 }
 
-void cargar_en_swap_pagina_entera(pagina_t* pagina, void* data_a_guardar_en_swap, int ejecutar_retardo) {
+
+// estaba_memoria_principal si es 1 indica la escritura es cuando se baja la pagina de memoria principal a swap.
+// si es 0 indica la carga inicial de la pagina vacia cuando se crean las estructuras administrativas.
+void cargar_en_swap_pagina_entera(pagina_t* pagina, void* data_a_guardar_en_swap, int nro_seg, int nro_pag, int estaba_memoria_principal) {
 	long offset = get_espacio_libre_en_swap();
 	if (offset == -1) {
 		log_error(logger_debug, "Algo salio mal buscando el proximo espacio disponible en SWAP");
 		exit(EXIT_FAILURE);
 	}
 
-	int cant_bytes_escritos;
 	pthread_mutex_lock(&swap_mutex);
 	fseek(area_swap, offset, SEEK_SET);
-	cant_bytes_escritos = fwrite(data_a_guardar_en_swap, config->tam_pagina, 1, area_swap);
+	fwrite(data_a_guardar_en_swap, config->tam_pagina, 1, area_swap);
 	pthread_mutex_unlock(&swap_mutex);
-	log_debug(logger_debug, "Se escribieron %d byte/s en SWAP", cant_bytes_escritos);
 
-	log_debug(logger_debug, "Estoy guardando en el offset %ld", offset);
+
+	log_debug(logger_debug, "Estoy guardando en el offset %ld de SWAP", offset);
 	pagina->pos_swap = offset;
 
 	free(data_a_guardar_en_swap);
 
-	if (ejecutar_retardo)
+	if (estaba_memoria_principal) {
+		log_info(logger,
+					"SWAP OUT -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
+					pagina->pid, pagina->frame, nro_seg,
+					nro_pag);
 		ejecutar_retardo_swap();
-
+	}
 }
 
 

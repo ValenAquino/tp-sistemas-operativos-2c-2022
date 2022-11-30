@@ -24,13 +24,10 @@ espacio_memoria_t* get_espacio_libre_en_memoria_principal(int pid) {
 		return espacio_en_mp->pagina->pid == pid;
 	}
 
-
-	int count = list_count_satisfying(espacios_en_memoria,
-			(void*) mismo_pid);
+	int count = list_count_satisfying(espacios_en_memoria, (void*) mismo_pid);
 	if (count == config->marcos_por_proceso) {
 		return NULL;
 	}
-
 
 	bool esta_libre(void *arg) {
 		espacio_memoria_t *espacio_en_mp = arg;
@@ -86,13 +83,16 @@ void escribir_pagina_entera_en_memoria_principal(pagina_t *pagina, void *data) {
 		exit(EXIT_FAILURE);
 	}
 
-	log_debug(logger_debug, "PID: <%d> Se esta escribiendo pagina entera en el offset: %d ",
+	log_debug(logger_debug,
+			"PID: <%d> Se esta escribiendo pagina entera en el offset: %d ",
 			pagina->pid, offset_memoria);
 
 	pthread_mutex_lock(&memoria_principal_mutex);
 	memcpy(memoria_principal + offset_memoria, data, config->tam_pagina);
-
 	pthread_mutex_unlock(&memoria_principal_mutex);
+
+	pagina->bit_p = 1;
+	pagina->bit_u = 1;
 
 	free(data);
 }
@@ -154,23 +154,20 @@ void escribir_en_memoria_principal(pagina_t *pagina, int offset_dentro_de_frame,
 }
 
 void cargar_pagina_entera_en_memoria_principal(pagina_t *pagina,
-		void *data_leida_de_swap) {
+		void *data_leida_de_swap, int nro_seg, int nro_pag) {
 	espacio_memoria_t *espacio_encontrado =
 			get_espacio_libre_en_memoria_principal(pagina->pid);
 
 	if (espacio_encontrado == NULL) {
 		log_debug(logger_debug, "No se encontro espacio libre en memoria");
-		manejar_reemplazo_en_memoria(pagina, data_leida_de_swap);
+		manejar_reemplazo_en_memoria(pagina, data_leida_de_swap, nro_seg, nro_pag);
 		return;
 	}
 
 	pagina->frame = espacio_encontrado->pos_memoria / config->tam_pagina;
-	pagina->bit_p = 1;
-	pagina->bit_u = 1;
 
 	espacio_encontrado->pagina = pagina;
 	aumentar_puntero_clock();
-
 	escribir_pagina_entera_en_memoria_principal(pagina, data_leida_de_swap);
 }
 

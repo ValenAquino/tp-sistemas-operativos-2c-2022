@@ -43,27 +43,23 @@ void manejar_comunicacion(void *void_args) {
 			log_trace(logger_debug, "ENTRE A PAGINA_SOLICITADA");
 			int pid = recibir_valor(cliente_socket);
 			int segmento_solicitado = recibir_valor(cliente_socket);
-			int pagina_solicitada = recibir_valor(cliente_socket);
+			int nro_pag_solicitada = recibir_valor(cliente_socket);
 			int index_en_ts_de_ps = recibir_valor(cliente_socket);
 
 			log_debug(logger_debug,
 					"Se esta solicitando cargar en memoria el segmento: %d y la pagina: %d para pcb id: %d",
-					segmento_solicitado, pagina_solicitada, pid);
+					segmento_solicitado, nro_pag_solicitada, pid);
 
 			pagina_t *pagina_obtenida = obtener_pagina(index_en_ts_de_ps,
-					pagina_solicitada);
+					nro_pag_solicitada);
 
 			void *data_leida_de_swap = leer_pagina_entera_de_swap(
 					pagina_obtenida, pid, segmento_solicitado,
-					pagina_solicitada);
+					nro_pag_solicitada);
 
 			cargar_pagina_entera_en_memoria_principal(pagina_obtenida,
-					data_leida_de_swap);
-
-			log_info(logger,
-					"SWAP IN -  PID: <%d> - Marco: <%d> - Page In: <%d>|<%d>",
-					pid, pagina_obtenida->frame, segmento_solicitado,
-					pagina_solicitada);
+					data_leida_de_swap, segmento_solicitado,
+					nro_pag_solicitada);
 
 			enviar_codop(cliente_socket, PAGINA_ENCONTRADA);
 			enviar_pid(cliente_socket, pid);

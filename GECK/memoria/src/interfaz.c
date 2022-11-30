@@ -21,7 +21,7 @@ int obtener_num_marco(dir_t direccion_parcial, int pid) {
 	pagina_t *pagina = obtener_pagina(direccion_parcial.id_tabla_pagina,
 			direccion_parcial.nro_pag);
 
-	log_info(logger, "Acceso a Tabla de Páginas: “PID: <%d> - Página: <%d> - Marco: <%d>",
+	log_info(logger, "Acceso a Tabla de Páginas: PID: <%d> - Página: <%d> - Marco: <%d>",
 				pid,direccion_parcial.nro_pag, pagina->frame);
 
 	if (pagina->bit_p == 1) {
@@ -83,7 +83,8 @@ t_list* crear_paginas(int pid) {
 		pagina_t *pagina = crear_pagina_vacia(pid);
 		void* data_pagina = malloc(config->tam_pagina);
 		memset(data_pagina, 0, config->tam_pagina);
-		cargar_en_swap_pagina_entera(pagina, data_pagina, 0);
+		// Los parametros tres y cuatro no importan ya que solo se usan si el ultimo parametro es 1
+		cargar_en_swap_pagina_entera(pagina, data_pagina, 0, 0, 0);
 		list_add(paginas, pagina);
 	}
 

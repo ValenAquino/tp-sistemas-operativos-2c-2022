@@ -30,7 +30,7 @@ void escribir_en_memoria_principal(pagina_t *pagina, int offset_dentro_de_frame,
 
 void* leer_pagina_entera_de_memoria_principal(pagina_t *pagina);
 void cargar_pagina_entera_en_memoria_principal(pagina_t *pagina,
-		void *data_leida_de_swap);
+		void *data_leida_de_swap, int nro_seg, int nro_pag);
 void escribir_pagina_entera_en_memoria_principal(pagina_t *pagina, void *data);
 
 #endif /* MEMORIA_PRINCIPAL_H_ */
