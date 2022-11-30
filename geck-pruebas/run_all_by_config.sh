@@ -20,11 +20,11 @@ echo Compilando proyectos...
 make all
 
 echo Ejecutando Memoria en una terminal nueva...
-gnome-terminal --working-directory=$PROJECT_PATH/memoria -e "valgrind ./Debug/memoria $PRUEBAS_PATH/$1/memoria.config"
+gnome-terminal --working-directory=$PROJECT_PATH/memoria -e "valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./Debug/memoria $PRUEBAS_PATH/$1/memoria.config"
 
 echo Ejecutando CPU en una terminal nueva...
-gnome-terminal --working-directory=$PROJECT_PATH/cpu -e "valgrind ./Debug/cpu $PRUEBAS_PATH/$1/cpu.config"
+gnome-terminal --working-directory=$PROJECT_PATH/cpu -e "valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./Debug/cpu $PRUEBAS_PATH/$1/cpu.config"
 
 echo Ejecutando Kernel en una terminal nueva...
-gnome-terminal --working-directory=$PROJECT_PATH/kernel -e "valgrind ./Debug/kernel $PRUEBAS_PATH/$1/kernel.config"
+gnome-terminal --working-directory=$PROJECT_PATH/kernel -e "valgrind  --leak-check=full --show-leak-kinds=all --track-origins=yes ./Debug/kernel $PRUEBAS_PATH/$1/kernel.config"
 

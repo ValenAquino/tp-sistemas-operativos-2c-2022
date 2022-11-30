@@ -16,7 +16,7 @@ int crear_archivo_swap() {
 
     if (area_swap == NULL) {
         log_error(logger_debug, "No se pudo crear el area de SWAP. (errno %i)", errno);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     truncate(path, config->tamanio_swap);
