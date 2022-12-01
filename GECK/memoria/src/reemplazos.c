@@ -193,8 +193,17 @@ int condicion_modificado_clock_m(espacio_memoria_t *espacio_encontrado, int pid)
 
 void reemplazar_pagina_en_espacio_victima(pagina_t *pag_a_guardar,
 		espacio_memoria_t *espacio_victima) {
+
+	log_trace(
+			logger_debug,
+			"pos victima: %ld, pos pag a guardar: %ld",
+			espacio_victima->pagina->pos_swap, pag_a_guardar->pos_swap
+			);
+
 	espacio_victima->pagina->bit_p = 0;
 	espacio_victima->pagina = pag_a_guardar;
+
+	aumentar_puntero_clock();
 }
 
 void aumentar_puntero_clock() {
