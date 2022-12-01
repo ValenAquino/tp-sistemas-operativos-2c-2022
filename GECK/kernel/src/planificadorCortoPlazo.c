@@ -24,7 +24,7 @@ void pasarAExec(PCB* pcb) {
 	}
 }
 
-void pasarABlock(PCB* pcb, dispositivos disp) {
+void pasarABlock(PCB* pcb, int disp) {
 	log_cambio_de_estado(pcb->id, pcb->estado_actual, BLOCK_STATE);
 	pcb->estado_actual = BLOCK_STATE;
 
@@ -32,7 +32,11 @@ void pasarABlock(PCB* pcb, dispositivos disp) {
 	list_add(procesosBlock, pcb);
 	pthread_mutex_unlock(&mutex_block);
 
-	log_info(logger, "PID: <%d> - Bloqueado por: <%s>", pcb->id, str_dispositivos(disp));
+	log_info(
+			logger,
+			"PID: <%d> - Bloqueado por: <%s>",
+			pcb->id, str_dispositivos(disp, config->dispositivos)
+	);
 }
 
 void pasarABlockPageFault(PCB* pcb) {

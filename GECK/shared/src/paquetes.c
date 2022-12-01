@@ -1,6 +1,5 @@
 #include "../include/paquetes.h"
 
-
 extern t_log* logger_debug;
 
 // ENVIOS
@@ -53,6 +52,50 @@ void eliminar_paquete(ts_paquete* paquete) {
 	free(paquete->buffer->stream);
 	free(paquete->buffer);
 	free(paquete);
+}
+
+void* serializar_lista_ins_consola(t_list *lista, int *size) {
+	int desplazamiento = 0;
+	int cant_elementos = list_size(lista);
+	int size_elemento = sizeof(int);
+
+	*size += sizeof(int);
+	void *stream = malloc(*size);
+
+	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		ts_ins_consola *inst = list_get(lista, i);
+
+		int size_param1 = strlen(inst->param1) + size_caracter_fin_de_cadena;
+		int size_param2 = strlen(inst->param1) + size_caracter_fin_de_cadena;
+
+		*size += sizeof(ts_ins_consola) + size_param1 + size_param2;
+		stream = realloc(stream, *size);
+
+		// instruccion
+		memcpy(stream + desplazamiento, &(inst->name), size_elemento);
+		desplazamiento += size_elemento;
+
+		// tamaño del string + param1
+		memcpy(stream + desplazamiento, &size_param1, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, inst->param1, size_param1);
+		desplazamiento += size_param1;
+
+		// tamaño del string + param2
+		memcpy(stream + desplazamiento, &size_param2, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, inst->param2, size_param2);
+		desplazamiento += size_param2;
+	}
+
+	list_destroy(lista);
+
+	return stream;
 }
 
 void* serializar_lista_ins(t_list *lista, int size) {
@@ -211,6 +254,44 @@ t_list* recibir_paquete(int socket_cliente) {
 
 	free(buffer);
 	return valores;
+}
+
+t_list *deserializar_lista_ins_consola(void *stream) {
+	t_list *lista_ins = list_create();
+	int cant_elementos = 0;
+	int desplazamiento = 0;
+	int size_elemento = sizeof(int);
+
+	memcpy(&cant_elementos, stream + desplazamiento, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		ts_ins_consola *inst = malloc(sizeof(ts_ins_consola));
+
+		// instruccion
+		memcpy(&(inst->name), stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		int size_param1 = 0;
+		memcpy(&size_param1, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		inst->param1 = malloc(size_param1);
+		memcpy(inst->param1, stream + desplazamiento, size_param1);
+		desplazamiento += size_param1;
+
+		int size_param2 = 0;
+		memcpy(&size_param2, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		inst->param2 = malloc(size_param2);
+		memcpy(inst->param2, stream + desplazamiento, size_param2);
+		desplazamiento += size_param2;
+
+		list_add(lista_ins, inst);
+	}
+
+	return lista_ins;
 }
 
 t_list* deserializar_lista_inst(void *stream) {

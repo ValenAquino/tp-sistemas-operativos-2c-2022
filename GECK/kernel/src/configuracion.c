@@ -24,59 +24,92 @@ t_configuracion_kernel* procesar_config(t_config *nuevo_config) {
 
 	t_configuracion_kernel *datos = malloc(sizeof(t_configuracion_kernel)); // creo estructura de datos de conexion
 	
-	datos->ip_kernel = malloc(strlen(ip_kernel) + 1);
+	datos->ip_kernel = malloc(strlen(ip_kernel) + size_caracter_fin_de_cadena);
 	strcpy(datos->ip_kernel, ip_kernel);
 	
-	datos->ip_memoria = malloc(strlen(ip_memoria) + 1);
+	datos->ip_memoria = malloc(strlen(ip_memoria) + size_caracter_fin_de_cadena);
 	strcpy(datos->ip_memoria, ip_memoria);
 	
-	datos->puerto_memoria = malloc(strlen(puerto_memoria) + 1);
+	datos->puerto_memoria = malloc(strlen(puerto_memoria) + size_caracter_fin_de_cadena);
 	strcpy(datos->puerto_memoria, puerto_memoria);
 	
-	datos->ip_cpu = malloc(strlen(ip_cpu) + 1);
+	datos->ip_cpu = malloc(strlen(ip_cpu) + size_caracter_fin_de_cadena);
 	strcpy(datos->ip_cpu, ip_cpu);
 	
-	datos->puerto_cpu_dispatch = malloc(strlen(puerto_cpu_dispatch) + 1);
+	datos->puerto_cpu_dispatch = malloc(strlen(puerto_cpu_dispatch) + size_caracter_fin_de_cadena);
 	strcpy(datos->puerto_cpu_dispatch, puerto_cpu_dispatch);
 	
-	datos->puerto_cpu_interrupt = malloc(strlen(puerto_cpu_interrupt) + 1);
+	datos->puerto_cpu_interrupt = malloc(strlen(puerto_cpu_interrupt) + size_caracter_fin_de_cadena);
 	strcpy(datos->puerto_cpu_interrupt, puerto_cpu_interrupt);
 	
-	datos->puerto_escucha = malloc(strlen(puerto_escucha) + 1);
+	datos->puerto_escucha = malloc(strlen(puerto_escucha) + size_caracter_fin_de_cadena);
 	strcpy(datos->puerto_escucha, puerto_escucha);
 	
 	datos->algoritmo_planificacion = algoritmo_planificacion;
 	datos->grado_max_multiprogramacion = grado_max_multiprogramacion;
 	datos->quantum_rr = quantum_rr;
 	
-	// Lista de arrays [ dispositivo tiempo, dispositivo tiempo];
-	datos->tiempos_io = procesar_tiempos_io(listaTiempos, listaDispositivos);
+	datos->dispositivos = crear_lista_dispositivos(listaTiempos, listaDispositivos);
 
 	config_destroy(nuevo_config); // libero la memoria del config
 	return datos;
 }
 
-dispositivos get_dispositivo(char* dispositivos) {
-	if(strcmp("DISCO", dispositivos) == 0) 
-		return DISCO;
-	if(strcmp("IMPRESORA", dispositivos) == 0) 
-		return IMPRESORA;
+//dispositivos get_dispositivo(char* dispositivos) {
+//	if(strcmp("DISCO", dispositivos) == 0)
+//		return DISCO;
+//	if(strcmp("IMPRESORA", dispositivos) == 0)
+//		return IMPRESORA;
+//
+//	return 9999;
+//}
 
-	return 9999; 
-}
-
-t_list* procesar_tiempos_io(char **tiempos, char **dispositivos) {
+t_list* crear_lista_dispositivos(char **tiempos, char **dispositivos) {
 	t_list* lista = list_create();
+	int indice_lista_disp = 2; // los dos primeros son los de consola
 
-	for (int i = 0; i<2; i++) {
-    	int *tiempos_io = malloc(sizeof(int) * 2);
+	void cargar_nombre(char* nombre) {
+		ts_dispositivo *disp = malloc(sizeof(ts_dispositivo));
 
-        tiempos_io[0] = get_dispositivo(dispositivos[i]);
-		tiempos_io[1] = atoi(tiempos[i]);
-		list_add(lista, tiempos_io);
-    }
+		disp->nombre = string_new();
+		string_append(&(disp->nombre), nombre);
+
+		list_add(lista, disp);
+	}
+
+	void cargar_tiempos(char *tiempo) {
+		ts_dispositivo *disp = list_get(lista, indice_lista_disp);
+		disp->tiempo_retardo = atoi(tiempo);
+		indice_lista_disp++;
+	}
+
+	void inicializar_mutex_dispositivo(void *arg) {
+		ts_dispositivo *disp = (ts_dispositivo *) arg;
+		pthread_mutex_init(&(disp->mutex), NULL);
+	}
+
+	ts_dispositivo *teclado = malloc(sizeof(ts_dispositivo));
+	teclado->nombre = "TECLADO";
+	teclado->tiempo_retardo = 0;
+
+	ts_dispositivo *pantalla = malloc(sizeof(ts_dispositivo));
+	pantalla->nombre = "PANTALLA";
+	pantalla->tiempo_retardo = 0;
+
+	list_add(lista, teclado); // para que su indice sea 0
+	list_add(lista, pantalla);// para que su indice sea 1
+
+	string_iterate_lines(dispositivos, cargar_nombre);
+	string_iterate_lines(tiempos, cargar_tiempos);
+	list_iterate(lista, (void*) inicializar_mutex_dispositivo);
 
     return lista;
+}
+
+int obtener_tiempo_io(int indice_disp, t_list* lista_dispositivos) {
+	ts_dispositivo *dispositivo = list_get(lista_dispositivos, indice_disp);
+
+	return dispositivo->tiempo_retardo;
 }
 
 t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
@@ -94,15 +127,10 @@ t_algoritmo_planificacion procesar_algoritmo(char* algoritmo) {
 }
 
 void test_read_config(t_configuracion_kernel* config) {
-	int *dispo1 = malloc(sizeof(int) * 2);
-	int *dispo2 = malloc(sizeof(int) * 2); 
-	
-	dispo1 = list_get(config->tiempos_io, 0);
-	dispo2 = list_get(config->tiempos_io, 1);
 	
 	log_debug(
 		logger_debug,
-		"Leyendo de config: \n"
+		"\nLeyendo de config: \n"
 		"IP_MEMORIA: %s \n"
 		"PUERTO_ESCUCHA: %s \n"
 		"PUERTO_MEMORIA: %s \n"
@@ -111,9 +139,7 @@ void test_read_config(t_configuracion_kernel* config) {
 		"PUERTO_CPU_INTERRUPT: %s \n"
 		"ALGORITMO_PLANIFICACION: %s \n"
 		"GRADO_MAX_MULTIPROGRAMACION: %d \n"
-		"QUANTUM_RR: %d \n"
-		"TIEMPO 1: %d, %dms \n"
-		"TIEMPO 2: %d, %dms \n",
+		"QUANTUM_RR: %d \n",
 		config->ip_memoria,
 		config->puerto_escucha,
 		config->puerto_memoria,
@@ -122,23 +148,15 @@ void test_read_config(t_configuracion_kernel* config) {
 		config->puerto_cpu_interrupt,
 		str_algoritmo(config->algoritmo_planificacion),
 		config->grado_max_multiprogramacion,
-		config->quantum_rr,
-		dispo1[0], dispo1[1],
-		dispo2[0], dispo2[1]
+		config->quantum_rr
 	);
-}
 
-int obtener_tiempo_io(dispositivos disp_que_busco, t_list* lista_dispositivos) {
-
-	// nested function
- 	bool get_time(void *element) {
-		int *array_dispositivo_tiempo = element;
-		return array_dispositivo_tiempo[0] == disp_que_busco;
+	void log_disp(void* arg) {
+		ts_dispositivo *disp = (ts_dispositivo *) arg;
+		log_debug(logger_debug, "<Disp: %s>|<T.Ret: %d>", disp->nombre, disp->tiempo_retardo);
 	}
 
-	int *array_dispositivo_tiempo = list_find(lista_dispositivos, get_time);
-
-	return array_dispositivo_tiempo[1];
+	list_iterate(config->dispositivos, (void*)log_disp);
 }
 
 void liberar_configuracion_kernel(t_configuracion_kernel* config_kernel) {
@@ -149,6 +167,7 @@ void liberar_configuracion_kernel(t_configuracion_kernel* config_kernel) {
     free(config_kernel->puerto_cpu_dispatch);
     free(config_kernel->puerto_cpu_interrupt);
     free(config_kernel->puerto_escucha);
-    list_destroy_and_destroy_elements(config_kernel->tiempos_io, free);
+    // ↓ hay que limpiar mas campos
+    list_destroy_and_destroy_elements(config_kernel->dispositivos, free);
     free(config_kernel);
 }

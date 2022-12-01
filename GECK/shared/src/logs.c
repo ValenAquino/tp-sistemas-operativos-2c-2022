@@ -25,14 +25,26 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 	free(file_name);
 }
 
+void log_list_inst_consola(t_list* instrucciones) {
+	for(int i = 0; i < list_size(instrucciones); i++) {
+		ts_ins_consola *inst = list_get(instrucciones, i);
+
+		log_debug(
+			logger_debug,
+			"Instruccion = [n: %s, p1: %s, p2: %s]",
+			str_ins(inst->name), inst->param1, inst->param2
+		);
+	}
+}
+
 void log_list_inst(t_list* instrucciones) {
 	for(int i = 0; i < list_size(instrucciones); i++) {
 		ts_ins *inst = list_get(instrucciones, i);
 
 		log_debug(
 			logger_debug,
-			"Instruccion = [n: %d, p1: %d, p2: %d]",
-			inst->name, inst->param1, inst->param2
+			"Instruccion = [%s, %d, %d]",
+			str_ins(inst->name), inst->param1, inst->param2
 		);
 	}
 }
@@ -119,20 +131,13 @@ char* str_estado(t_estado_proceso estado) {
 	return "UNKNONW";
 }
 
-char* str_dispositivos(reg_cpu disp) {
-	switch (disp) {
-	case DISCO:
-		return "DISCO";
-	case IMPRESORA:
-		return "IMPRESORA";
-	case TECLADO:
-		return "TECLADO";
-	case PANTALLA:
-		return "PANTALLA";
-	default:
+char* str_dispositivos(int indice_disp, t_list *lista_dispositivos) {
+	ts_dispositivo *dispositivo = list_get(lista_dispositivos, indice_disp);
+
+	if(dispositivo != NULL)
+		return dispositivo->nombre;
+	else
 		return "UNKNOWN";
-	}
-	return "UNKNOWN";
 }
 
 char* str_registro(reg_cpu reg) {

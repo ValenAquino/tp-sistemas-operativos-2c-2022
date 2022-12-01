@@ -3,7 +3,8 @@
 extern t_log* logger_debug;
 
 t_list* parsear_pseudocod(char* pseudo_path) {
-	ts_ins *inst;
+	ts_ins_consola *inst;
+
 	FILE* f_pseudo = fopen(pseudo_path, "r");
 	t_list* lista_inst = list_create();
 
@@ -12,12 +13,14 @@ t_list* parsear_pseudocod(char* pseudo_path) {
 		exit(EXIT_FAILURE);
 	}
 
-	while(!feof(f_pseudo)) {
+	while(!feof(f_pseudo) && (inst->name != EXIT)) {
 		inst = crear_instruccion(&f_pseudo);
 		list_add(lista_inst, inst);
 	}
 
 	fclose(f_pseudo);
+
+	log_list_inst_consola(lista_inst);
 
 	return lista_inst;
 }
@@ -45,92 +48,41 @@ t_ins procesar_inst(char* inst) {
 	exit(EXIT_FAILURE);
 }
 
-reg_cpu procesar_reg(char *reg) {
-	if(strcmp("AX", reg) == 0)
-		return AX;
-
-	if(strcmp("BX", reg) == 0)
-		return BX;
-
-	if(strcmp("CX", reg) == 0)
-		return CX;
-
-	if(strcmp("DX", reg) == 0)
-		return DX;
-
-	log_error(logger_debug, "el registro '%s' es incorrecto", reg);
-	exit(EXIT_FAILURE);
-}
-
-dispositivos procesar_dispositivo(char *disp) {
-	if(strcmp("DISCO", disp) == 0)
-		return DISCO;
-
-	if(strcmp("TECLADO", disp) == 0)
-		return TECLADO;
-
-	if(strcmp("PANTALLA", disp) == 0)
-		return PANTALLA;
-	
-	if(strcmp("IMPRESORA", disp) == 0)
-		return IMPRESORA;
-
-	log_error(logger_debug, "el dispositivo '%s' es incorrecto", disp);
-	exit(EXIT_FAILURE);
-}
-
-void leer_instruccion(FILE **f_pseudo, ts_ins *inst) {
+void leer_instruccion(FILE **f_pseudo, ts_ins_consola *inst) {
 	char buffer[10];
 
 	fscanf(*f_pseudo, "%s", buffer);
 	inst->name = procesar_inst(buffer);
 }
 
-void leer_parametros(FILE **f_pseudo, ts_ins *inst) {
-	char buffer[10];
+char *procesar_buffer(FILE **f_pseudo) {
+	char buffer[30];
 
+	fscanf(*f_pseudo, "%s", buffer);
+
+	int length = strlen(buffer);
+
+	char *cadena = malloc(length + size_caracter_fin_de_cadena);
+	strcpy(cadena, buffer);
+
+	return cadena;
+}
+
+void leer_parametros(FILE **f_pseudo, ts_ins_consola *inst) {
 	switch(inst->name) {
 	case SET:
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param1 = procesar_reg(buffer);
-		fscanf(*f_pseudo, "%d", &(inst->param2));
-		break;
-
 	case ADD:
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param1 = procesar_reg(buffer);
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param2 = procesar_reg(buffer);
-		break;
-
 	case MOV_IN:
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param1 = procesar_reg(buffer);
-		fscanf(*f_pseudo, "%d", &((inst->param2)));
-		break;
-
 	case MOV_OUT:
-		fscanf(*f_pseudo, "%d", &(inst->param1));
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param2 = procesar_reg(buffer);
-		break;
-
 	case IO:
-		fscanf(*f_pseudo, "%s", buffer);
-		inst->param1 = procesar_dispositivo(buffer);
-
-		if((inst->param1 == DISCO) || (inst->param1 == IMPRESORA))
-			fscanf(*f_pseudo, "%d", &(inst->param2));
-		else {
-			fscanf(*f_pseudo, "%s", buffer);
-			inst->param2 = procesar_reg(buffer);
-		}
-
+		inst->param1 = procesar_buffer(f_pseudo);
+		inst->param2 = procesar_buffer(f_pseudo);
 		break;
 
 	case EXIT:
-		inst->param1 = -1; // los inicializo para que no tengan basura
-		inst->param2 = -1; // 
+		char *cadena_vacia = "";
+		inst->param1 = cadena_vacia;
+		inst->param2 = cadena_vacia;
 		break;
 
 	default:
@@ -140,8 +92,8 @@ void leer_parametros(FILE **f_pseudo, ts_ins *inst) {
 	}
 }
 
-ts_ins* crear_instruccion(FILE **f_pseudo) {
-	ts_ins *inst = malloc(sizeof(ts_ins));
+ts_ins_consola* crear_instruccion(FILE **f_pseudo) {
+	ts_ins_consola *inst = malloc(sizeof(ts_ins_consola));
 
 	leer_instruccion(f_pseudo, inst);
 	leer_parametros(f_pseudo, inst);

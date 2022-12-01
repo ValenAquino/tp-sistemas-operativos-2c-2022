@@ -24,4 +24,9 @@ int conectar_con(char *servername, char *ip, char *puerto);
 
 PCB* crear_pcb(int cliente_socket);
 
+reg_cpu procesar_reg(char *reg);
+int procesar_dispositivo(char *disp);
+ts_ins *convertir_inst_consola_a_inst_kernel(t_ins enum_ins, char *parametro1, char *parametro2);
+t_list *crear_lista_instrucciones(t_list *lista_ins_consola);
+
 #endif /* COMUNICACION_H_ */

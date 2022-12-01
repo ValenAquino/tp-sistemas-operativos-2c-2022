@@ -24,7 +24,7 @@ typedef struct {
 
 void suspender_proceso(void* void_args);
 void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo);
-void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket);
+void manejar_suspension_por(int dispo, PCB* pcb, int cliente_socket);
 
 void ejecutar_bloqueo_page_fault(PCB* pcb, int segmento_solicitado, int pagina_solicitada);
 void hilo_page_fault(void* void_args);

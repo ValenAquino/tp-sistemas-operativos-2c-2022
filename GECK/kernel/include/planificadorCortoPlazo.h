@@ -4,7 +4,7 @@
 #include "kernel.h"
 
 void pasarAExec(PCB* pcb);
-void pasarABlock(PCB* pcb, dispositivos disp);
+void pasarABlock(PCB* pcb, int disp);
 void pasarABlockPageFault(PCB* pcb);
 
 void planificador_corto_plazo();

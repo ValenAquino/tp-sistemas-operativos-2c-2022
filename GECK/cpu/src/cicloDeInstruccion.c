@@ -139,36 +139,27 @@ int execute_io(ts_ins *instruccion, PCB *pcb) {
 	actualizar_pcb(pcb);
 
 	switch (instruccion->param1) {
-	case DISCO:
-		codigo = OP_DISCO;
-
-		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
-				str_ins(instruccion->name), str_registro(instruccion->param1),
-				instruccion->param2);
-		break;
-
-	case IMPRESORA:
-
-		codigo = OP_IMPRESORA;
-		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
-				str_ins(instruccion->name), str_registro(instruccion->param1),
-				instruccion->param2);
-		break;
-
 	case PANTALLA:
 		codigo = OP_PANTALLA;
 
 		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
-				str_ins(instruccion->name), str_registro(instruccion->param1),
-				str_registro(instruccion->param2));
+				 str_ins(instruccion->name), str_registro(instruccion->param1),
+				 str_registro(instruccion->param2) );
 		break;
 
 	case TECLADO:
 		codigo = OP_TECLADO;
 
 		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
-				str_ins(instruccion->name), str_registro(instruccion->param1),
-				str_registro(instruccion->param2));
+				 str_ins(instruccion->name), str_registro(instruccion->param1),
+				 str_registro(instruccion->param2) );
+		break;
+	default:
+		codigo = IO_KERNEL;
+
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
+				 str_ins(instruccion->name), str_registro(instruccion->param1),
+				 instruccion->param2);
 		break;
 	}
 

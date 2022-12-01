@@ -5,6 +5,8 @@ extern t_log *logger_debug;
 
 extern t_list *procesosNew;
 
+extern t_configuracion_kernel *config;
+
 extern pthread_mutex_t mutex_new;
 extern sem_t cpu_idle;
 extern sem_t sem_estructuras_memoria;
@@ -26,6 +28,7 @@ void manejar_comunicacion(void *void_args) {
 		switch (cod_op) {
 		case ELEMENTOS_CONSOLA: // consola
 			PCB *pcb = crear_pcb(cliente_socket);
+			log_pcb(pcb);
 			pasarANew(pcb);
 			break;
 
@@ -63,17 +66,10 @@ void manejar_comunicacion(void *void_args) {
 			break;
 		}
 
-		case OP_DISCO: {
+		case IO_KERNEL: {
 			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
 			sem_post(&cpu_idle);
 			manejar_suspension_por(DISCO, pcb, cliente_socket);
-			break;
-		}
-
-		case OP_IMPRESORA: {
-			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
-			sem_post(&cpu_idle);
-			manejar_suspension_por(IMPRESORA, pcb, cliente_socket);
 			break;
 		}
 
@@ -211,18 +207,125 @@ int conectar_con(char *servername, char *ip, char *puerto) {
 	return file_descriptor;
 }
 
+
+reg_cpu procesar_reg(char *reg) {
+	if(strcmp("AX", reg) == 0)
+		return AX;
+
+	if(strcmp("BX", reg) == 0)
+		return BX;
+
+	if(strcmp("CX", reg) == 0)
+		return CX;
+
+	if(strcmp("DX", reg) == 0)
+		return DX;
+
+	log_error(logger_debug, "el registro '%s' es incorrecto", reg);
+	exit(EXIT_FAILURE);
+}
+
+int procesar_dispositivo(char *disp) {
+	int indice_dispositivo = -1; // -1 para poder iterar dentro de la nested function
+
+	bool mismo_nombre(void *arg) {
+		indice_dispositivo++;
+		ts_dispositivo *dispositivo = (ts_dispositivo *) arg;
+		return strcmp(dispositivo->nombre, disp) == 0;
+	}
+
+	ts_dispositivo *dispositivo = list_find(config->dispositivos, (void*) mismo_nombre);
+
+	if(dispositivo == NULL) {
+		log_error(logger_debug, "el dispositivo '%s' es incorrecto", disp);
+		exit(EXIT_FAILURE);
+	}
+
+	return indice_dispositivo;
+}
+
+int procesar_parametro2_io(int disp, char* parametro2) {
+	if ((disp == TECLADO) || (disp == PANTALLA))
+		return procesar_reg(parametro2);
+	else
+		return atoi(parametro2);
+}
+
+ts_ins *convertir_inst_consola_a_inst_kernel(t_ins enum_ins, char *parametro1, char *parametro2) {
+	ts_ins *inst = malloc(sizeof(ts_ins));
+	inst->name = enum_ins;
+
+	switch (enum_ins) {
+	case SET:
+			inst->param1 = procesar_reg(parametro1);
+			inst->param2 = atoi(parametro2);
+			break;
+	case ADD:
+			inst->param1 = procesar_reg(parametro1);
+			inst->param2 = procesar_reg(parametro2);
+			break;
+	case MOV_IN:
+			inst->param1 = procesar_reg(parametro1);
+			inst->param2 = atoi(parametro2);
+			break;
+	case MOV_OUT:
+			inst->param1 = atoi(parametro1);
+			inst->param2 = procesar_reg(parametro2);
+			break;
+	case EXIT:
+			inst->param1 = -1;
+			inst->param2 = -1;
+			break;
+	case IO:
+			inst->param1 = procesar_dispositivo(parametro1);
+			inst->param2 = procesar_parametro2_io(inst->param1, parametro2);
+			break;
+	default:
+			log_error(logger_debug, "ins %d no reconocida", enum_ins);
+			exit(EXIT_FAILURE);
+			break;
+	}
+
+	free(parametro1);
+	free(parametro2);
+
+	return inst;
+}
+
+t_list *crear_lista_instrucciones(t_list *lista_ins_consola) {
+	t_list *lista_ins = list_create();
+
+	for(int i=0; i< list_size(lista_ins_consola); i++) {
+
+		ts_ins_consola *inst_consola = list_get(lista_ins_consola, i);
+
+		ts_ins *ins = convertir_inst_consola_a_inst_kernel(
+			inst_consola->name,
+			inst_consola->param1,
+			inst_consola->param2
+		);
+
+		list_add(lista_ins, ins);
+		free(inst_consola);
+	}
+
+	return lista_ins;
+}
+
 PCB* crear_pcb(int cliente_socket) {
 	t_list *listas = recibir_paquete(cliente_socket);
 
 	void *ins = list_get(listas, 0);
 	void *seg = list_get(listas, 1);
 
-	t_list *lista_ins = deserializar_lista_inst(ins);
+	t_list *lista_ins_consola = deserializar_lista_ins_consola(ins);
+	t_list *lista_ins = crear_lista_instrucciones(lista_ins_consola);
 	t_list *lista_segm = deserializar_lista_tamanios_segm(seg);
 
 	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
-
 	proccess_counter++;
+
+	list_destroy(lista_ins_consola);
 
 	return pcb;
 }

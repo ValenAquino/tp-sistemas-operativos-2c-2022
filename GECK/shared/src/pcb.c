@@ -20,7 +20,6 @@ PCB* nuevoPcb(int id, int fd_consola, t_list* instr, t_list* tamanio_segmentos) 
     return pcb;
 }
 
-
 PCB *obtener_proceso_por_pid(int pid, t_list* lista, pthread_mutex_t mutex) {
 
 	bool get_element(void *element) {
@@ -41,5 +40,3 @@ void destruir_pcb(PCB* pcb) {
 	list_destroy_and_destroy_elements(pcb->instrucciones, free);
 	free(pcb);
 }
-
-

@@ -5,25 +5,19 @@ t_log* logger_debug;
 int tiempo_pantalla;
 
 int main(int argc, char** argv) {
-	char* config_path;
-	char* pseudo_path;
-	t_config* config;
 	t_list *lista_inst;
 	t_list *lista_segmentos;
-	int kernel_fd;
 
-	// Level trace para que hagamos logs debugs y trace
-	// Así los logs minimos quedan al level info
-	//	logger = log_create("Consola.log", "logger", true, LOG_LEVEL_TRACE);
 	if (argc < 3) {
-		mostrar_mensaje_para_finalizar("Se necesitan mas argumentos para inicializar correctamente la consola");
+		mostrar_mensaje_para_finalizar(
+			"Se necesitan mas argumentos para inicializar correctamente la consola");
 		return EXIT_FAILURE;
 	}
 
-	config_path = argv[1];
-	pseudo_path = argv[2];
+	char* config_path = argv[1];
+	char* pseudo_path = argv[2];
 
-	config = abrir_configuracion(config_path);
+	t_config* config = abrir_configuracion(config_path);
 	crear_loggers("consola", &logger, &logger_debug, config);
 
 	log_debug(logger_debug, "config: %s", config_path);
@@ -33,12 +27,13 @@ int main(int argc, char** argv) {
 
 	procesar_config(config, &lista_segmentos, &tiempo_pantalla);
 
-	kernel_fd = connect_to_kernel(config);
+	int kernel_fd = connect_to_kernel(config);
 
-	// TODO agregar logs para trackear que va pasando
 	enviar_proceso(kernel_fd, lista_inst, lista_segmentos);
 
-	t_manejar_conexion_args * comunicacion_args = malloc(sizeof(t_manejar_conexion_args));
+	t_manejar_conexion_args * comunicacion_args =
+			malloc(sizeof(t_manejar_conexion_args));
+
 	comunicacion_args->fd = kernel_fd;
 	comunicacion_args->server_name = "CONSOLA - KERNEL";
 
@@ -79,13 +74,10 @@ int connect_to_kernel(t_config* config) {
 void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) {
 	ts_paquete* paquete = crear_paquete(ELEMENTOS_CONSOLA);
 
-	int size_ins = sizeof(ts_ins) * list_size(lista_inst) + sizeof(int);
+	int size_ins = 0;
 	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
-	// log_list_inst(lista_inst);
-	// log_lista_seg(lista_segmentos);
-	
-	void *ins = serializar_lista_ins(lista_inst, size_ins);
+	void *ins = serializar_lista_ins_consola(lista_inst, &size_ins);
 	void *seg = serializar_lista_tamanios_seg(lista_segmentos, size_seg, 1);
 
 	agregar_a_paquete(paquete, ins, size_ins);

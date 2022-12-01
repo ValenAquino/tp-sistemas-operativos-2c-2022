@@ -29,7 +29,6 @@
 #include "pseudocodigo.h"
 #include "comunicacion.h"
 
-
 void procesar_config(t_config*, t_list**, int*);
 t_list* parsear_pseudocod(char*);
 

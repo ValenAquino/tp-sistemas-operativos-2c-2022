@@ -42,51 +42,30 @@ void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo)
     pthread_detach(hilo);
 }
 
-void manejar_suspension_por(dispositivos dispo, PCB* pcb, int cliente_socket) {
+void manejar_suspension_por(int indice_dispo, PCB* pcb, int cliente_socket) {
 	int unidades_de_trabajo = recibir_operacion(cliente_socket);
-	int tiempo_por_unidad = obtener_tiempo_io(dispo, config->tiempos_io);
+	int tiempo_por_unidad = obtener_tiempo_io(indice_dispo, config->dispositivos);
 	int tiempo_de_suspension = tiempo_por_unidad * unidades_de_trabajo / 1000;
 			
-	pasarABlock(pcb, dispo);
+	pasarABlock(pcb, indice_dispo);
 
-	manejar_wait_dispositivo(dispo);
+	manejar_wait_dispositivo(indice_dispo);
 
 	log_trace(logger_debug, "SLEEP DE %d", tiempo_de_suspension);
-	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension, dispo);
+	ejecutar_suspension_en_hilo(pcb, tiempo_de_suspension, indice_dispo);
 }
 
-void manejar_wait_dispositivo(dispositivos dispositivo) {
-	switch (dispositivo) {
-		case IMPRESORA:
-			sem_wait(&sem_impresora);
-		break;
-		case DISCO:
-			sem_wait(&sem_disco);
-		break;
-		default:
-			log_error(logger_debug, "Dispositivo desconocido. No se puede manejar la suspension.");
-			exit(EXIT_FAILURE);
-		break;
-	}
+void manejar_wait_dispositivo(int indice_disp) {
+	ts_dispositivo *dispositivo = list_get(config->dispositivos, indice_disp);
+
+	pthread_mutex_lock(&dispositivo->mutex);
 }
 
+void manejar_post_dispositivo(int indice_disp) {
+	ts_dispositivo *dispositivo = list_get(config->dispositivos, indice_disp);
 
-void manejar_post_dispositivo(dispositivos dispositivo) {
-	switch (dispositivo) {
-		case IMPRESORA:
-			sem_post(&sem_impresora);
-		break;
-		case DISCO:
-			sem_post(&sem_disco);
-		break;
-		default:
-			log_error(logger_debug, "Dispositivo desconocido. Error al hacer el post para desbloquear el dispositivo.");
-			exit(EXIT_FAILURE);
-		break;
-	}
+	pthread_mutex_unlock(&dispositivo->mutex);
 }
-
-
 
 // IO con consola
 

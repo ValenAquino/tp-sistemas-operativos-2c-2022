@@ -32,8 +32,20 @@ typedef enum {
 } reg_cpu;
 
 typedef enum {
-	DISCO, IMPRESORA, TECLADO, PANTALLA,
-} dispositivos;
+	TECLADO, PANTALLA, DISCO, IMPRESORA
+} dispositivos; // TODO: Sacar DISCO, IMPRESORA cuando se modifiquen todos los lugares donde se usa
+
+typedef struct {
+		char *nombre;
+		int tiempo_retardo;
+		pthread_mutex_t mutex;
+} ts_dispositivo;
+
+typedef struct {
+	t_ins name;
+	char *param1;
+	char *param2;
+} ts_ins_consola;
 
 typedef struct {
 	t_ins name;
@@ -51,6 +63,8 @@ typedef struct {
 	ts_buffer *buffer;
 } ts_paquete;
 
+#define size_caracter_fin_de_cadena 1 // --> '\0'
+
 // Buffer
 void crear_buffer(ts_paquete *paquete);
 void* recibir_buffer(int*, int);
@@ -64,8 +78,7 @@ void* serializar_paquete(ts_paquete *paquete, int bytes);
 t_list* recibir_paquete(int);
 
 void enviar_pcb(PCB *pcb, int socket_fd, op_code op_code);
-void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos,
-		int socket_fd, int pid);
+void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd, int pid);
 void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd, int pid);
 void enviar_direccion_parcial(dir_t direccion, int cliente_socket, int codop);
 
@@ -76,16 +89,17 @@ void* serializar_lista_seg(t_list*, int);
 void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista);
 void* serializar_datos_pcb(PCB*, int);
 void* serializar_direccion_parcial(dir_t, int);
+void* serializar_lista_ins_consola(t_list *lista, int *size);
 
 // Deserializacion
 t_list* deserializar_lista_inst(void *stream);
+t_list* deserializar_lista_ins_consola(void *stream);
 t_list* deserializar_lista_segm(void *stream);
 t_list* deserializar_lista_tamanios_segm(void *stream);
 t_list* deserializar_lista_io(void *stream);
 t_list* deserializar_lista_tiempos(void *stream);
 t_list* deserializar_lista_indices(void *stream);
-PCB* deserializar_pcb(void *data, void *inst, void *segm,
-		void *tamanios_segmentos);
+PCB* deserializar_pcb(void *data, void *inst, void *segm, void *tamanios_segmentos);
 dir_t deserializar_direccion_parcial(void *stream);
 
 // Recepcion
