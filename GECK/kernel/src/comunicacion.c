@@ -68,8 +68,9 @@ void manejar_comunicacion(void *void_args) {
 
 		case IO_KERNEL: {
 			PCB *pcb = recibir_pcb_de_cpu(cliente_socket);
+			uint32_t indice_dispositivo = recibir_valor(cliente_socket);
 			sem_post(&cpu_idle);
-			manejar_suspension_por(DISCO, pcb, cliente_socket);
+			manejar_suspension_por(indice_dispositivo, pcb, cliente_socket);
 			break;
 		}
 

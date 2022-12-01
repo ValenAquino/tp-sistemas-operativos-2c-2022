@@ -157,16 +157,24 @@ int execute_io(ts_ins *instruccion, PCB *pcb) {
 	default:
 		codigo = IO_KERNEL;
 
-		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%d>", pcb->id,
-				 str_ins(instruccion->name), str_registro(instruccion->param1),
-				 instruccion->param2);
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%d>", pcb->id,
+				 str_ins(instruccion->name), instruccion->param1, instruccion->param2);
+
 		break;
 	}
 
 	log_trace(logger_debug, "ENVIANDO PCB A KERNEL POR I/O: ");
 
 	enviar_pcb(pcb, kernel_fd, codigo);
-	enviar_registro(kernel_fd, instruccion->param2);
+
+	if(codigo == OP_TECLADO || codigo == OP_PANTALLA) {
+		enviar_registro(kernel_fd, instruccion->param2);
+	}
+	else {
+		enviar_valor(kernel_fd, instruccion->param1); // dispositivo
+		enviar_valor(kernel_fd, instruccion->param2); // unidades de trabajo
+	}
+
 	free(pcb);
 
 	se_devolvio_pcb = true;

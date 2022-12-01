@@ -43,7 +43,7 @@ void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo)
 }
 
 void manejar_suspension_por(int indice_dispo, PCB* pcb, int cliente_socket) {
-	int unidades_de_trabajo = recibir_operacion(cliente_socket);
+	int unidades_de_trabajo = recibir_valor(cliente_socket);
 	int tiempo_por_unidad = obtener_tiempo_io(indice_dispo, config->dispositivos);
 	int tiempo_de_suspension = tiempo_por_unidad * unidades_de_trabajo / 1000;
 			
@@ -58,13 +58,13 @@ void manejar_suspension_por(int indice_dispo, PCB* pcb, int cliente_socket) {
 void manejar_wait_dispositivo(int indice_disp) {
 	ts_dispositivo *dispositivo = list_get(config->dispositivos, indice_disp);
 
-	pthread_mutex_lock(&dispositivo->mutex);
+	sem_wait(&dispositivo->sem_dispositivo);
 }
 
 void manejar_post_dispositivo(int indice_disp) {
 	ts_dispositivo *dispositivo = list_get(config->dispositivos, indice_disp);
 
-	pthread_mutex_unlock(&dispositivo->mutex);
+	sem_post(&dispositivo->sem_dispositivo);
 }
 
 // IO con consola

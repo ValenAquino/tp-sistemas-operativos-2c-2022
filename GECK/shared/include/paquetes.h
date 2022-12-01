@@ -38,7 +38,7 @@ typedef enum {
 typedef struct {
 		char *nombre;
 		int tiempo_retardo;
-		pthread_mutex_t mutex;
+		sem_t sem_dispositivo;
 } ts_dispositivo;
 
 typedef struct {

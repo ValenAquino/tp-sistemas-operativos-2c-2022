@@ -85,7 +85,8 @@ t_list* crear_lista_dispositivos(char **tiempos, char **dispositivos) {
 
 	void inicializar_mutex_dispositivo(void *arg) {
 		ts_dispositivo *disp = (ts_dispositivo *) arg;
-		pthread_mutex_init(&(disp->mutex), NULL);
+		
+		sem_init(&(disp->sem_dispositivo), 1, 1);
 	}
 
 	ts_dispositivo *teclado = malloc(sizeof(ts_dispositivo));
