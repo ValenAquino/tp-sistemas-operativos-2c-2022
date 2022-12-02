@@ -106,7 +106,7 @@ uint32_t leer_de_memoria_principal(pagina_t *pagina, int offset_dentro_de_frame)
 		exit(EXIT_FAILURE);
 	}
 
-	log_info(logger, "PID: <%d> - Acción: <LEER> - Dirección física: <%d%d>",
+	log_info(logger, "PID: <%d> - Acción: <LEER> - Dirección física: <%d|%d>",
 			pagina->pid, frame, offset_dentro_de_frame);
 	pthread_mutex_lock(&memoria_principal_mutex);
 
@@ -136,7 +136,7 @@ void escribir_en_memoria_principal(pagina_t *pagina, int offset_dentro_de_frame,
 	}
 
 	log_info(logger,
-			"PID: <%d> - Acción: <ESCRIBIR> - Dirección física: <%d%d>",
+			"PID: <%d> - Acción: <ESCRIBIR> - Dirección física: <%d|%d>",
 			pagina->pid, frame, offset_dentro_de_frame);
 	pthread_mutex_lock(&memoria_principal_mutex);
 	memcpy(memoria_principal + offset_memoria + offset_dentro_de_frame,

@@ -176,7 +176,8 @@ void loggear_tlb() {
 	log_info(logger, "------  FIN TLB ------\n");
 
 	log_info(logger, "\n");
-	log_info(logger, "-------- TLB DEBUG --------");
+	
+	log_debug(logger_debug, "-------- TLB DEBUG --------");
 	pthread_mutex_lock(&mutex_tlb);
 	for (int i = 0; i < list_size(tlb); i++) {
 		entrada_tlb *entrada = list_get(tlb, i);
@@ -186,7 +187,7 @@ void loggear_tlb() {
 				entrada->frame, entrada->ult_ref_timestamp);
 	}
 	pthread_mutex_unlock(&mutex_tlb);
-	log_info(logger, "------  FIN TLB DEBUG ------\n");
+	log_debug(logger_debug, "------  FIN TLB DEBUG ------\n");
 }
 
 algoritmo_reemplazo_tlb get_algoritmo_reemplazo(char *algoritmo) {

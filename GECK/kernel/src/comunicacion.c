@@ -8,6 +8,7 @@ extern t_list *procesosNew;
 extern t_configuracion_kernel *config;
 
 extern pthread_mutex_t mutex_new;
+extern pthread_mutex_t mutex_pid_counter;
 extern sem_t cpu_idle;
 extern sem_t sem_estructuras_memoria;
 extern sem_t sem_procesos_ready;
@@ -323,8 +324,10 @@ PCB* crear_pcb(int cliente_socket) {
 	t_list *lista_ins = crear_lista_instrucciones(lista_ins_consola);
 	t_list *lista_segm = deserializar_lista_tamanios_segm(seg);
 
+	pthread_mutex_lock(&mutex_pid_counter);
 	PCB *pcb = nuevoPcb(proccess_counter, cliente_socket, lista_ins, lista_segm);
 	proccess_counter++;
+	pthread_mutex_unlock(&mutex_pid_counter);
 
 	list_destroy(lista_ins_consola);
 

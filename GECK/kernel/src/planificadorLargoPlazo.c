@@ -17,6 +17,7 @@ extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
 extern sem_t sem_estructuras_memoria;
 
+extern pthread_mutex_t mutex_exit;
 extern pthread_mutex_t mutex_ready;
 extern sem_t planificar;
 extern pthread_mutex_t mutex_baja_prioridad;
@@ -123,6 +124,10 @@ void pasarAExit(PCB* pcb) {
 	pcb->estado_actual = EXIT_STATE;
 	log_cambio_de_estado(pcb->id, EXEC_STATE, EXIT_STATE);
 	enviar_codop(pcb->socket_consola, FIN_POR_EXIT);
+
+	pthread_mutex_lock(&mutex_exit);
 	list_add(procesosExit, pcb);
+	pthread_mutex_unlock(&mutex_exit);
+
 	sem_post(&sem_procesos_ready);
 }

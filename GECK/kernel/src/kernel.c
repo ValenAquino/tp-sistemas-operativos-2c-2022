@@ -21,7 +21,9 @@ t_list *procesosExit;
 pthread_mutex_t mutex_ready;
 pthread_mutex_t mutex_block;
 pthread_mutex_t mutex_new;
+pthread_mutex_t mutex_exit;
 pthread_mutex_t mutex_baja_prioridad;
+pthread_mutex_t mutex_pid_counter;
 
 sem_t planificar;
 sem_t cpu_idle;
@@ -188,6 +190,8 @@ void inicializar_kernel() {
 	sem_init(&sem_estructuras_memoria, 1, 0);
 	pthread_mutex_init(&mutex_block, NULL);
 	pthread_mutex_init(&mutex_new, NULL);
+	pthread_mutex_init(&mutex_exit, NULL);
+	pthread_mutex_init(&mutex_pid_counter, NULL);
 
 	if (config->algoritmo_planificacion == FEEDBACK) {
 		log_debug(logger_debug, "Inicializando para algoritmo FEEDBACK");
