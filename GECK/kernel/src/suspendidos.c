@@ -4,8 +4,6 @@ extern t_configuracion_kernel* config;
 
 extern t_list* procesosBlock;
 extern pthread_mutex_t mutex_block;
-extern sem_t sem_disco;
-extern sem_t sem_impresora;
 
 extern int memoria_fd;
 

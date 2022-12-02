@@ -54,13 +54,14 @@ void eliminar_paquete(ts_paquete* paquete) {
 	free(paquete);
 }
 
-void* serializar_lista_ins_consola(t_list *lista, int *size) {
+void* serializar_lista_ins_consola(t_list *lista) {
+	int size = 0;
 	int desplazamiento = 0;
 	int cant_elementos = list_size(lista);
 	int size_elemento = sizeof(int);
 
-	*size += sizeof(int);
-	void *stream = malloc(*size);
+	size += sizeof(int);
+	void *stream = malloc(size);
 
 	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
 	desplazamiento += size_elemento;
@@ -69,10 +70,10 @@ void* serializar_lista_ins_consola(t_list *lista, int *size) {
 		ts_ins_consola *inst = list_get(lista, i);
 
 		int size_param1 = strlen(inst->param1) + size_caracter_fin_de_cadena;
-		int size_param2 = strlen(inst->param1) + size_caracter_fin_de_cadena;
+		int size_param2 = strlen(inst->param2) + size_caracter_fin_de_cadena;
 
-		*size += sizeof(ts_ins_consola) + size_param1 + size_param2;
-		stream = realloc(stream, *size);
+		size += sizeof(ts_ins_consola) + size_param1 + size_param2 + 2*size_elemento;
+		stream = realloc(stream, size);
 
 		// instruccion
 		memcpy(stream + desplazamiento, &(inst->name), size_elemento);
@@ -93,6 +94,7 @@ void* serializar_lista_ins_consola(t_list *lista, int *size) {
 		desplazamiento += size_param2;
 	}
 
+	// TODO: hacer un free de los elementos de la lista
 	list_destroy(lista);
 
 	return stream;
@@ -291,6 +293,7 @@ t_list *deserializar_lista_ins_consola(void *stream) {
 		list_add(lista_ins, inst);
 	}
 
+	free(stream);
 	return lista_ins;
 }
 

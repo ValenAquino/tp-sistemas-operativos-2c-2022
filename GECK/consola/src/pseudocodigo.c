@@ -13,9 +13,12 @@ t_list* parsear_pseudocod(char* pseudo_path) {
 		exit(EXIT_FAILURE);
 	}
 
-	while(!feof(f_pseudo) && (inst->name != EXIT)) {
+	while(!feof(f_pseudo)) {
 		inst = crear_instruccion(&f_pseudo);
 		list_add(lista_inst, inst);
+
+		if(inst->name == EXIT)
+			break;
 	}
 
 	fclose(f_pseudo);

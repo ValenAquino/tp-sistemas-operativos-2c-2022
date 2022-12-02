@@ -2,9 +2,21 @@
 
 t_log* logger;
 t_log* logger_debug;
+t_config* config;
 int tiempo_pantalla;
+int kernel_fd;
+
+void sighandler(int x) {
+	switch (x) {
+	case SIGINT:
+		liberar_memoria();
+		exit(EXIT_SUCCESS);
+		break;
+	}
+}
 
 int main(int argc, char** argv) {
+	signal(SIGINT, sighandler);
 	t_list *lista_inst;
 	t_list *lista_segmentos;
 
@@ -17,7 +29,7 @@ int main(int argc, char** argv) {
 	char* config_path = argv[1];
 	char* pseudo_path = argv[2];
 
-	t_config* config = abrir_configuracion(config_path);
+	config = abrir_configuracion(config_path);
 	crear_loggers("consola", &logger, &logger_debug, config);
 
 	log_debug(logger_debug, "config: %s", config_path);
@@ -27,7 +39,7 @@ int main(int argc, char** argv) {
 
 	procesar_config(config, &lista_segmentos, &tiempo_pantalla);
 
-	int kernel_fd = connect_to_kernel(config);
+	kernel_fd = connect_to_kernel(config);
 
 	enviar_proceso(kernel_fd, lista_inst, lista_segmentos);
 
@@ -39,7 +51,7 @@ int main(int argc, char** argv) {
 
 	while(manejar_comunicacion(comunicacion_args));
 
-	return liberar_memoria(logger, logger_debug, kernel_fd, config);
+	return liberar_memoria();
 }
 
 void procesar_config(t_config* config, t_list **lista_segmentos, int* tiempo_pantalla) {
@@ -71,13 +83,28 @@ int connect_to_kernel(t_config* config) {
 	return kernel_fd;
 }
 
+int calcular_size_lista_ins(t_list* lista_inst) {
+	int size = 0;
+
+	for(int i = 0; i< list_size(lista_inst); i++) {
+		ts_ins_consola *inst = list_get(lista_inst, i);
+
+		int size_param1 = strlen(inst->param1) + size_caracter_fin_de_cadena;
+		int size_param2 = strlen(inst->param2) + size_caracter_fin_de_cadena;
+
+		size += size_param1 + size_param2 + 2*sizeof(int);
+	}
+
+	return size;
+}
+
 void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) {
 	ts_paquete* paquete = crear_paquete(ELEMENTOS_CONSOLA);
 
-	int size_ins = 0;
+	int size_ins = calcular_size_lista_ins(lista_inst);
 	int size_seg = sizeof(int) * list_size(lista_segmentos) + sizeof(int);
 
-	void *ins = serializar_lista_ins_consola(lista_inst, &size_ins);
+	void *ins = serializar_lista_ins_consola(lista_inst);
 	void *seg = serializar_lista_tamanios_seg(lista_segmentos, size_seg, 1);
 
 	agregar_a_paquete(paquete, ins, size_ins);
@@ -87,9 +114,9 @@ void enviar_proceso(int kernel_fd, t_list* lista_inst, t_list* lista_segmentos) 
 	eliminar_paquete(paquete);
 }
 
-int liberar_memoria(t_log* logger_debug, t_log* logger, int fd, t_config* config) {
+int liberar_memoria() {
 	log_trace(logger, "Finalizando consola");
-	liberar_conexion(fd);
+	liberar_conexion(kernel_fd);
 	config_destroy(config);
 	log_destroy(logger_debug);
 	log_destroy(logger);

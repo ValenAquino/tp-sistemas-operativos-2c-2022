@@ -89,7 +89,7 @@ void* serializar_lista_seg(t_list*, int);
 void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista);
 void* serializar_datos_pcb(PCB*, int);
 void* serializar_direccion_parcial(dir_t, int);
-void* serializar_lista_ins_consola(t_list *lista, int *size);
+void* serializar_lista_ins_consola(t_list *lista);
 
 // Deserializacion
 t_list* deserializar_lista_inst(void *stream);
