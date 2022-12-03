@@ -28,8 +28,6 @@ pthread_mutex_t mutex_pid_counter;
 sem_t planificar;
 sem_t cpu_idle;
 sem_t sem_estructuras_memoria;
-sem_t sem_disco;
-sem_t sem_impresora;
 sem_t sem_procesos_ready;
 sem_t sem_proceso_nuevo;
 
@@ -185,8 +183,6 @@ void inicializar_kernel() {
 	pthread_mutex_init(&mutex_ready, NULL);
 	sem_init(&planificar, 1, 0);
 	sem_init(&cpu_idle, 1, 1);
-	sem_init(&sem_impresora, 1, 1);
-	sem_init(&sem_disco, 1, 1);
 	sem_init(&sem_estructuras_memoria, 1, 0);
 	pthread_mutex_init(&mutex_block, NULL);
 	pthread_mutex_init(&mutex_new, NULL);

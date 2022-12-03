@@ -17,6 +17,7 @@ extern sem_t sem_procesos_ready;
 extern sem_t sem_proceso_nuevo;
 extern sem_t sem_estructuras_memoria;
 
+extern pthread_mutex_t mutex_new;
 extern pthread_mutex_t mutex_exit;
 extern pthread_mutex_t mutex_ready;
 extern sem_t planificar;
@@ -27,7 +28,9 @@ void planificador_largo_plazo() {
 	while(1) {
 		sem_wait(&sem_proceso_nuevo);
 		sem_wait(&sem_procesos_ready);
+		pthread_mutex_lock(&mutex_new);
 		PCB* pcb = list_get(procesosNew, 0);
+		pthread_mutex_unlock(&mutex_new);
 		enviar_solicitud_crear_estructuras_memoria(pcb->tamanios_segmentos, memoria_fd, pcb->id);
 		sem_wait(&sem_estructuras_memoria);
 		log_pcb(pcb);
@@ -37,7 +40,9 @@ void planificador_largo_plazo() {
 }
 
 void pasarANew(PCB* pcb) {
+	pthread_mutex_lock(&mutex_new);
 	list_add(procesosNew, pcb);
+	pthread_mutex_unlock(&mutex_new);
 	log_info(logger_debug, "Se agrego un proceso de id: %d a la cola de NEW", pcb->id);
 	sem_post(&sem_proceso_nuevo);
 	// CREAR HILO DE QUANTUM.

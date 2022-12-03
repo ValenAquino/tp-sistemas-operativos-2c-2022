@@ -179,7 +179,6 @@ void manejar_comunicacion(void *void_args) {
 		case -1:
 			log_error(logger_debug, "El cliente se desconecto. Terminando servidor");
 			close(cliente_socket);
-			exit(EXIT_FAILURE);
 			return;
 
 		default:
