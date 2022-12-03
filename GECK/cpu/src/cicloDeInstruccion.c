@@ -9,6 +9,7 @@ extern int FLAG_FIN_QUANTUM;
 extern int memoria_fd;
 
 extern sem_t sem_respuesta_memoria;
+extern pthread_mutex_t mutex_flag_quantum;
 
 extern uint32_t REG_AX;
 extern uint32_t REG_BX;
@@ -52,7 +53,7 @@ ts_ins* decode(ts_ins *instruccion) {
 				"Ejecutando un retardo de instruccion de: %d ms",
 				config->retardo_instruccion);
 
-		sleep(config->retardo_instruccion / 1000); // Sleep recibe tiempo en segundos
+		usleep(config->retardo_instruccion * 1000); // Sleep recibe tiempo en segundos
 
 		log_trace(logger_debug, "FIN retardo de instruccion");
 		return instruccion;
@@ -142,16 +143,16 @@ int execute_io(ts_ins *instruccion, PCB *pcb) {
 	case PANTALLA:
 		codigo = OP_PANTALLA;
 
-		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
-				 str_ins(instruccion->name), str_registro(instruccion->param1),
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%s>", pcb->id,
+				 str_ins(instruccion->name), instruccion->param1,
 				 str_registro(instruccion->param2) );
 		break;
 
 	case TECLADO:
 		codigo = OP_TECLADO;
 
-		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%s> - <%s>", pcb->id,
-				 str_ins(instruccion->name), str_registro(instruccion->param1),
+		log_info(logger, "PID: <%d> - Ejecutando: <%s> - <%d> - <%s>", pcb->id,
+				 str_ins(instruccion->name), instruccion->param1,
 				 str_registro(instruccion->param2) );
 		break;
 	default:
@@ -234,12 +235,16 @@ void check_interrupt(PCB *pcb) {
 	log_trace(logger_debug, "CHECK INTERRUPT\n");
 
 	if (se_devolvio_pcb) {
+		pthread_mutex_lock(&mutex_flag_quantum);
 		FLAG_FIN_QUANTUM = 0;
+		pthread_mutex_unlock(&mutex_flag_quantum);
 		return;
 	}
 
+	pthread_mutex_lock(&mutex_flag_quantum);
 	if (FLAG_FIN_QUANTUM) {
 		FLAG_FIN_QUANTUM = 0;
+		pthread_mutex_unlock(&mutex_flag_quantum);
 
 		log_debug(logger_debug, "<FLAG_FIN_QUANTUM>\n");
 
@@ -251,6 +256,7 @@ void check_interrupt(PCB *pcb) {
 		se_devolvio_pcb = true;
 		return;
 	}
+	pthread_mutex_unlock(&mutex_flag_quantum);
 }
 
 uint32_t get_valor_registro(reg_cpu registro) {

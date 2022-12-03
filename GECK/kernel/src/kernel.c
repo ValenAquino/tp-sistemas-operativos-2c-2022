@@ -218,8 +218,6 @@ void destruir_semaforos() {
 	sem_destroy(&planificar);
 	sem_destroy(&cpu_idle);
 	sem_destroy(&sem_estructuras_memoria);
-	sem_destroy(&sem_disco);
-	sem_destroy(&sem_impresora);
 	sem_destroy(&sem_procesos_ready);
 	sem_destroy(&sem_proceso_nuevo);
 	pthread_mutex_destroy(&mutex_ready);

@@ -12,6 +12,7 @@ extern int tam_max_segmento_memoria;
 extern int memoria_fd;
 
 extern pthread_mutex_t mutex_comunicacion_memoria;
+extern pthread_mutex_t mutex_flag_quantum;
 
 void manejar_comunicacion_dispatch(void *void_args) {
 	t_manejar_conexion_args *args = (t_manejar_conexion_args*) void_args;
@@ -71,7 +72,10 @@ void manejar_comunicacion_interrupt(void *void_args) {
 		switch (cod_op) {
 		case INTERRUPCION_QUANTUM:
 			log_debug(logger_debug, "INTERRUPCION POR FIN DE QUANTUM!\n");
+			pthread_mutex_lock(&mutex_flag_quantum);
 			FLAG_FIN_QUANTUM = 1;
+			pthread_mutex_unlock(&mutex_flag_quantum);
+
 			break;
 
 		case DEBUG:

@@ -22,6 +22,7 @@ uint32_t REG_DX;
 
 pthread_mutex_t mutex_tlb;
 pthread_mutex_t mutex_comunicacion_memoria;
+pthread_mutex_t mutex_flag_quantum;
 
 int memoria_fd;
 char *config_path;
@@ -57,6 +58,7 @@ void iniciar_cpu() {
 
 	pthread_mutex_init(&mutex_tlb, NULL);
 	pthread_mutex_init(&mutex_comunicacion_memoria, NULL);
+	pthread_mutex_init(&mutex_flag_quantum, NULL);
 }
 
 void iniciar_servidores_de_escucha() {

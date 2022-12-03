@@ -24,7 +24,7 @@ int manejar_comunicacion(void* void_args) {
 			uint32_t reg = recibir_registro(cliente_socket);
 			int pid = recibir_pid(cliente_socket);
 			
-			sleep(tiempo_pantalla/1000);
+			usleep(tiempo_pantalla * 1000);
 			log_info(logger, "%d", valor);
 
 			enviar_codop(cliente_socket, RESPUESTA_PANTALLA);

@@ -16,7 +16,7 @@ void suspender_proceso(void* void_args) {
 	dispositivos dispositivo = args->dispositivo;
 	free(args);
 
-	sleep(tiempo);
+	usleep(tiempo * 1000);
 	manejar_post_dispositivo(dispositivo);
 
 	mover_proceso_block_ready_by_pid(pcb->id);
@@ -43,7 +43,7 @@ void ejecutar_suspension_en_hilo(PCB* pcb, int tiempo, dispositivos dispositivo)
 void manejar_suspension_por(int indice_dispo, PCB* pcb, int cliente_socket) {
 	int unidades_de_trabajo = recibir_valor(cliente_socket);
 	int tiempo_por_unidad = obtener_tiempo_io(indice_dispo, config->dispositivos);
-	int tiempo_de_suspension = tiempo_por_unidad * unidades_de_trabajo / 1000;
+	int tiempo_de_suspension = tiempo_por_unidad * unidades_de_trabajo;
 			
 	pasarABlock(pcb, indice_dispo);
 
