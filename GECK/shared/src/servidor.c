@@ -83,3 +83,31 @@ uint32_t recibir_respuesta_consola(int socket_cliente) {
 uint32_t recibir_valor(int socket_cliente) {
 	return recibir_registro(socket_cliente);
 }
+
+
+int server_escuchar(t_log* logger, char* server_name, int server_socket, void* function_handler) {
+    int cliente_socket = esperar_cliente(logger, server_name, server_socket);
+
+    if (cliente_socket != -1) {
+        pthread_t hilo;
+        t_manejar_conexion_args* args = malloc(sizeof(t_manejar_conexion_args));
+        args->fd = cliente_socket;
+        args->server_name = server_name;
+        pthread_create(&hilo, NULL, (void*) function_handler, (void*) args);
+        pthread_detach(hilo);
+        return 1;
+    }
+
+    return 0;
+}
+
+void solicitar_pagina(int socket_conexion, t_manejar_page_fault* args) {
+	enviar_codop(socket_conexion, PAGINA_SOLICITADA);
+	enviar_valor(socket_conexion, args->pcb->id);
+	enviar_valor(socket_conexion, args->nro_segmento_solicitado);
+	enviar_valor(socket_conexion, args->pagina_solicitada);
+	enviar_valor(socket_conexion, args->indice_tablas_de_paginas);
+
+	free(args);
+}
+

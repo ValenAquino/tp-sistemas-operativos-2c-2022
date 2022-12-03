@@ -7,5 +7,7 @@
 # binarios
 /consola/Debug/consola
 /kernel/Debug/kernel
+/memoria/Debug/memoria
+/cpu/Debug/cpu
 
 .vscode/

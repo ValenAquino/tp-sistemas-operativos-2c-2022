@@ -4,6 +4,8 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 	char **mostrar_logs_char = config_get_array_value(config, "MOSTRAR_LOGS");
 	t_list *mostrar_logs = array_char_to_list_int(mostrar_logs_char);
 
+	// TODO: Agregar validacion y default value si no existe la key en config.
+
 	char* file_name_debug = malloc(sizeof(module_name) + sizeof("-debug.log"));
 	char* logger_debug_name = malloc(sizeof(module_name) + sizeof("-DEBUG"));
 	char* file_name = malloc(sizeof(module_name) + sizeof(".log"));
@@ -23,40 +25,67 @@ void crear_loggers(char* module_name, t_log **logger_prod, t_log **logger_debug,
 	free(file_name);
 }
 
+void log_list_inst_consola(t_list* instrucciones) {
+	for(int i = 0; i < list_size(instrucciones); i++) {
+		ts_ins_consola *inst = list_get(instrucciones, i);
+
+		log_debug(
+			logger_debug,
+			"Instruccion = [n: %s, p1: %s, p2: %s]",
+			str_ins(inst->name), inst->param1, inst->param2
+		);
+	}
+}
+
 void log_list_inst(t_list* instrucciones) {
 	for(int i = 0; i < list_size(instrucciones); i++) {
 		ts_ins *inst = list_get(instrucciones, i);
 
 		log_debug(
 			logger_debug,
-			"Instruccion = [n: %d, p1: %d, p2: %d]",
-			inst->name, inst->param1, inst->param2
+			"Instruccion = [%s, %d, %d]",
+			str_ins(inst->name), inst->param1, inst->param2
 		);
 	}
 }
 
-void log_lista_seg(t_list* tablaSegmentos) {
-	for(int i = 0; i < list_size(tablaSegmentos); i++) {
-		int *seg = list_get(tablaSegmentos, i);
-		log_debug(logger_debug, "segmento[%d] = %d", i, *seg);
+void log_lista_tamanios_seg(t_list* tabla_tamanios) {
+	for(int i = 0; i < list_size(tabla_tamanios); i++) {
+		int *tamanio = list_get(tabla_tamanios, i);
+		log_debug(logger_debug, "tamanio segmento [%d] = %d", i, *tamanio);
+	}
+}
+
+void log_lista_seg(t_list* tabla_segmentos) {
+
+	if (list_size(tabla_segmentos) == 0) {
+		log_debug(logger_debug, "Todavia no hay segmentos en este proceso");
+		return;
+	}
+
+	for(int i = 0; i < list_size(tabla_segmentos); i++) {
+		segmento_t *seg = list_get(tabla_segmentos, i);
+		log_debug(logger_debug, "segmento [%d] = { tam: %d, id_tabla_de_pags: %d }", i, seg->tamanio_segmento, seg->indice_tablas_paginas);
 	}
 }
 
 void log_pcb(PCB* pcb) {
 	t_list* instrucciones = pcb->instrucciones;
 	t_list* segmentos = pcb->tablaSegmentos;
+	t_list* tamanios_segmentos = pcb->tamanios_segmentos;
 
     log_trace(logger_debug, "IMPRIMIENDO PCB");
 	log_debug(logger_debug, "ID: %d, PC: %d", pcb->id, pcb->programCounter);
 	log_debug(logger_debug, "STATE: %d, FD: %d", pcb->estado_actual, pcb->socket_consola);
 
 	log_debug (
-		logger,
+		logger_debug,
 		"[AX: %u, BX: %u, CX: %u, DX: %u]",
 		pcb->registros[0], pcb->registros[1], pcb->registros[2], pcb->registros[3]
 	);
 
 	log_list_inst(instrucciones);
+	log_lista_tamanios_seg(tamanios_segmentos);
 	log_lista_seg(segmentos);
 	
     log_trace(logger_debug, "FIN PCB");
@@ -102,20 +131,13 @@ char* str_estado(t_estado_proceso estado) {
 	return "UNKNONW";
 }
 
-char* str_dispositivos(reg_cpu disp) {
-	switch (disp) {
-	case DISCO:
-		return "DISCO";
-	case IMPRESORA:
-		return "IMPRESORA";
-	case TECLADO:
-		return "TECLADO";
-	case PANTALLA:
-		return "PANTALLA";
-	default:
+char* str_dispositivos(int indice_disp, t_list *lista_dispositivos) {
+	ts_dispositivo *dispositivo = list_get(lista_dispositivos, indice_disp);
+
+	if(dispositivo != NULL)
+		return dispositivo->nombre;
+	else
 		return "UNKNOWN";
-	}
-	return "UNKNOWN";
 }
 
 char* str_registro(reg_cpu reg) {

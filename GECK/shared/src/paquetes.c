@@ -1,7 +1,8 @@
 #include "../include/paquetes.h"
 
-// ENVIOS
+extern t_log* logger_debug;
 
+// ENVIOS
 ts_paquete* crear_paquete(op_code codigo) {
 	ts_paquete* paquete = malloc(sizeof(ts_paquete));
 	paquete->code = codigo;
@@ -53,6 +54,47 @@ void eliminar_paquete(ts_paquete* paquete) {
 	free(paquete);
 }
 
+void* serializar_lista_ins_consola(t_list *lista, int size_stream) {
+	int desplazamiento = 0;
+	int cant_elementos = list_size(lista);
+	int size_elemento = sizeof(int);
+
+	void *stream = malloc(size_stream);
+
+	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		ts_ins_consola *inst = list_get(lista, i);
+
+		int size_param1 = strlen(inst->param1) + size_caracter_fin_de_cadena;
+		int size_param2 = strlen(inst->param2) + size_caracter_fin_de_cadena;
+
+		// instruccion
+		memcpy(stream + desplazamiento, &(inst->name), sizeof(t_ins));
+		desplazamiento += sizeof(t_ins);
+
+		// tamaño del string + param1
+		memcpy(stream + desplazamiento, &size_param1, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, inst->param1, size_param1);
+		desplazamiento += size_param1;
+
+		// tamaño del string + param2
+		memcpy(stream + desplazamiento, &size_param2, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, inst->param2, size_param2);
+		desplazamiento += size_param2;
+	}
+
+	// TODO: hacer un free de los elementos de la lista
+	list_destroy(lista);
+
+	return stream;
+}
+
 void* serializar_lista_ins(t_list *lista, int size) {
 	int desplazamiento = 0;
 
@@ -81,7 +123,7 @@ void* serializar_lista_ins(t_list *lista, int size) {
 	return stream;
 }
 
-void* serializar_lista_seg(t_list *lista, int size) {
+void* serializar_lista_tamanios_seg(t_list *lista, int size, int destruir_lista) {
 	int desplazamiento = 0;
 
 	int cant_elementos = list_size(lista);
@@ -95,6 +137,55 @@ void* serializar_lista_seg(t_list *lista, int size) {
 		int *valor = list_get(lista, i);
 
 		memcpy(stream + desplazamiento, valor, size_elemento);
+		desplazamiento += size_elemento;
+	}
+
+	if(destruir_lista == 1){
+		list_destroy(lista);
+	}
+
+	return stream;
+}
+
+void* serializar_lista_indices(t_list *lista, int size) {
+	int desplazamiento = 0;
+
+	int cant_elementos = list_size(lista);
+	int size_elemento = sizeof(int);
+	void* stream = malloc(size);
+
+	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		int *valor = list_get(lista, i);
+
+		memcpy(stream + desplazamiento, valor, size_elemento);
+		desplazamiento += size_elemento;
+	}
+
+	list_destroy(lista);
+
+	return stream;
+}
+
+void* serializar_lista_seg(t_list *lista, int size) {
+	int desplazamiento = 0;
+
+	int cant_elementos = list_size(lista);
+	int size_elemento = sizeof(int);
+	void* stream = malloc(size);
+
+	memcpy(stream + desplazamiento, &cant_elementos, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		segmento_t *segmento = list_get(lista, i);
+
+		memcpy(stream + desplazamiento, &(segmento->tamanio_segmento), size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(stream + desplazamiento, &(segmento->indice_tablas_paginas), size_elemento);
 		desplazamiento += size_elemento;
 	}
 
@@ -162,6 +253,45 @@ t_list* recibir_paquete(int socket_cliente) {
 	return valores;
 }
 
+t_list *deserializar_lista_ins_consola(void *stream) {
+	t_list *lista_ins = list_create();
+	int cant_elementos = 0;
+	int desplazamiento = 0;
+	int size_elemento = sizeof(int);
+
+	memcpy(&cant_elementos, stream + desplazamiento, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		ts_ins_consola *inst = malloc(sizeof(ts_ins_consola));
+
+		// instruccion
+		memcpy(&(inst->name), stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		int size_param1 = 0;
+		memcpy(&size_param1, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		inst->param1 = malloc(size_param1);
+		memcpy(inst->param1, stream + desplazamiento, size_param1);
+		desplazamiento += size_param1;
+
+		int size_param2 = 0;
+		memcpy(&size_param2, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		inst->param2 = malloc(size_param2);
+		memcpy(inst->param2, stream + desplazamiento, size_param2);
+		desplazamiento += size_param2;
+
+		list_add(lista_ins, inst);
+	}
+
+	free(stream);
+	return lista_ins;
+}
+
 t_list* deserializar_lista_inst(void *stream) {
 	int cant_elementos;
 	int desplazamiento = 0;
@@ -198,6 +328,31 @@ t_list* deserializar_lista_segm(void *stream) {
 	desplazamiento += size_elemento;
 	
 	for(int i = 0; i < cant_elementos; i++) {
+		segmento_t *segmento = malloc(sizeof(segmento_t));
+
+		memcpy(&segmento->tamanio_segmento, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		memcpy(&segmento->indice_tablas_paginas, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+
+		list_add(lista, segmento);
+	}
+
+	return lista;
+}
+
+
+t_list* deserializar_lista_indices(void *stream) {
+	int cant_elementos;
+	int desplazamiento = 0;
+	int size_elemento = sizeof(int);
+	t_list* lista = list_create();
+
+	memcpy(&cant_elementos, stream + desplazamiento, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
 		int *valor = malloc(sizeof(int));
 		memcpy(valor, stream + desplazamiento, size_elemento);
 		desplazamiento += size_elemento;
@@ -207,7 +362,26 @@ t_list* deserializar_lista_segm(void *stream) {
 	return lista;
 }
 
-PCB* deserializar_pcb(void* data, void* inst, void* segm) {
+t_list* deserializar_lista_tamanios_segm(void *stream) {
+	int cant_elementos;
+	int desplazamiento = 0;
+	int size_elemento = sizeof(int);
+	t_list* lista = list_create();
+
+	memcpy(&cant_elementos, stream + desplazamiento, size_elemento);
+	desplazamiento += size_elemento;
+
+	for(int i = 0; i < cant_elementos; i++) {
+		int *valor = malloc(sizeof(int));
+		memcpy(valor, stream + desplazamiento, size_elemento);
+		desplazamiento += size_elemento;
+		list_add(lista, valor);
+	}
+
+	return lista;
+}
+
+PCB* deserializar_pcb(void* data, void* inst, void* segm, void* tamanios_segmentos) {
 	PCB* pcb = (PCB*) malloc(sizeof(PCB));
 	int desplazamiento = 0;
 
@@ -228,10 +402,12 @@ PCB* deserializar_pcb(void* data, void* inst, void* segm) {
 
 	pcb->instrucciones = deserializar_lista_inst(inst);
 	pcb->tablaSegmentos = deserializar_lista_segm(segm);
+	pcb->tamanios_segmentos = deserializar_lista_tamanios_segm(tamanios_segmentos);
 
 	free(data);
 	free(inst);
 	free(segm);
+	free(tamanios_segmentos);
 
 	return pcb;
 }
@@ -242,14 +418,17 @@ void enviar_pcb(PCB* pcb, int socket_fd, op_code op_code) {
 	// 3 ints de PC, ID, SOCKET + 4 uint32_t de los registros + 1 t_estado_proceso
 	int size_data = sizeof(int) * 3 + sizeof(uint32_t) * 4 + sizeof(t_estado_proceso);
 	int size_ins = sizeof(ts_ins) * list_size(pcb->instrucciones) + sizeof(int);
-	int size_seg = sizeof(int) * list_size(pcb->tablaSegmentos) + sizeof(int);
+	int size_tamanios_seg = sizeof(int) * list_size(pcb->tamanios_segmentos) + sizeof(int);
+	int size_seg = sizeof(segmento_t) * list_size(pcb->tablaSegmentos) + sizeof(int);
 
 	void* data = serializar_datos_pcb(pcb, size_data);
 	void* inst = serializar_lista_ins(pcb->instrucciones, size_ins);
+	void* tam_segm = serializar_lista_tamanios_seg(pcb->tamanios_segmentos, size_tamanios_seg, 1);
 	void* segm = serializar_lista_seg(pcb->tablaSegmentos, size_seg);
 
 	agregar_a_paquete(paquete, data, size_data);
 	agregar_a_paquete(paquete, inst, size_ins);
+	agregar_a_paquete(paquete, tam_segm, size_tamanios_seg);
 	agregar_a_paquete(paquete, segm, size_seg);
 
 	enviar_paquete(paquete, socket_fd);
@@ -261,10 +440,11 @@ PCB* recibir_pcb(int cliente_socket) {
 
 	void* datos = list_get(listas, 0);
 	void* inst  = list_get(listas, 1);
-	void* segm  = list_get(listas, 2);
+	void* tam_segm  = list_get(listas, 2);
+	void* segm  = list_get(listas, 3);
 	list_destroy(listas);
 
-	PCB* pcb = deserializar_pcb(datos, inst, segm);
+	PCB* pcb = deserializar_pcb(datos, inst, segm, tam_segm);
 
 	return pcb;
 }
@@ -287,3 +467,139 @@ t_list* deserializar_lista_tiempos(void* stream) {
 
 	return lista;
 }
+
+void enviar_solicitud_crear_estructuras_memoria(t_list *tamanios_segmentos, int socket_fd, int pid) {
+	ts_paquete* paquete = crear_paquete(CREAR_ESTRUCTURAS_MEMORIA);
+	t_list *tamanios_segmentos_copy = list_duplicate(tamanios_segmentos);
+	int size_tamanios_seg = sizeof(int) * list_size(tamanios_segmentos_copy) + sizeof(int);
+
+	void* tam_segm = serializar_lista_tamanios_seg(tamanios_segmentos_copy, size_tamanios_seg, 0);
+	agregar_a_paquete(paquete, tam_segm, size_tamanios_seg);
+
+	enviar_paquete(paquete, socket_fd);
+	eliminar_paquete(paquete);
+
+	enviar_pid(socket_fd, pid);
+}
+
+t_list* recibir_solicitud_crear_estructuras_memoria(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	log_debug(logger_debug, "recibir_solicitud_crear_estructuras_memoria list paquete size: %d", list_size(listas));
+
+	void* tam_segm = list_get(listas, 0);
+
+	list_destroy(listas);
+
+	t_list* tamanios_segmentos = deserializar_lista_tamanios_segm(tam_segm);
+
+	return tamanios_segmentos;
+}
+
+void enviar_indices_tablas_de_paginas(t_list *indices, int socket_fd, int pid) {
+	ts_paquete* paquete = crear_paquete(RESPUESTA_INDICES_T_PS);
+
+	int size_tamanios_indices = sizeof(int) * list_size(indices) + sizeof(int);
+	log_debug(logger_debug, "enviar_indices_tablas_de_paginas list paquete size: %d", list_size(indices));
+
+	void* tam_indices = serializar_lista_indices(indices, size_tamanios_indices);
+	agregar_a_paquete(paquete, tam_indices, size_tamanios_indices);
+
+	enviar_paquete(paquete, socket_fd);
+	eliminar_paquete(paquete);
+
+	enviar_pid(socket_fd,pid);
+}
+
+t_list* recibir_indices_tablas_de_paginas(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	log_debug(logger_debug, "recibir_indices_tablas_de_paginas list paquete size: %d", list_size(listas));
+
+	void* tam_indices = list_get(listas, 0);
+
+	list_destroy(listas);
+
+	t_list* tamanios_segmentos = deserializar_lista_indices(tam_indices);
+
+	return tamanios_segmentos;
+}
+
+void* serializar_direccion_parcial(dir_t direccion, int size) {
+	void *stream = malloc(size);
+	int desplazamiento = 0;
+
+	memcpy(stream + desplazamiento, &(direccion.nro_seg), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento,&(direccion.nro_pag), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(direccion.desplazamiento_pag), sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(stream + desplazamiento, &(direccion.id_tabla_pagina),  sizeof(int));
+	desplazamiento += sizeof(int);
+
+	return stream;
+}
+
+dir_t deserializar_direccion_parcial(void* stream) {
+	dir_t* direccion = (dir_t*) malloc(sizeof(dir_t));
+
+	int desplazamiento = 0;
+
+	memcpy(&(direccion->nro_seg), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->nro_pag), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->desplazamiento_pag), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(&(direccion->id_tabla_pagina), stream + desplazamiento, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	dir_t resultado;
+	resultado.nro_seg = direccion->nro_seg;
+	resultado.nro_pag = direccion->nro_pag;
+	resultado.desplazamiento_pag = direccion->desplazamiento_pag;
+	resultado.id_tabla_pagina = direccion->id_tabla_pagina;
+
+	free(stream);
+	free(direccion);
+
+	return resultado;
+}
+
+void enviar_direccion_parcial(dir_t direccion, int cliente_socket, int codop) {
+	ts_paquete* paquete = crear_paquete(codop);
+
+	int size_dir = sizeof(dir_t);
+
+	void* dir_stream = serializar_direccion_parcial(direccion, size_dir);
+
+	agregar_a_paquete(paquete, dir_stream, size_dir);
+
+	enviar_paquete(paquete, cliente_socket);
+
+	eliminar_paquete(paquete);
+	free(dir_stream);
+}
+
+dir_t recibir_direccion_parcial(int cliente_socket) {
+	t_list *listas = recibir_paquete(cliente_socket);
+
+	log_debug(logger_debug, "recibir_direccion_parcial list paquete size: %d", list_size(listas));
+
+	void* direccion = list_get(listas, 0);
+
+	dir_t direccion_deserializada = deserializar_direccion_parcial(direccion);
+
+	list_destroy(listas);
+	return direccion_deserializada;
+}
+
+
+

@@ -29,13 +29,12 @@
 #include "pseudocodigo.h"
 #include "comunicacion.h"
 
-
 void procesar_config(t_config*, t_list**, int*);
 t_list* parsear_pseudocod(char*);
 
 int connect_to_kernel(t_config*);
 void enviar_proceso(int, t_list*, t_list*);
 
-int liberar_memoria(t_log*, t_log*, int, t_config*);
+int liberar_memoria();
 
 #endif /* CONSOLA_H_ */

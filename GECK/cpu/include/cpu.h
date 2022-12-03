@@ -8,14 +8,25 @@
 #include <servidor.h>
 #include <shared.h>
 #include <logs.h>
+#include <semaphore.h>
 
 #include "comunicacion.h"
 #include "configuracion.h"
+#include "tlb.h"
 
 #define DISPATCH_SERVER_NAME "CPU_SERVER_DISPATCH"
 #define INTERRUPT_SERVER_NAME "CPU_SERVER_INTERRUPT"
 
-void iniciar_cpu();
 int crear_servidor(char* ip, char* puerto, char* server_name);
+
+void iniciar_cpu();
+void iniciar_servidores_de_escucha();
+
+void destruir_loggers();
+void destruir_listas_y_elementos();
+void liberar_conexiones();
+
+void sighandler(int x);
+void terminar_cpu();
 
 #endif /* CPU_H_ */
