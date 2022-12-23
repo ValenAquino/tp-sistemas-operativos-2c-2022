@@ -40,7 +40,7 @@ main-build: memoria
 memoria: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/ubuntu/Documents/tp-2022-2c-Compilant/GECK/shared/Debug" -o "memoria" $(OBJS) $(USER_OBJS) $(LIBS) -lcommons -lshared
+	gcc -L"/home/utnso/tp-2022-2c-Compilant/GECK/shared/Debug" -o "memoria" $(OBJS) $(USER_OBJS) $(LIBS) -lcommons -lshared
 	@echo 'Finished building target: $@'
 	@echo ' '
 
